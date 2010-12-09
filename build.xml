@@ -12,11 +12,11 @@
 	<!-- used by "compile" -->
 	<property name="src.dir" value="src" />
 	
-	<!-- -->
+	<!-- used by "plugin.xml" and "boilerplate" -->
 	<property name="header.generated" value="ATTENTION: generated file. Do not edit it, edit the build.xml instead." />
 
 	<!-- used by "boilerplate" -->
-	<property name="src.generated" value="src_generated" />
+	<property name="src.generated" value="generated_src" />
 	
 	<!-- used by "plugin.xml" -->
 	<property name="description" value="Test" />
