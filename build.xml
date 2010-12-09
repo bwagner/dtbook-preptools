@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="preptools" default="deploy">
+	<!-- used by "deploy" and "plugin.xml" -->
+	<property name="pluginfile" value="plugin.xml" />
+	
+	<!-- used by "deploy", "jar" and "plugin.xml" -->
+	<property name="jarfile" value="${ant.project.name}.jar" />
+	
+	<!-- used by "jar" and "init" -->
+	<property name="build.dir" value="bin" />
+	
+	<!-- used by "compile" -->
+	<property name="src.dir" value="src" />
+	
+	<!-- -->
+	<property name="header.generated" value="ATTENTION: generated file. Do not edit it, edit the build.xml instead." />
+
+	<!-- used by "boilerplate" -->
+	<property name="src.generated" value="src_generated" />
+	
+	<!-- used by "plugin.xml" -->
+	<property name="description" value="Test" />
+	<!-- TODO: possibly the following values can be found from the sources -->
+	<property name="package" value="ch.sbs.plugin.preptools" />
+	<property name="clazz" value="WorkspaceAccessPlugin" />
+	<property name="fqnclazz" value="${package}.${clazz}" />
+	<property name="type" value="WorkspaceAccess" />
+	<property name="extensionClazz" value="${fqnclazz}Extension" />
+	<property name="lib.dir" value="lib" />
+	<path id="classpath.path">
+		<pathelement location="${build.dir}" />
+		<fileset dir="${lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<target name="init">
+		<mkdir dir="${build.dir}" />
+	</target>
+
+	<target name="compile" depends="init, boilerplate">
+		<javac destdir="${build.dir}" deprecation="on" debug="on">
+			<src path="${src.dir}" />
+			<src path="${src.generated}" />
+			<classpath>
+				<path refid="classpath.path" />
+			</classpath>
+		</javac>
+	</target>
+	
+	<target name="deploy" depends="jar, plugin.xml, oxygendir">
+		<property name="plugindir" value="${oxygendir}/plugins/${ant.project.name}" />
+		<delete dir="${plugindir}" />
+		<mkdir dir="${plugindir}/lib" />
+		<copy file="${jarfile}" todir="${plugindir}/lib" />
+		<copy file="${pluginfile}" todir="${plugindir}" />
+	</target>
+	
+	<target name="jar" depends="compile">
+		<jar destfile="${jarfile}" basedir="${build.dir}">
+			<fileset dir="${build.dir}">
+				<include name="**/*" />
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="oxygendir">
+		<exec executable="sh" outputproperty="oxygendir">
+			<arg value="-c" />
+			<arg value="which oxygen|perl -MFile::Basename -ne 'chomp;print dirname readlink'" />
+		</exec>
+	</target>
+	
+	<target name="plugin.xml">
+		<echo file="${pluginfile}">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+			&lt;!DOCTYPE plugin SYSTEM "../plugin.dtd"&gt;
+			&lt;!-- ${header.generated} --&gt;
+
+			&lt;plugin
+					name="${ant.project.name}"
+					description="${description}"
+					version="1.0.0"
+					vendor="SBS"
+					class="${fqnclazz}"&gt;
+				&lt;runtime&gt;
+					&lt;library name="lib/${jarfile}"/&gt;
+				&lt;/runtime&gt;
+				&lt;extension type="${type}" 
+					class="${extensionClazz}"/&gt;
+			&lt;/plugin&gt;
+		</echo>
+	</target>
+	
+	<target name="boilerplate" depends="package2dir">
+		<mkdir dir="${src.generated}/${packagedir}"/>
+		<echo file="${src.generated}/${packagedir}/${clazz}.java">
+			// ${header.generated}
+			package ${package};
+
+			import ro.sync.exml.plugin.Plugin;
+			import ro.sync.exml.plugin.PluginDescriptor;
+
+			public class ${clazz} extends Plugin {
+
+				private static ${clazz} instance = null;
+
+				public ${clazz}(PluginDescriptor descriptor) {
+					super(descriptor);
+
+					if (instance != null) {
+						throw new IllegalStateException("Already instantiated!");
+					}
+					instance = this;
+				}
+
+				public static ${clazz} getInstance() {
+					return instance;
+				}
+			}
+		</echo>
+	</target>
+
+	<!-- alternative to do string manip in ant: -->
+	<!-- http://ptrthomas.wordpress.com/2007/04/22/how-to-do-string-operations-in-ant/ -->
+	<target name="package2dir">
+		<exec executable="sh" outputproperty="packagedir">
+			<arg value="-c"/>
+			<arg value="perl -e '$_=&quot;${package}&quot;;tr{.}{/};print $_'"/>
+		</exec>
+	</target>
+
+</project>
