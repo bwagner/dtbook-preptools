@@ -5,11 +5,13 @@ public class VFormUtil {
 			"Ihn(?:en)?", "Euer", "Eure(?:n|m|s)?", "Dein(?:en|em|es|e)?",
 			"Sie", "Du", "Dir", "Dich", "Euch" };
 
-	public static String replace(String text) {
-		for (String vform : vforms) {
-			text = text.replaceAll(vform, "<brl:v-form>$0</brl:v-form>");
+	public static String replace(final String theText) {
+		String result = theText;
+		for (final String vform : vforms) {
+			result = result.replaceAll(vform + "\\b",
+					"<brl:v-form>$0</brl:v-form>");
 		}
-		return text;
+		return result;
 	}
 
 }
