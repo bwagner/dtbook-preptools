@@ -24,6 +24,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 
 import ro.sync.ecss.extensions.api.AuthorAccess;
 import ro.sync.ecss.extensions.api.AuthorDocumentController;
@@ -32,6 +33,7 @@ import ro.sync.ecss.extensions.api.structure.AuthorPopupMenuCustomizer;
 import ro.sync.exml.editor.EditorPageConstants;
 import ro.sync.exml.workspace.api.editor.WSEditor;
 import ro.sync.exml.workspace.api.editor.page.author.WSAuthorEditorPage;
+import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
 import ro.sync.exml.workspace.api.listeners.WSEditorChangeListener;
 import ro.sync.exml.workspace.api.standalone.MenuBarCustomizer;
 import ro.sync.exml.workspace.api.standalone.StandalonePluginWorkspace;
@@ -40,7 +42,7 @@ import ro.sync.exml.workspace.api.standalone.ToolbarInfo;
 import ro.sync.exml.workspace.api.standalone.ViewComponentCustomizer;
 import ro.sync.exml.workspace.api.standalone.ViewInfo;
 import ro.sync.ui.Icons;
-import ro.sync.util.URLUtil;
+import ch.sbs.utils.preptools.vform.VFormUtil;
 
 /**
  * Plugin extension - workspace access extension.
@@ -66,9 +68,9 @@ public class WorkspaceAccessPluginExtension implements
 	private boolean forceCheckIn;
 
 	/**
-	 * The CMS messages area.
+	 * The PrepTools messages area.
 	 */
-	private JTextArea cmsMessagesArea;
+	private JTextArea prepToolsMessagesArea;
 
 	/**
 	 * Plugin workspace access.
@@ -79,6 +81,98 @@ public class WorkspaceAccessPluginExtension implements
 	 * If <code>true</code> then the plugin is running.
 	 */
 	private boolean runPlugin;
+
+	private final String LABEL = "VForms";
+
+	// legacy action: replaces everything.
+
+	private class VFormAction extends AbstractAction {
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			final WSEditor editorAccess = pluginWorkspaceAccess
+					.getCurrentEditorAccess(StandalonePluginWorkspace.MAIN_EDITING_AREA);
+			if (editorAccess != null) {
+				if (!(editorAccess.getCurrentPage() instanceof WSTextEditorPage)) {
+					showDialog("This function is only available in the Text page, not the Author page.");
+					return;
+				}
+				WSTextEditorPage aWSTextEditorPage = (WSTextEditorPage) editorAccess
+						.getCurrentPage();
+				final Document document = aWSTextEditorPage.getDocument();
+				try {
+					String text = document.getText(0, document.getLength());
+					text = VFormUtil.replace(text);
+					document.remove(0, document.getLength());
+					document.insertString(0, text, null);
+
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+				}
+
+			}
+		}
+	};
+
+	// TODO: Code duplication between Actions
+	// TODO: enable/disable toolbar buttons
+	// TODO: navigate on the dom not the plain text!
+
+	private class VFormStartAction extends AbstractAction {
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			final WSEditor editorAccess = pluginWorkspaceAccess
+					.getCurrentEditorAccess(StandalonePluginWorkspace.MAIN_EDITING_AREA);
+			if (editorAccess != null) {
+				if (!(editorAccess.getCurrentPage() instanceof WSTextEditorPage)) {
+					showDialog("This function is only available in the Text page, not the Author page.");
+					return;
+				}
+				WSTextEditorPage aWSTextEditorPage = (WSTextEditorPage) editorAccess
+						.getCurrentPage();
+				final Document document = aWSTextEditorPage.getDocument();
+				try {
+					String text = document.getText(0, document.getLength());
+					VFormUtil.Match match = VFormUtil.find(text, 0);
+					aWSTextEditorPage
+							.select(match.startOffset, match.endOffset);
+
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+				}
+
+			}
+		}
+	};
+
+	private class VFormAcceptAction extends AbstractAction {
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			final WSEditor editorAccess = pluginWorkspaceAccess
+					.getCurrentEditorAccess(StandalonePluginWorkspace.MAIN_EDITING_AREA);
+			if (editorAccess != null) {
+				if (!(editorAccess.getCurrentPage() instanceof WSTextEditorPage)) {
+					showDialog("This function is only available in the Text page, not the Author page.");
+					return;
+				}
+				WSTextEditorPage aWSTextEditorPage = (WSTextEditorPage) editorAccess
+						.getCurrentPage();
+				final Document document = aWSTextEditorPage.getDocument();
+				try {
+					String text = document.getText(0, document.getLength());
+					VFormUtil.Match match = VFormUtil.find(text,
+							aWSTextEditorPage.getSelectionEnd());
+					aWSTextEditorPage
+							.select(match.startOffset, match.endOffset);
+
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+				}
+
+			}
+		}
+	};
+
+	// TODO: VForm Reject action
 
 	/**
 	 * @see ro.sync.exml.plugin.workspace.WorkspaceAccessPluginExtension#applicationStarted(ro.sync.exml.workspace.api.standalone.StandalonePluginWorkspace)
@@ -92,66 +186,10 @@ public class WorkspaceAccessPluginExtension implements
 		this.runPlugin = "jar".equals(resource.getProtocol()) ? true : System
 				.getProperty("cms.sample.plugin") != null;
 		if (runPlugin) {
-			// Check In action
-			final Action checkInAction = new AbstractAction() {
-				@Override
-				public void actionPerformed(ActionEvent arg0) {
-					WSEditor editorAccess = pluginWorkspaceAccess
-							.getCurrentEditorAccess(StandalonePluginWorkspace.MAIN_EDITING_AREA);
-					if (editorAccess != null) {
-						URL tempFileUrl = editorAccess.getEditorLocation();
-						// Get the corresponding URL
-						URL checkedOutUrl = openedCheckedOutUrls
-								.get(tempFileUrl);
-						if (checkedOutUrl == null) {
-							pluginWorkspaceAccess
-									.showInformationMessage("The file is not Checked Out.");
-						} else {
-							checkInFile(pluginWorkspaceAccess, editorAccess,
-									tempFileUrl, checkedOutUrl, true);
-						}
-					}
-					// Show 'CMS Messages' view
-					pluginWorkspaceAccess.showView(
-							ViewComponentCustomizer.CUSTOM, true);
-				}
-			};
+			final Action vformStartAction = new VFormStartAction();
 
 			// Check Out action
-			final Action checkOutAction = new AbstractAction() {
-				@Override
-				public void actionPerformed(ActionEvent arg0) {
-					File checkedOutFile = pluginWorkspaceAccess.chooseFile(
-							"Choose file", new String[] { "xml" }, "XML Files");
-					if (checkedOutFile != null) {
-						try {
-							// Create temporary file from the checked out file.
-							File tempFile = createTempFromCheckedOutFile(checkedOutFile);
-							URL tempUrl = URLUtil.correct(tempFile);
-							// Add the URls pair in the internal map
-							URL checkedoutUrl = URLUtil.correct(checkedOutFile);
-							openedCheckedOutUrls.put(tempUrl, checkedoutUrl);
-
-							// Open the temporary file
-							pluginWorkspaceAccess.open(tempUrl);
-
-							if (cmsMessagesArea != null) {
-								String messages = cmsMessagesArea.getText()
-										+ "\n" + "Check Out "
-										+ checkedoutUrl.toString();
-								cmsMessagesArea.setText(messages);
-							}
-						} catch (Exception e) {
-							pluginWorkspaceAccess
-									.showErrorMessage("Check Out operation failed: "
-											+ e.getMessage());
-						}
-					}
-					// Show 'CMS Messages' view
-					pluginWorkspaceAccess.showView(
-							ViewComponentCustomizer.CUSTOM, true);
-				}
-			};
+			final Action vformContinueAction = new VFormAcceptAction();
 
 			// Show Selection Source action
 			final Action selectionSourceAction = new AbstractAction() {
@@ -203,11 +241,13 @@ public class WorkspaceAccessPluginExtension implements
 				 */
 				@Override
 				public void customizeMainMenu(JMenuBar mainMenuBar) {
-					// CMS menu
-					JMenu menuCMS = createCMSMenu(checkInAction,
-							checkOutAction, selectionSourceAction);
-					// Add the CMS menu before the Help menu
-					mainMenuBar.add(menuCMS, mainMenuBar.getMenuCount() - 1);
+					// PrepTools menu
+					final JMenu menuPrepTools = createPrepToolsMenu(
+							vformStartAction, vformContinueAction,
+							selectionSourceAction);
+					// Add the PrepTools menu before the Help menu
+					mainMenuBar.add(menuPrepTools,
+							mainMenuBar.getMenuCount() - 1);
 				}
 			});
 
@@ -240,14 +280,14 @@ public class WorkspaceAccessPluginExtension implements
 											public void customizePopUpMenu(
 													Object popUp,
 													AuthorAccess authorAccess) {
-												// CMS menu
-												JMenu menuCMS = createCMSMenu(
-														checkInAction,
-														checkOutAction,
+												// PrepTools menu
+												JMenu menuPrepTools = createPrepToolsMenu(
+														vformStartAction,
+														vformContinueAction,
 														selectionSourceAction);
-												// Add the CMS menu
+												// Add the PrepTools menu
 												((JPopupMenu) popUp).add(
-														menuCMS, 0);
+														menuPrepTools, 0);
 												// Add 'Open in external
 												// application' action
 
@@ -292,9 +332,7 @@ public class WorkspaceAccessPluginExtension implements
 												.equals(editorAccess
 														.getCurrentPageID()));
 							}
-							URL checkedOutUrl = openedCheckedOutUrls
-									.get(editorLocation);
-							checkInAction.setEnabled(checkedOutUrl != null);
+							vformStartAction.setEnabled(true);
 						}
 
 						@Override
@@ -346,32 +384,31 @@ public class WorkspaceAccessPluginExtension implements
 						public void customizeToolbar(ToolbarInfo toolbarInfo) {
 							if (ToolbarComponentsCustomizer.CUSTOM
 									.equals(toolbarInfo.getToolbarID())) {
-								// Check In
-								JButton checkInButton = new JButton(
-										checkInAction);
-								checkInButton.setText("Chegg In");
+								// VForm Start
+								JButton vFormButton = new JButton(
+										vformStartAction);
+								vFormButton.setText(LABEL);
 
-								// Check Out
+								// VForm Accept
 								JButton checkOutButton = new JButton(
-										checkOutAction);
-								checkOutButton.setText("Chegg Out");
+										vformContinueAction);
+								checkOutButton.setText("Accept");
 
-								// Show Selection Source
+								// VForm Reject
 								JButton selectionSourceButton = new JButton(
 										selectionSourceAction);
-								selectionSourceButton
-										.setText("Show Selection Source");
+								selectionSourceButton.setText("Reject");
 
 								// Add in toolbar
 								List<JComponent> comps = new ArrayList<JComponent>();
-								comps.add(checkInButton);
+								comps.add(vFormButton);
 								comps.add(checkOutButton);
 								comps.add(selectionSourceButton);
 								toolbarInfo.setComponents(comps
 										.toArray(new JComponent[0]));
 
 								// Set title
-								toolbarInfo.setTitle("CMS");
+								toolbarInfo.setTitle("PrepTools");
 							}
 						}
 					});
@@ -385,15 +422,15 @@ public class WorkspaceAccessPluginExtension implements
 						public void customizeView(ViewInfo viewInfo) {
 							if (ViewComponentCustomizer.CUSTOM.equals(viewInfo
 									.getViewID())) {
-								cmsMessagesArea = new JTextArea(
-										"CMS Session History:");
+								prepToolsMessagesArea = new JTextArea(
+										"PrepTools Session History:");
 								viewInfo.setComponent(new JScrollPane(
-										cmsMessagesArea));
-								viewInfo.setTitle("CMS Messages");
+										prepToolsMessagesArea));
+								viewInfo.setTitle("PrepTools Messages");
 								viewInfo.setIcon(Icons.CMS_MESSAGES_CUSTOM_VIEW);
 							} else if ("Project".equals(viewInfo.getViewID())) {
 								// Change the 'Project' view title.
-								viewInfo.setTitle("CMS Project");
+								viewInfo.setTitle("PrepTools Project");
 							}
 						}
 					});
@@ -401,33 +438,33 @@ public class WorkspaceAccessPluginExtension implements
 	}
 
 	/**
-	 * Create CMS menu that contains the following actions:
+	 * Create PrepTools menu that contains the following actions:
 	 * <code>Check In</code>, <code>Check Out</code> and
 	 * <code>Show Selection Source<code/>
 	 * 
 	 * @return
 	 */
-	private JMenu createCMSMenu(final Action checkInAction,
+	private JMenu createPrepToolsMenu(final Action checkInAction,
 			final Action checkOutAction, final Action selectionSourceAction) {
-		// CMS menu
-		JMenu menuCMS = new JMenu("CMS");
+		// PrepTools menu
+		JMenu menuPrepTools = new JMenu("PrepTools");
 
 		// Add Check In action on the menu
 		final JMenuItem checkInItem = new JMenuItem(checkInAction);
-		checkInItem.setText("Check In");
-		menuCMS.add(checkInItem);
+		checkInItem.setText(LABEL);
+		menuPrepTools.add(checkInItem);
 
 		// Add Check Out action on the menu
 		JMenuItem checkOutItem = new JMenuItem(checkOutAction);
 		checkOutItem.setText("Check Out");
-		menuCMS.add(checkOutItem);
+		menuPrepTools.add(checkOutItem);
 
 		// Add Show Section Source action on the menu
 		JMenuItem selectionSourceItem = new JMenuItem(selectionSourceAction);
 		selectionSourceItem.setText("Show Selection Source");
-		menuCMS.add(selectionSourceItem);
+		menuPrepTools.add(selectionSourceItem);
 
-		return menuCMS;
+		return menuPrepTools;
 	}
 
 	/**
@@ -567,13 +604,8 @@ public class WorkspaceAccessPluginExtension implements
 				if (openFile) {
 					// Open the checked out file
 					pluginWorkspaceAccess.open(checkedOutUrl);
-					pluginWorkspaceAccess
-							.showInformationMessage("Check In was performed.");
-					if (cmsMessagesArea != null) {
-						String messages = cmsMessagesArea.getText() + "\n"
-								+ "Check In " + checkedOutUrl.toString();
-						cmsMessagesArea.setText(messages);
-					}
+					showDialog("Check In was performed.");
+					showMessage("Check In " + checkedOutUrl.toString());
 				}
 			} catch (Exception e) {
 				// Failed
@@ -582,5 +614,17 @@ public class WorkspaceAccessPluginExtension implements
 								+ e.getMessage());
 			}
 		}
+	}
+
+	private void showMessage(final String msg) {
+		if (prepToolsMessagesArea != null) {
+			prepToolsMessagesArea.append("\n");
+			prepToolsMessagesArea.append(msg);
+		}
+	}
+
+	private void showDialog(final String msg) {
+		pluginWorkspaceAccess.showInformationMessage("Running v-form");
+		pluginWorkspaceAccess.showView(ViewComponentCustomizer.CUSTOM, true);
 	}
 }

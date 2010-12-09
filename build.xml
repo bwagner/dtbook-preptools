@@ -48,7 +48,13 @@
 		</javac>
 	</target>
 	
-	<target name="deploy" depends="jar, plugin.xml, oxygendir">
+	<target name="deploy">
+		<antcall target="stopoxy"/>
+		<antcall target="dist" />
+		<antcall target="startoxy"/>
+	</target>
+	
+	<target name="dist" depends="jar, plugin.xml, oxygendir">
 		<property name="plugindir" value="${oxygendir}/plugins/${ant.project.name}" />
 		<delete dir="${plugindir}" />
 		<mkdir dir="${plugindir}/lib" />
@@ -127,6 +133,17 @@
 			<arg value="-c"/>
 			<arg value="perl -e '$_=&quot;${package}&quot;;tr{.}{/};print $_'"/>
 		</exec>
+	</target>
+	
+	<target name="stopoxy">
+		<exec executable="wmctrl">
+			<arg value="-c"/>
+			<arg value="&lt;oxygen/&gt;"/>
+		</exec>
+	</target>
+	
+	<target name="startoxy">
+		<exec executable="oxygen" />
 	</target>
 
 </project>
