@@ -16,25 +16,35 @@ public class VFormUtilTest {
 
 	@Test
 	public void testReplaceKeep() {
+		assertEquals(VFormUtil.NULL_MATCH, VFormUtil.find("Sieb", 0));
+		final VFormUtil.Match m = VFormUtil.find("Sieben können Sie haben.", 0);
+		assertEquals(14, m.startOffset);
+		assertEquals(14 + "Sie".length(), m.endOffset);
+	}
+
+	@Test
+	public void testReplaceNothing() {
 		assertEquals("nix", VFormUtil.replace("nix"));
 	}
 
 	@Test
+	public void testDeinetwegen() {
+		assertEquals(wrap("Deinetwegen") + " ist es schief gegangen.",
+				VFormUtil.replace("Deinetwegen ist es schief gegangen."));
+	}
+
+	@Test
 	public void testReplace() {
-		assertEquals("<brl:v-form>Sie</brl:v-form>", VFormUtil.replace("Sie"));
-		assertEquals("<brl:v-form>Ihre</brl:v-form>", VFormUtil.replace("Ihre"));
-		assertEquals("<brl:v-form>Ihr</brl:v-form>", VFormUtil.replace("Ihr"));
-		assertEquals("<brl:v-form>Ihren</brl:v-form>",
-				VFormUtil.replace("Ihren"));
-		assertEquals("<brl:v-form>Ihrem</brl:v-form>",
-				VFormUtil.replace("Ihrem"));
-		assertEquals("<brl:v-form>Ihres</brl:v-form>",
-				VFormUtil.replace("Ihres"));
-		assertEquals("<brl:v-form>Deine</brl:v-form>",
-				VFormUtil.replace("Deine"));
-		assertEquals("<brl:v-form>Dein</brl:v-form>", VFormUtil.replace("Dein"));
-		assertEquals(
-				"Das können <brl:v-form>Sie</brl:v-form> zu <brl:v-form>Ihren</brl:v-form> Akten legen.",
+		assertEquals(wrap("Sie"), VFormUtil.replace("Sie"));
+		assertEquals(wrap("Ihre"), VFormUtil.replace("Ihre"));
+		assertEquals(wrap("Ihr"), VFormUtil.replace("Ihr"));
+		assertEquals(wrap("Ihren"), VFormUtil.replace("Ihren"));
+		assertEquals(wrap("Ihrem"), VFormUtil.replace("Ihrem"));
+		assertEquals(wrap("Ihres"), VFormUtil.replace("Ihres"));
+		assertEquals(wrap("Deine"), VFormUtil.replace("Deine"));
+		assertEquals(wrap("Dein"), VFormUtil.replace("Dein"));
+		assertEquals("Das können " + wrap("Sie") + " zu " + wrap("Ihren")
+				+ " Akten legen.",
 				VFormUtil.replace("Das können Sie zu Ihren Akten legen."));
 	}
 
@@ -93,5 +103,19 @@ public class VFormUtilTest {
 
 		assertEquals(VFormUtil.NULL_MATCH, match);
 
+	}
+
+	@Test
+	public void testEur() {
+
+		assertEquals("Das kostet 50 Eur.",
+				VFormUtil.replace("Das kostet 50 Eur."));
+		assertEquals("Was kostet " + wrap("Eure") + " Lösung?",
+				VFormUtil.replace("Was kostet Eure Lösung?"));
+
+	}
+
+	private static final String wrap(final String theString) {
+		return "<brl:v-form>" + theString + "</brl:v-form>";
 	}
 }

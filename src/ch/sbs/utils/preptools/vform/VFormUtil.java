@@ -5,47 +5,35 @@ import java.util.regex.Pattern;
 
 public class VFormUtil {
 
-	// Using an array and not e.g. a Set, because the order of the patterns
-	// is relevant since "Ihre" would possibly match before "Ihren" gets a
-	// chance.
-	private static final String[] vforms = new String[] { "Ihren", "Ihrem",
-			"Ihres", "Ihre", "Ihr", "Ihnen", "Euer", "Eure", "Euren", "Eurem",
-			"Eures", "Deinen", "Deinem", "Deines", "Deine", "Dein", "Sie",
-			"Du", "Dir", "Dich", "Euch" };
+	private static final String[] forms = new String[] { "Ihretwegen", "Ihren",
+			"Ihrem", "Ihres", "Ihre", "Ihr", "Ihnen", "Deinetwegen", "Deinen",
+			"Deinem", "Deines", "Deine", "Dein", "Euretwegen", "Euren",
+			"Eurem", "Eures", "Eure", "Euer", "Euch", "Sie", "Du", "Dir",
+			"Dich" };
 
 	private static final Pattern vFormPattern;
 
 	static {
-		final StringBuilder bla = new StringBuilder();
-		bla.append("(?:");
-		for (final String vform : vforms) {
-			bla.append(vform);// = Pattern.compile(vform + "\\b");
-			bla.append("|");
+		final StringBuffer sb = new StringBuffer("(?:");
+		for (final String form : forms) {
+			sb.append(form);
+			sb.append("|");
 		}
-		bla.setLength(bla.length() - 1); // throw away last "|"
-		bla.append(")\\b");
-		vFormPattern = Pattern.compile(bla.toString());
-		// vFormPattern = Pattern.compile(".*");
+		sb.setLength(sb.length() - 1); // chop off last "|"
+		sb.append(")\\b"); // make sure we don't match substrings.
+		vFormPattern = Pattern.compile(sb.toString());
 	}
 
 	public static String replace(final String theText) {
-		String result = theText;
-		for (final String vform : vforms) {
-			result = result.replaceAll(vform + "\\b",
-					"<brl:v-form>$0</brl:v-form>");
-		}
-		return result;
+		return vFormPattern.matcher(theText).replaceAll(
+				"<brl:v-form>$0</brl:v-form>");
+		// Group zero always stands for the entire expression.
+		// http://download.oracle.com/javase/1.5.0/docs/api/index.html?java/util/regex/Matcher.html
 	}
 
-	// TODO: optimization potentials:
-	// 1. reuse the matcher that has already matched text.
 	public static Match find(final String text, int i) {
 		final Matcher m = vFormPattern.matcher(text);
-		if (m.find(i)) {
-			return new Match(m.start(), m.end());
-		} else {
-			return NULL_MATCH;
-		}
+		return m.find(i) ? new Match(m.start(), m.end()) : NULL_MATCH;
 	}
 
 	public static class Match {
