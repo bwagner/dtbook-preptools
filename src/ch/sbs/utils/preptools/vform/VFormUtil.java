@@ -5,15 +5,17 @@ import java.util.regex.Pattern;
 
 public class VFormUtil {
 
-	private static final String[] forms = new String[] { "Ihrethalber",
+	private static final String[] forms = new String[] { "Sie", "Ihrethalber",
 			"Ihretwegen", "Ihren", "Ihrem", "Ihres", "Ihre", "Ihr", "Ihnen",
-			"Deinethalber", "Deinetwegen", "Deinen", "Deinem", "Deines",
-			"Deine", "Dein", "Eurethalber", "Euretwegen", "Euren", "Eurem",
-			"Eures", "Eure", "Euer", "Euch", "Sie", "Du", "Dir", "Dich" };
+			"Du", "Dich", "Dir", "Deinethalber", "Deinetwegen", "Deinen",
+			"Deinem", "Deines", "Deine", "Dein", "Eurethalber", "Euretwegen",
+			"Euren", "Eurem", "Eures", "Eure", "Euer", "Euch" };
 
 	private static final Pattern vFormPattern;
 
 	static {
+		// non-capturing group, see "(?:"
+		// http://download.oracle.com/javase/1.5.0/docs/api/java/util/regex/Pattern.html#special
 		final StringBuffer sb = new StringBuffer("(?:");
 		for (final String form : forms) {
 			sb.append(form);
