@@ -5,11 +5,11 @@ import java.util.regex.Pattern;
 
 public class VFormUtil {
 
-	private static final String[] forms = new String[] { "Ihretwegen", "Ihren",
-			"Ihrem", "Ihres", "Ihre", "Ihr", "Ihnen", "Deinetwegen", "Deinen",
-			"Deinem", "Deines", "Deine", "Dein", "Euretwegen", "Euren",
-			"Eurem", "Eures", "Eure", "Euer", "Euch", "Sie", "Du", "Dir",
-			"Dich" };
+	private static final String[] forms = new String[] { "Ihrethalber",
+			"Ihretwegen", "Ihren", "Ihrem", "Ihres", "Ihre", "Ihr", "Ihnen",
+			"Deinethalber", "Deinetwegen", "Deinen", "Deinem", "Deines",
+			"Deine", "Dein", "Eurethalber", "Euretwegen", "Euren", "Eurem",
+			"Eures", "Eure", "Euer", "Euch", "Sie", "Du", "Dir", "Dich" };
 
 	private static final Pattern vFormPattern;
 
