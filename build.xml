@@ -2,22 +2,25 @@
 <project name="preptools" default="deploy">
 	<!-- used by "deploy" and "plugin.xml" -->
 	<property name="pluginfile" value="plugin.xml" />
-	
+
+	<!-- used by "stamp" -->
+	<property name="stamp.properties" value="stamp.properties" />
+
 	<!-- used by "deploy", "jar" and "plugin.xml" -->
 	<property name="jarfile" value="${ant.project.name}.jar" />
-	
+
 	<!-- used by "jar" and "init" -->
 	<property name="build.dir" value="bin" />
-	
+
 	<!-- used by "compile" -->
 	<property name="src.dir" value="src" />
-	
+
 	<!-- used by "plugin.xml" and "boilerplate" -->
 	<property name="header.generated" value="ATTENTION: generated file. Do not edit it, edit the build.xml instead." />
 
 	<!-- used by "boilerplate" -->
 	<property name="src.generated" value="generated_src" />
-	
+
 	<!-- used by "plugin.xml" -->
 	<property name="description" value="Test" />
 	<!-- TODO: possibly the following values can be found from the sources -->
@@ -47,25 +50,31 @@
 			</classpath>
 		</javac>
 	</target>
-	
+
 	<target name="deploy">
-		<antcall target="stopoxy"/>
+		<antcall target="stopoxy" />
 		<antcall target="dist" />
-		<antcall target="startoxy"/>
+		<antcall target="startoxy" />
 	</target>
-	
+
 	<target name="dist" depends="jar, plugin.xml, oxygendir">
 		<property name="plugindir" value="${oxygendir}/plugins/${ant.project.name}" />
 		<delete dir="${plugindir}" />
 		<mkdir dir="${plugindir}/lib" />
 		<copy file="${jarfile}" todir="${plugindir}/lib" />
 		<copy file="${pluginfile}" todir="${plugindir}" />
+		<!--
+		<copy file="${stamp.properties}" todir="${plugindir}" />
+		-->
 	</target>
-	
-	<target name="jar" depends="compile">
+
+	<target name="jar" depends="compile, stamp">
 		<jar destfile="${jarfile}" basedir="${build.dir}">
 			<fileset dir="${build.dir}">
 				<include name="**/*" />
+			</fileset>
+			<fileset dir=".">
+				<include name="${stamp.properties}" />
 			</fileset>
 		</jar>
 	</target>
@@ -76,7 +85,7 @@
 			<arg value="which oxygen|perl -MFile::Basename -ne 'chomp;print dirname readlink'" />
 		</exec>
 	</target>
-	
+
 	<target name="plugin.xml">
 		<echo file="${pluginfile}">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 			&lt;!DOCTYPE plugin SYSTEM "../plugin.dtd"&gt;
@@ -96,9 +105,9 @@
 			&lt;/plugin&gt;
 		</echo>
 	</target>
-	
+
 	<target name="boilerplate" depends="package2dir">
-		<mkdir dir="${src.generated}/${packagedir}"/>
+		<mkdir dir="${src.generated}/${packagedir}" />
 		<echo file="${src.generated}/${packagedir}/${clazz}.java">
 			// ${header.generated}
 			package ${package};
@@ -124,24 +133,35 @@
 				}
 			}
 		</echo>
+
+	</target>
+
+	<target name="stamp">
+		<tstamp>
+			<format property="release.time" pattern="dd.MM.yyyy HH:mm:ss" />
+		</tstamp>
+		<echo file="stamp.properties">
+			# ${header.generated}
+			stamp = ${release.time}
+		</echo>
 	</target>
 
 	<!-- alternative to do string manip in ant: -->
 	<!-- http://ptrthomas.wordpress.com/2007/04/22/how-to-do-string-operations-in-ant/ -->
 	<target name="package2dir">
 		<exec executable="sh" outputproperty="packagedir">
-			<arg value="-c"/>
-			<arg value="perl -e '$_=&quot;${package}&quot;;tr{.}{/};print $_'"/>
+			<arg value="-c" />
+			<arg value="perl -e '$_=&quot;${package}&quot;;tr{.}{/};print $_'" />
 		</exec>
 	</target>
-	
+
 	<target name="stopoxy">
 		<exec executable="wmctrl">
-			<arg value="-c"/>
-			<arg value="&lt;oxygen/&gt;"/>
+			<arg value="-c" />
+			<arg value="&lt;oxygen/&gt;" />
 		</exec>
 	</target>
-	
+
 	<target name="startoxy">
 		<exec executable="oxygen" />
 	</target>

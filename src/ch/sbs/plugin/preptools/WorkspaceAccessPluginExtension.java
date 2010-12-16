@@ -1,11 +1,6 @@
 package ch.sbs.plugin.preptools;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -27,8 +22,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import ro.sync.ecss.extensions.api.AuthorAccess;
-import ro.sync.ecss.extensions.api.AuthorDocumentController;
-import ro.sync.ecss.extensions.api.node.AuthorDocumentFragment;
 import ro.sync.ecss.extensions.api.structure.AuthorPopupMenuCustomizer;
 import ro.sync.exml.editor.EditorPageConstants;
 import ro.sync.exml.workspace.api.editor.WSEditor;
@@ -42,6 +35,7 @@ import ro.sync.exml.workspace.api.standalone.ToolbarInfo;
 import ro.sync.exml.workspace.api.standalone.ViewComponentCustomizer;
 import ro.sync.exml.workspace.api.standalone.ViewInfo;
 import ro.sync.ui.Icons;
+import ch.sbs.utils.preptools.vform.PropsUtils;
 import ch.sbs.utils.preptools.vform.VFormUtil;
 
 /**
@@ -82,97 +76,123 @@ public class WorkspaceAccessPluginExtension implements
 	 */
 	private boolean runPlugin;
 
-	private final String LABEL = "VForms";
-
-	// legacy action: replaces everything.
-
-	private class VFormAction extends AbstractAction {
+	private abstract class AbstractVFormAction extends AbstractAction {
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			final WSEditor editorAccess = pluginWorkspaceAccess
 					.getCurrentEditorAccess(StandalonePluginWorkspace.MAIN_EDITING_AREA);
-			if (editorAccess != null) {
-				if (!(editorAccess.getCurrentPage() instanceof WSTextEditorPage)) {
-					showDialog("This function is only available in the Text page, not the Author page.");
-					return;
-				}
-				WSTextEditorPage aWSTextEditorPage = (WSTextEditorPage) editorAccess
-						.getCurrentPage();
+			final WSTextEditorPage aWSTextEditorPage;
+			if ((aWSTextEditorPage = getPage(editorAccess)) != null) {
 				final Document document = aWSTextEditorPage.getDocument();
 				try {
-					String text = document.getText(0, document.getLength());
-					text = VFormUtil.replace(text);
-					document.remove(0, document.getLength());
-					document.insertString(0, text, null);
-
+					doSomething(editorAccess, aWSTextEditorPage, document,
+							document.getText(0, document.getLength()));
 				} catch (BadLocationException e) {
 					e.printStackTrace();
 				}
 
 			}
 		}
+
+		/**
+		 * Hook that gets called only when editor, page, document, text have
+		 * successfully been retrieved.
+		 * 
+		 * @param editorAccess
+		 * @param aWSTextEditorPage
+		 * @param document
+		 * @param text
+		 * @throws BadLocationException
+		 */
+		protected abstract void doSomething(final WSEditor editorAccess,
+				final WSTextEditorPage aWSTextEditorPage,
+				final Document document, final String text)
+				throws BadLocationException;
+
+	}
+
+	/**
+	 * legacy action: replaces everything. TODO: doesn't care about enclosing
+	 * <brl:v-form>
+	 */
+	private class VFormAction extends AbstractVFormAction {
+		@Override
+		protected void doSomething(final WSEditor editorAccess,
+				final WSTextEditorPage aWSTextEditorPage,
+				final Document document, final String text)
+				throws BadLocationException {
+
+			document.remove(0, document.getLength());
+			document.insertString(0, VFormUtil.replace(text), null);
+		}
 	};
 
-	// TODO: Code duplication between Actions
 	// TODO: enable/disable toolbar buttons
 	// TODO: navigate on the dom not the plain text!
-
-	private class VFormStartAction extends AbstractAction {
+	private class VFormStartAction extends AbstractVFormAction {
 		@Override
-		public void actionPerformed(ActionEvent arg0) {
-			final WSEditor editorAccess = pluginWorkspaceAccess
-					.getCurrentEditorAccess(StandalonePluginWorkspace.MAIN_EDITING_AREA);
-			if (editorAccess != null) {
-				if (!(editorAccess.getCurrentPage() instanceof WSTextEditorPage)) {
-					showDialog("This function is only available in the Text page, not the Author page.");
-					return;
-				}
-				WSTextEditorPage aWSTextEditorPage = (WSTextEditorPage) editorAccess
-						.getCurrentPage();
-				final Document document = aWSTextEditorPage.getDocument();
-				try {
-					String text = document.getText(0, document.getLength());
-					VFormUtil.Match match = VFormUtil.find(text, 0);
-					aWSTextEditorPage
-							.select(match.startOffset, match.endOffset);
+		protected void doSomething(final WSEditor editorAccess,
+				final WSTextEditorPage aWSTextEditorPage,
+				final Document document, final String text)
+				throws BadLocationException {
 
-				} catch (BadLocationException e) {
-					e.printStackTrace();
-				}
-
-			}
+			showMessage("vform start action");
+			final VFormUtil.Match match = VFormUtil.find(text, 0);
+			aWSTextEditorPage.select(match.startOffset, match.endOffset);
 		}
 	};
 
-	private class VFormAcceptAction extends AbstractAction {
+	// Accept should only be enabled
+	// 1.) when there's selected text in the editor
+	// 2.) the selected text conforms to a vform.
+	private class VFormAcceptAction extends AbstractVFormAction {
 		@Override
-		public void actionPerformed(ActionEvent arg0) {
-			final WSEditor editorAccess = pluginWorkspaceAccess
-					.getCurrentEditorAccess(StandalonePluginWorkspace.MAIN_EDITING_AREA);
-			if (editorAccess != null) {
-				if (!(editorAccess.getCurrentPage() instanceof WSTextEditorPage)) {
-					showDialog("This function is only available in the Text page, not the Author page.");
-					return;
-				}
-				WSTextEditorPage aWSTextEditorPage = (WSTextEditorPage) editorAccess
-						.getCurrentPage();
-				final Document document = aWSTextEditorPage.getDocument();
-				try {
-					String text = document.getText(0, document.getLength());
-					VFormUtil.Match match = VFormUtil.find(text,
-							aWSTextEditorPage.getSelectionEnd());
-					aWSTextEditorPage
-							.select(match.startOffset, match.endOffset);
+		protected void doSomething(final WSEditor editorAccess,
+				final WSTextEditorPage aWSTextEditorPage,
+				final Document document, final String text)
+				throws BadLocationException {
 
-				} catch (BadLocationException e) {
-					e.printStackTrace();
-				}
+			// enclose selection with "br:v-form"
 
-			}
+			showMessage("vform accept action");
+			final String selText = aWSTextEditorPage.getSelectedText();
+
+			if (selText == null)
+				return;
+
+			final String newText = VFormUtil.wrap(selText);
+
+			final int TEXT_START = aWSTextEditorPage.getSelectionStart();
+			aWSTextEditorPage.deleteSelection();
+
+			String text3 = document.getText(0, document.getLength());
+			text3 = text3.substring(0, TEXT_START) + newText
+					+ text3.substring(TEXT_START);
+
+			document.remove(0, document.getLength());
+			document.insertString(0, text3, null);
+
+			final VFormUtil.Match match = VFormUtil.find(text, TEXT_START
+					+ newText.length());
+			aWSTextEditorPage.select(match.startOffset, match.endOffset);
 		}
 	};
 
-	// TODO: VForm Reject action
+	private class VFormRejectAction extends AbstractVFormAction {
+		@Override
+		protected void doSomething(final WSEditor editorAccess,
+				final WSTextEditorPage aWSTextEditorPage,
+				final Document document, final String text)
+				throws BadLocationException {
+
+			showMessage("vform reject action");
+			// don't enclose selection with "br:v-form"
+
+			final VFormUtil.Match match = VFormUtil.find(text,
+					aWSTextEditorPage.getSelectionEnd());
+			aWSTextEditorPage.select(match.startOffset, match.endOffset);
+		}
+	};
 
 	/**
 	 * @see ro.sync.exml.plugin.workspace.WorkspaceAccessPluginExtension#applicationStarted(ro.sync.exml.workspace.api.standalone.StandalonePluginWorkspace)
@@ -188,52 +208,9 @@ public class WorkspaceAccessPluginExtension implements
 		if (runPlugin) {
 			final Action vformStartAction = new VFormStartAction();
 
-			// Check Out action
-			final Action vformContinueAction = new VFormAcceptAction();
+			final Action vformAcceptAction = new VFormAcceptAction();
 
-			// Show Selection Source action
-			final Action selectionSourceAction = new AbstractAction() {
-				@Override
-				public void actionPerformed(ActionEvent actionevent) {
-					WSEditor editorAccess = pluginWorkspaceAccess
-							.getCurrentEditorAccess(StandalonePluginWorkspace.MAIN_EDITING_AREA);
-					// The action is available only in Author mode.
-					if (editorAccess != null
-							&& EditorPageConstants.PAGE_AUTHOR
-									.equals(editorAccess.getCurrentPageID())) {
-						WSAuthorEditorPage authorPageAccess = (WSAuthorEditorPage) editorAccess
-								.getCurrentPage();
-						AuthorDocumentController controller = authorPageAccess
-								.getDocumentController();
-						if (authorPageAccess.hasSelection()) {
-							AuthorDocumentFragment selectionFragment;
-							try {
-								// Create fragment from selection
-								selectionFragment = controller
-										.createDocumentFragment(
-												authorPageAccess
-														.getSelectionStart(),
-												authorPageAccess
-														.getSelectionEnd() - 1);
-								// Serialize
-								String serializeFragmentToXML = controller
-										.serializeFragmentToXML(selectionFragment);
-								// Show fragment
-								pluginWorkspaceAccess
-										.showInformationMessage(serializeFragmentToXML);
-							} catch (BadLocationException e) {
-								pluginWorkspaceAccess
-										.showErrorMessage("Show Selection Source operation failed: "
-												+ e.getMessage());
-							}
-						} else {
-							// No selection
-							pluginWorkspaceAccess
-									.showInformationMessage("No selection available.");
-						}
-					}
-				}
-			};
+			final Action vformRejectAction = new VFormRejectAction();
 
 			pluginWorkspaceAccess.addMenuBarCustomizer(new MenuBarCustomizer() {
 				/**
@@ -243,8 +220,8 @@ public class WorkspaceAccessPluginExtension implements
 				public void customizeMainMenu(JMenuBar mainMenuBar) {
 					// PrepTools menu
 					final JMenu menuPrepTools = createPrepToolsMenu(
-							vformStartAction, vformContinueAction,
-							selectionSourceAction);
+							vformStartAction, vformAcceptAction,
+							vformRejectAction);
 					// Add the PrepTools menu before the Help menu
 					mainMenuBar.add(menuPrepTools,
 							mainMenuBar.getMenuCount() - 1);
@@ -258,7 +235,6 @@ public class WorkspaceAccessPluginExtension implements
 						public void editorOpened(URL editorLocation) {
 							checkActionsStatus(editorLocation);
 							customizePopupMenu();
-							// Show 'Edit' toolbar
 							pluginWorkspaceAccess.showToolbar("Edit");
 						};
 
@@ -283,8 +259,8 @@ public class WorkspaceAccessPluginExtension implements
 												// PrepTools menu
 												JMenu menuPrepTools = createPrepToolsMenu(
 														vformStartAction,
-														vformContinueAction,
-														selectionSourceAction);
+														vformAcceptAction,
+														vformRejectAction);
 												// Add the PrepTools menu
 												((JPopupMenu) popUp).add(
 														menuPrepTools, 0);
@@ -322,44 +298,32 @@ public class WorkspaceAccessPluginExtension implements
 							}
 						}
 
-						// Check actions status
 						private void checkActionsStatus(URL editorLocation) {
 							WSEditor editorAccess = pluginWorkspaceAccess
 									.getCurrentEditorAccess(StandalonePluginWorkspace.MAIN_EDITING_AREA);
-							if (editorAccess != null) {
-								selectionSourceAction
-										.setEnabled(EditorPageConstants.PAGE_AUTHOR
-												.equals(editorAccess
-														.getCurrentPageID()));
-							}
+
 							vformStartAction.setEnabled(true);
+							vformAcceptAction.setEnabled(false);
+							vformRejectAction.setEnabled(false);
+							final boolean text_editor = editorAccess != null
+									&& EditorPageConstants.PAGE_TEXT
+											.equals(editorAccess
+													.getCurrentPageID());
+							vformAcceptAction.setEnabled(text_editor
+									&& VFormUtil.matches(getPage(editorAccess)
+											.getSelectedText()));
+							vformRejectAction.setEnabled(text_editor
+									&& VFormUtil.matches(getPage(editorAccess)
+											.getSelectedText()));
+
+							// FIXME! checkActionStatus should be called as soon
+							// as selection changes
+							vformAcceptAction.setEnabled(true);
+							vformRejectAction.setEnabled(true);
 						}
 
 						@Override
 						public void editorClosed(URL editorLocation) {
-							URL checkedOutUrl = openedCheckedOutUrls
-									.get(editorLocation);
-							if (checkedOutUrl != null) {
-								if (verifyCheckInOnClose) {
-									if (forceCheckIn
-											|| pluginWorkspaceAccess
-													.showConfirmDialog(
-															"Close",
-															"The closed file "
-																	+ editorLocation
-																	+ " is Checked Out.\n Do you want to Check In?",
-															new String[] {
-																	"Ok",
-																	"Cancel" },
-															new int[] { 0, 1 }) == 0) {
-										// Save the current file.
-										checkInFile(pluginWorkspaceAccess,
-												null, editorLocation,
-												checkedOutUrl, false);
-									}
-								}
-								openedCheckedOutUrls.remove(editorLocation);
-							}
 						};
 
 						@Override
@@ -387,16 +351,16 @@ public class WorkspaceAccessPluginExtension implements
 								// VForm Start
 								JButton vFormButton = new JButton(
 										vformStartAction);
-								vFormButton.setText(LABEL);
+								vFormButton.setText("VForms");
 
 								// VForm Accept
 								JButton checkOutButton = new JButton(
-										vformContinueAction);
+										vformAcceptAction);
 								checkOutButton.setText("Accept");
 
 								// VForm Reject
 								JButton selectionSourceButton = new JButton(
-										selectionSourceAction);
+										vformRejectAction);
 								selectionSourceButton.setText("Reject");
 
 								// Add in toolbar
@@ -428,12 +392,26 @@ public class WorkspaceAccessPluginExtension implements
 										prepToolsMessagesArea));
 								viewInfo.setTitle("PrepTools Messages");
 								viewInfo.setIcon(Icons.CMS_MESSAGES_CUSTOM_VIEW);
+								showMessage(getVersion());
 							} else if ("Project".equals(viewInfo.getViewID())) {
 								// Change the 'Project' view title.
 								viewInfo.setTitle("PrepTools Project");
 							}
 						}
+
 					});
+		}
+	}
+
+	private String getVersion() {
+		final String key = "stamp";
+		final String filename = "stamp.properties";
+		final String version = PropsUtils.loadForClass(this.getClass(),
+				filename).getProperty(key);
+		if (version != null && version.length() > 0) {
+			return version;
+		} else {
+			return "'" + key + "' not found in props file " + filename;
 		}
 	}
 
@@ -444,24 +422,24 @@ public class WorkspaceAccessPluginExtension implements
 	 * 
 	 * @return
 	 */
-	private JMenu createPrepToolsMenu(final Action checkInAction,
-			final Action checkOutAction, final Action selectionSourceAction) {
+	private JMenu createPrepToolsMenu(final Action vformStartAction,
+			final Action vformAcceptAction, final Action vformRejectAction) {
 		// PrepTools menu
 		JMenu menuPrepTools = new JMenu("PrepTools");
 
 		// Add Check In action on the menu
-		final JMenuItem checkInItem = new JMenuItem(checkInAction);
-		checkInItem.setText(LABEL);
+		final JMenuItem checkInItem = new JMenuItem(vformStartAction);
+		checkInItem.setText("VForms");
 		menuPrepTools.add(checkInItem);
 
 		// Add Check Out action on the menu
-		JMenuItem checkOutItem = new JMenuItem(checkOutAction);
-		checkOutItem.setText("Check Out");
+		JMenuItem checkOutItem = new JMenuItem(vformAcceptAction);
+		checkOutItem.setText("Accept");
 		menuPrepTools.add(checkOutItem);
 
 		// Add Show Section Source action on the menu
-		JMenuItem selectionSourceItem = new JMenuItem(selectionSourceAction);
-		selectionSourceItem.setText("Show Selection Source");
+		JMenuItem selectionSourceItem = new JMenuItem(vformRejectAction);
+		selectionSourceItem.setText("Reject");
 		menuPrepTools.add(selectionSourceItem);
 
 		return menuPrepTools;
@@ -497,125 +475,6 @@ public class WorkspaceAccessPluginExtension implements
 		return true;
 	}
 
-	/**
-	 * Create temporary file from checked out file.
-	 * 
-	 * @param checkedOutFile
-	 *            The checked out file.
-	 * @return Temporary file.
-	 * @throws IOException
-	 * @throws FileNotFoundException
-	 */
-	private File createTempFromCheckedOutFile(File checkedOutFile)
-			throws IOException, FileNotFoundException {
-		int indexOfPoint = checkedOutFile.getName().lastIndexOf('.');
-		String fileName = checkedOutFile.getName();
-		// Temporary file name
-		String tempFileName = indexOfPoint > -1 ? fileName.substring(0,
-				indexOfPoint) : fileName;
-		// Temporary file extension
-		String fileExtension = indexOfPoint > -1 ? fileName
-				.substring(indexOfPoint) : null;
-
-		// Create temporary file
-		File tempFile = File.createTempFile("cms_oxy" + tempFileName,
-				fileExtension, checkedOutFile.getParentFile());
-
-		// Write the content
-		copyFileContent(checkedOutFile, tempFile);
-
-		return tempFile;
-	}
-
-	/**
-	 * Copy content from one file to another.
-	 * 
-	 * @param initialFile
-	 *            The initial file to copy the content from.
-	 * @param destinationFile
-	 *            The destination.
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 */
-	private void copyFileContent(File initialFile, File destinationFile)
-			throws FileNotFoundException, IOException {
-		FileInputStream fis = new FileInputStream(initialFile);
-		FileOutputStream fos = new FileOutputStream(destinationFile);
-		// Write the content
-		int b;
-		while ((b = fis.read()) != -1) {
-			fos.write(b);
-		}
-		fos.close();
-		fis.close();
-	}
-
-	/**
-	 * Check In file.
-	 * 
-	 * @param pluginWorkspaceAccess
-	 *            The plugin workspace access
-	 * @param editorAccess
-	 *            The editor access.
-	 * @param tempFileUrl
-	 *            The temporary local file URL.
-	 * @param checkedOutUrl
-	 *            The URL of the corresponding checked out file
-	 */
-	private void checkInFile(
-			final StandalonePluginWorkspace pluginWorkspaceAccess,
-			WSEditor editorAccess, URL tempFileUrl, URL checkedOutUrl,
-			boolean openFile) {
-		boolean checkIn = true;
-		// Verify if the editor is modified
-		if (editorAccess != null && editorAccess.isModified()) {
-			// Ask to save
-			if (pluginWorkspaceAccess.showConfirmDialog("Save",
-					"You must save the file in order to Check In.",
-					new String[] { "Ok", "Cancel" }, new int[] { 0, 1 }) == 0) {
-				// Save the current file.
-				editorAccess.save();
-			} else {
-				// Cancel.
-				checkIn = false;
-				pluginWorkspaceAccess
-						.showInformationMessage("Check In operation was canceled.");
-			}
-		}
-
-		// Perform Check In ...
-		if (checkIn) {
-			try {
-				File tempFile = new File(tempFileUrl.getFile());
-
-				// Copy the content of the temporary file over the original file
-				copyFileContent(tempFile, new File(checkedOutUrl.getFile()));
-
-				if (editorAccess != null) {
-					// Close temporary file editor
-					verifyCheckInOnClose = false;
-					editorAccess.close(false);
-					verifyCheckInOnClose = true;
-				}
-
-				// Delete temporary file
-				tempFile.delete();
-
-				if (openFile) {
-					// Open the checked out file
-					pluginWorkspaceAccess.open(checkedOutUrl);
-					showDialog("Check In was performed.");
-					showMessage("Check In " + checkedOutUrl.toString());
-				}
-			} catch (Exception e) {
-				// Failed
-				pluginWorkspaceAccess
-						.showErrorMessage("Check In operation failed: "
-								+ e.getMessage());
-			}
-		}
-	}
-
 	private void showMessage(final String msg) {
 		if (prepToolsMessagesArea != null) {
 			prepToolsMessagesArea.append("\n");
@@ -626,5 +485,18 @@ public class WorkspaceAccessPluginExtension implements
 	private void showDialog(final String msg) {
 		pluginWorkspaceAccess.showInformationMessage("Running v-form");
 		pluginWorkspaceAccess.showView(ViewComponentCustomizer.CUSTOM, true);
+	}
+
+	public static WSTextEditorPage getPage(final WSEditor editorAccess) {
+		if (editorAccess == null) {
+			return null;
+		}
+		if (!(editorAccess.getCurrentPage() instanceof WSTextEditorPage)) {
+			// showDialog("This function is only available in the Text page, not the Author page.");
+			return null;
+		}
+		WSTextEditorPage aWSTextEditorPage = (WSTextEditorPage) editorAccess
+				.getCurrentPage();
+		return aWSTextEditorPage;
 	}
 }
