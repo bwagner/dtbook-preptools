@@ -14,9 +14,10 @@ public class VFormUtil {
 	private static final Pattern vFormPattern;
 
 	static {
-		// non-capturing group, see "(?:"
+
+		final StringBuffer sb = new StringBuffer("(?:"); // non-capturing group,
+															// see
 		// http://download.oracle.com/javase/1.5.0/docs/api/java/util/regex/Pattern.html#special
-		final StringBuffer sb = new StringBuffer("(?:");
 		for (final String form : forms) {
 			sb.append(form);
 			sb.append("|");
@@ -38,6 +39,10 @@ public class VFormUtil {
 		return m.find(i) ? new Match(m.start(), m.end()) : NULL_MATCH;
 	}
 
+	public static boolean matches(final String text) {
+		return text != null && vFormPattern.matcher(text).matches();
+	}
+
 	public static class Match {
 		public Match(int start, int end) {
 			startOffset = start;
@@ -46,6 +51,18 @@ public class VFormUtil {
 
 		public int startOffset;
 		public int endOffset;
+	}
+
+	public static final String wrap(final String theString) {
+		final String element = "brl:v-form";
+		final StringBuilder sb = new StringBuilder("<");
+		sb.append(element);
+		sb.append(">");
+		sb.append(theString);
+		sb.append("</");
+		sb.append(element);
+		sb.append(">");
+		return sb.toString();
 	}
 
 	public static final Match NULL_MATCH = new Match(-1, -1);

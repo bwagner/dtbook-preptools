@@ -1,12 +1,26 @@
 package ch.sbs.plugin.preptools;
 
+import static ch.sbs.utils.preptools.vform.VFormUtil.wrap;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 import ch.sbs.utils.preptools.vform.VFormUtil;
 
 public class VFormUtilTest {
+
+	@Test
+	public void testMatchesNull() {
+		assertFalse(VFormUtil.matches(null));
+	}
+
+	@Test
+	public void testReplaceMatches() {
+		assertTrue(VFormUtil.matches("Deine"));
+		assertFalse(VFormUtil.matches("Sieb"));
+	}
 
 	@Test
 	public void testReplaceKeepPart() {
@@ -113,9 +127,5 @@ public class VFormUtilTest {
 		assertEquals("Was kostet " + wrap("Eure") + " Lösung?",
 				VFormUtil.replace("Was kostet Eure Lösung?"));
 
-	}
-
-	private static final String wrap(final String theString) {
-		return "<brl:v-form>" + theString + "</brl:v-form>";
 	}
 }
