@@ -143,8 +143,10 @@
 		<echo file="stamp.properties">
 			# ${header.generated}
 			stamp = ${release.time}
-		</echo>
-	</target>
+			</echo>
+		<echo>
+			expect stamp: ${release.time}
+		</echo>	</target>
 
 	<!-- alternative to do string manip in ant: -->
 	<!-- http://ptrthomas.wordpress.com/2007/04/22/how-to-do-string-operations-in-ant/ -->
