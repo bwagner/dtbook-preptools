@@ -65,8 +65,8 @@ public class VFormUtilTest {
 	@Test
 	public void testMatch() {
 
-		// ____________1___________________2
-		// ____________01234567890123456789012345678901234
+		// ____________________________1___________________2
+		// __________________01234567890123456789012345678901234
 		final String text = "Das können Sie zu Ihren Akten legen.";
 
 		VFormUtil.Match match = VFormUtil.find(text, 0);
@@ -126,6 +126,48 @@ public class VFormUtilTest {
 				VFormUtil.replace("Das kostet 50 Eur."));
 		assertEquals("Was kostet " + wrap("Eure") + " Lösung?",
 				VFormUtil.replace("Was kostet Eure Lösung?"));
+
+	}
+
+	/*
+	 * 	EBNF für Satzende:
+	--------------------
+	
+	 Variations:
+	 1. Punkt                        Whitespace
+	 2. Punkt                        Whitespace QuoteSign
+	 3. Punkt QuoteSign              Whitespace
+	 4. Punkt QuoteSign              Whitespace QuoteSign 
+	 5. Punkt           ClosingBrace Whitespace
+	 6. Punkt           ClosingBrace Whitespace QuoteSign 
+	 7. Punkt           ClosingBrace            QuoteSign Whitespace
+	 8. Punkt QuoteSign ClosingBrace Whitespace
+	 9. Punkt QuoteSign              Whitespace QuoteSign 
+	10. Punkt QuoteSign ClosingBrace Whitespace QuoteSign 
+	 */
+
+	@Test
+	public void testPhraseEndPW() {
+
+	}
+
+	@Test
+	public void testPhraseEndPWQ() {
+
+	}
+
+	@Test
+	public void testPhraseEndPQW() {
+
+	}
+
+	@Test
+	public void testPhraseEndPQWQ() {
+
+	}
+
+	@Test
+	public void testPhraseEndPCW() {
 
 	}
 }
