@@ -158,6 +158,22 @@
 	</target>
 
 	<target name="stopoxy">
+		<exec executable="xdotool">
+			<arg line="search --onlyvisible --name '&lt;oXygen/&gt; XML Editor' windowactivate --sync key alt+F4"/>
+		</exec>
+		<sleep seconds="1"/>
+		<exec executable="xdotool">
+			<arg line="search --onlyvisible --name '^Save$' windowactivate --sync mousemove --window %1 340 75 click 1"/>
+		</exec>
+	</target>
+
+	<target name="stopoxyOneLinerIsTooFast">
+		<exec executable="xdotool">
+			<arg line="search --onlyvisible --name '&lt;oXygen/&gt; XML Editor' key alt+F4 search --onlyvisible --name '^Save$' windowactivate --sync mousemove --window %1 340 75 click 1"/>
+		</exec>
+	</target>
+
+	<target name="stopoxy_OnlyWorksIfThereAreNoUnsavedDocs">
 		<exec executable="wmctrl">
 			<arg value="-c" />
 			<arg value="&lt;oxygen/&gt;" />
