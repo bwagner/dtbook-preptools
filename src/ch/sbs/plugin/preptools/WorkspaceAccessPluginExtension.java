@@ -31,6 +31,7 @@ import ro.sync.exml.workspace.api.standalone.ToolbarInfo;
 import ro.sync.exml.workspace.api.standalone.ViewComponentCustomizer;
 import ro.sync.exml.workspace.api.standalone.ViewInfo;
 import ro.sync.ui.Icons;
+import ch.sbs.plugin.preptools.TrafficLight.STATE;
 import ch.sbs.utils.preptools.vform.PropsUtils;
 import ch.sbs.utils.preptools.vform.VFormUtil;
 
@@ -45,14 +46,33 @@ public class WorkspaceAccessPluginExtension implements
 	 * 
 	 * 
 	 */
-	private class DocumentMetaInformation {
+	private class DocumentMetaInfo {
 		boolean isDtBook;
-		boolean checkingVform;
+		boolean hasStartedCheckingVform;
+		boolean hasFinishedCheckingVform;
 		boolean isOldSpelling;
 		protected WSTextEditorPage page;
+
+		public void setCurrentLightState() {
+			if (!isDtBook) {
+				trafficLight.setCurrentLightState(STATE.OFF);
+				return;
+			}
+			if (!hasStartedCheckingVform) {
+				trafficLight.setCurrentLightState(STATE.GREEN);
+				return;
+			}
+			trafficLight
+					.setCurrentLightState(hasFinishedCheckingVform ? STATE.BLUE
+							: STATE.YELLOW);
+		}
+
+		public void done() {
+			hasFinishedCheckingVform = true;
+		}
 	}
 
-	private final Map<URL, DocumentMetaInformation> documents = new HashMap<URL, DocumentMetaInformation>();
+	private final Map<URL, DocumentMetaInfo> documents = new HashMap<URL, DocumentMetaInfo>();
 
 	/**
 	 * The PrepTools messages area.
@@ -71,12 +91,13 @@ public class WorkspaceAccessPluginExtension implements
 
 	private JMenu menuPrepTools;
 
+	private TrafficLight trafficLight;
+
 	@SuppressWarnings("serial")
 	private abstract class AbstractVFormAction extends AbstractAction {
 		@Override
 		public void actionPerformed(final ActionEvent arg0) {
-			final WSEditor editorAccess = pluginWorkspaceAccess
-					.getCurrentEditorAccess(StandalonePluginWorkspace.MAIN_EDITING_AREA);
+			final WSEditor editorAccess = getWsEditor();
 			final WSTextEditorPage aWSTextEditorPage;
 			if ((aWSTextEditorPage = getPage(editorAccess)) != null) {
 				final Document document = aWSTextEditorPage.getDocument();
@@ -119,14 +140,51 @@ public class WorkspaceAccessPluginExtension implements
 
 			final VFormUtil.Match match = VFormUtil.find(text, 0);
 			aWSTextEditorPage.select(match.startOffset, match.endOffset);
+
+			final DocumentMetaInfo dmi = getDocumentMetaInfo(editorAccess
+					.getEditorLocation());
+			if (dmi.hasFinishedCheckingVform) {
+				showMessage("starting over (document was finished)");
+				dmi.hasFinishedCheckingVform = false;
+			}
+			if (dmi.hasStartedCheckingVform) {
+				showMessage("starting over");
+			}
+
+			dmi.hasStartedCheckingVform = true;
+			dmi.hasFinishedCheckingVform = false;
+			dmi.setCurrentLightState();
 		}
 	};
+
+	private abstract class ProceedAction extends AbstractVFormAction {
+
+		// TODO: do it more nicely with template method
+		// .i.e. searchOn gets called from "doSomething"
+		protected void searchOn(final Document document,
+				final WSTextEditorPage aWSTextEditorPage,
+				final WSEditor editorAccess, final int continueAt)
+				throws BadLocationException {
+			final String newText = document.getText(0, document.getLength());
+			final VFormUtil.Match match = VFormUtil.find(newText, continueAt);
+			final DocumentMetaInfo dmi = getDocumentMetaInfo(editorAccess
+					.getEditorLocation());
+			if (match.equals(VFormUtil.NULL_MATCH)) {
+				showDialog("you're done!");
+				dmi.done();
+				match.startOffset = 0;
+				match.endOffset = 0;
+			}
+			dmi.setCurrentLightState();
+			aWSTextEditorPage.select(match.startOffset, match.endOffset);
+		}
+	}
 
 	// Accept should only be enabled
 	// 1.) when there's selected text in the editor
 	// 2.) the selected text conforms to a vform.
 	@SuppressWarnings("serial")
-	private class VFormAcceptAction extends AbstractVFormAction {
+	private class VFormAcceptAction extends ProceedAction {
 		@Override
 		protected void doSomething(final WSEditor editorAccess,
 				final WSTextEditorPage aWSTextEditorPage,
@@ -156,23 +214,20 @@ public class WorkspaceAccessPluginExtension implements
 			final int continueAt = MATCH_START + ELEMENT_NAME.length() * 2
 					+ "<></>".length() + selText.length();
 
-			final String newText = document.getText(0, document.getLength());
-			final VFormUtil.Match match = VFormUtil.find(newText, continueAt);
-			aWSTextEditorPage.select(match.startOffset, match.endOffset);
+			searchOn(document, aWSTextEditorPage, editorAccess, continueAt);
 		}
 	};
 
 	@SuppressWarnings("serial")
-	private class VFormFindAction extends AbstractVFormAction {
+	private class VFormFindAction extends ProceedAction {
 		@Override
 		protected void doSomething(final WSEditor editorAccess,
 				final WSTextEditorPage aWSTextEditorPage,
 				final Document document, final String text)
 				throws BadLocationException {
 
-			final VFormUtil.Match match = VFormUtil.find(text,
+			searchOn(document, aWSTextEditorPage, editorAccess,
 					aWSTextEditorPage.getSelectionEnd());
-			aWSTextEditorPage.select(match.startOffset, match.endOffset);
 		}
 	};
 
@@ -181,10 +236,10 @@ public class WorkspaceAccessPluginExtension implements
 	 */
 	@Override
 	public void applicationStarted(
-			final StandalonePluginWorkspace pluginWorkspaceAccess) {
+			final StandalonePluginWorkspace thePluginWorkspaceAccess) {
 		URL resource = getClass().getResource(
 				"/" + getClass().getName().replace('.', '/') + ".class");
-		this.pluginWorkspaceAccess = pluginWorkspaceAccess;
+		pluginWorkspaceAccess = thePluginWorkspaceAccess;
 		this.runPlugin = "jar".equals(resource.getProtocol()) ? true : System
 				.getProperty("cms.sample.plugin") != null;
 		if (runPlugin) {
@@ -215,16 +270,9 @@ public class WorkspaceAccessPluginExtension implements
 
 						@Override
 						public void editorOpened(URL editorLocation) {
+							showMessage("editorOpened:" + editorLocation);
 							checkActionsStatus(editorLocation);
-							// pluginWorkspaceAccess.showToolbar("Edit");
-							// TODO: handle the situation that user opened
-							// editor
-							// with a different Editor than "text" (i.e. "grid"
-							// or "author") -> So we not only check it here
-							// But also in "editorSelected" and
-							// "editorPageChanged"
-							final WSEditor editorAccess = pluginWorkspaceAccess
-									.getCurrentEditorAccess(StandalonePluginWorkspace.MAIN_EDITING_AREA);
+							final WSEditor editorAccess = getWsEditor();
 							final WSTextEditorPage page = getPage(editorAccess);
 							if (page == null) {
 								final boolean isText = EditorPageConstants.PAGE_TEXT
@@ -237,30 +285,26 @@ public class WorkspaceAccessPluginExtension implements
 														+ ")"));
 								return;
 							}
-							final DocumentMetaInformation documentMetaInformation = new DocumentMetaInformation();
+							final DocumentMetaInfo documentMetaInformation = getDocumentMetaInfo(editorLocation);
+							showMessage("new doc dtbook:"
+									+ documentMetaInformation.isDtBook);
+						}
+
+						private DocumentMetaInfo makeDocumentMetaInfo(
+								final URL editorLocation,
+								final WSTextEditorPage page) {
+							final DocumentMetaInfo documentMetaInformation = new DocumentMetaInfo();
 							documentMetaInformation.page = page;
 
-							try {
-								documents.put(editorLocation,
-										documentMetaInformation);
-								documentMetaInformation.isDtBook = page
-										.getDocument()
-										.getText(0,
-												page.getDocument().getLength())
-										.indexOf("<dtbook") != -1;
-								showMessage("new doc dtbook:"
-										+ documentMetaInformation.isDtBook);
-
-							} catch (BadLocationException e) {
-								showMessage("failed to get text for opened document:"
-										+ editorLocation + " " + e);
-								e.printStackTrace();
-							}
+							documents.put(editorLocation,
+									documentMetaInformation);
+							documentMetaInformation.isDtBook = isDtBook(page
+									.getDocument());
+							return documentMetaInformation;
 						};
 
 						private void checkActionsStatus(URL editorLocation) {
-							WSEditor editorAccess = pluginWorkspaceAccess
-									.getCurrentEditorAccess(StandalonePluginWorkspace.MAIN_EDITING_AREA);
+							final WSEditor editorAccess = getWsEditor();
 
 							vformStartAction.setEnabled(true);
 							vformAcceptAction.setEnabled(false);
@@ -279,15 +323,20 @@ public class WorkspaceAccessPluginExtension implements
 
 						@Override
 						public void editorClosed(URL editorLocation) {
+							showMessage("editorClosed:" + editorLocation);
+							DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
+							if (!dmi.hasFinishedCheckingVform) {
+								showMessage("editorClosed even though we hadn't finished!");
+							}
 							documents.remove(editorLocation);
+							trafficLight.turnOff(); // in case this was the last
+													// open document
 						};
 
 						@Override
 						public void editorPageChanged(URL editorLocation) {
-							// This only gets called when user changes
-							// editor between "Text", "Grid" and "Author"
-							WSEditor editorAccess = pluginWorkspaceAccess
-									.getCurrentEditorAccess(StandalonePluginWorkspace.MAIN_EDITING_AREA);
+							showMessage("editorPageChanged:" + editorLocation);
+							final WSEditor editorAccess = getWsEditor();
 
 							final boolean isText = EditorPageConstants.PAGE_TEXT
 									.equals(editorAccess.getCurrentPageID());
@@ -303,9 +352,17 @@ public class WorkspaceAccessPluginExtension implements
 								c.setEnabled(isText);
 								// showMessage("" + c.isEnabled());
 							}
-							if (!isText) {
+							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
+							if (isText) {
+								dmi.setCurrentLightState();
+							}
+							else {
 								showMessage("PrepTools only available in text mode, but we're in "
 										+ editorAccess.getCurrentPageID());
+								if (dmi.isDtBook) {
+									trafficLight
+											.setCurrentLightState(STATE.RED);
+								}
 							}
 
 							// FIXME: remove! Just for testing show/hide
@@ -323,8 +380,12 @@ public class WorkspaceAccessPluginExtension implements
 
 						@Override
 						public void editorSelected(URL editorLocation) {
-							checkActionsStatus(editorLocation);
 							showMessage("editorSelected: " + editorLocation);
+							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
+							if (dmi != null) {
+								dmi.setCurrentLightState();
+							}
+							checkActionsStatus(editorLocation);
 						};
 					}, StandalonePluginWorkspace.MAIN_EDITING_AREA);
 
@@ -340,7 +401,7 @@ public class WorkspaceAccessPluginExtension implements
 								// // VForm Start
 								JButton vFormButton = new JButton(
 										vformStartAction);
-								vFormButton.setText("VForms");
+								vFormButton.setText("Start VForms");
 
 								// VForm Find
 								JButton findButton = new JButton(
@@ -354,9 +415,10 @@ public class WorkspaceAccessPluginExtension implements
 
 								// Add in toolbar
 								List<JComponent> comps = new ArrayList<JComponent>();
-								// comps.add(vFormButton);
+								comps.add(vFormButton);
 								comps.add(findButton);
 								comps.add(acceptButton);
+								comps.add(trafficLight = new TrafficLight(26));
 								toolbarInfo.setComponents(comps
 										.toArray(new JComponent[0]));
 
@@ -393,6 +455,23 @@ public class WorkspaceAccessPluginExtension implements
 		}
 	}
 
+	private DocumentMetaInfo getDocumentMetaInfo(final URL editorLocation) {
+		if (documents.containsKey(editorLocation)) {
+			return documents.get(editorLocation);
+		}
+
+		final DocumentMetaInfo documentMetaInformation = new DocumentMetaInfo();
+		documentMetaInformation.page = getPage();
+		if (documentMetaInformation.page == null) {
+			return null;
+		}
+		documentMetaInformation.isDtBook = isDtBook(documentMetaInformation.page
+				.getDocument());
+
+		documents.put(editorLocation, documentMetaInformation);
+		return documentMetaInformation;
+	}
+
 	private String getVersion() {
 		final String key = "stamp";
 		final String filename = "stamp.properties";
@@ -419,9 +498,9 @@ public class WorkspaceAccessPluginExtension implements
 		JMenu menuPrepTools = new JMenu("PrepTools");
 
 		// Add Check In action on the menu
-		// final JMenuItem checkInItem = new JMenuItem(vformStartAction);
-		// checkInItem.setText("VForms");
-		// menuPrepTools.add(checkInItem);
+		final JMenuItem checkInItem = new JMenuItem(vformStartAction);
+		checkInItem.setText("Start VForms");
+		menuPrepTools.add(checkInItem);
 
 		// Add Show Section Source action on the menu
 		final JMenuItem vformFindItem = new JMenuItem(VFormFindAction);
@@ -448,15 +527,30 @@ public class WorkspaceAccessPluginExtension implements
 		return true;
 	}
 
+	public boolean isDtBook(final Document document) {
+		try {
+			return document.getText(0, document.getLength())
+					.contains("<dtbook");
+		} catch (final BadLocationException e) {
+			showMessage("determining dtbookness failed:" + e);
+			return false;
+		}
+	}
+
 	private void showMessage(final String msg) {
 		if (prepToolsMessagesArea != null) {
 			prepToolsMessagesArea.append("\n");
 			prepToolsMessagesArea.append(msg);
+			// crashes with NullPointer:
+			// if (pluginWorkspaceAccess != null) {
+			// pluginWorkspaceAccess.showView(ViewComponentCustomizer.CUSTOM,
+			// true);
+			// }
 		}
 	}
 
 	private void showDialog(final String msg) {
-		pluginWorkspaceAccess.showInformationMessage("Running v-form");
+		pluginWorkspaceAccess.showInformationMessage(msg);
 		pluginWorkspaceAccess.showView(ViewComponentCustomizer.CUSTOM, true);
 	}
 
@@ -471,5 +565,15 @@ public class WorkspaceAccessPluginExtension implements
 		WSTextEditorPage aWSTextEditorPage = (WSTextEditorPage) editorAccess
 				.getCurrentPage();
 		return aWSTextEditorPage;
+	}
+
+	public WSTextEditorPage getPage() {
+		return getPage(getWsEditor());
+	}
+
+	private WSEditor getWsEditor() {
+		final WSEditor editorAccess = pluginWorkspaceAccess
+				.getCurrentEditorAccess(StandalonePluginWorkspace.MAIN_EDITING_AREA);
+		return editorAccess;
 	}
 }
