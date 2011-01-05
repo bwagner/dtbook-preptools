@@ -12,31 +12,53 @@ public class VFormUtil {
 			"Dich", "Dir", "Deinethalber", "Deinetwegen", "Deinen", "Deinem",
 			"Deines", "Deine", "Dein", "Eurethalber", "Euretwegen", "Euren",
 			"Eurem", "Eures", "Eure", "Euer", "Euch" };
+
+	private static final String[] allForms;
+
+	static {
+		allForms = new String[forms.length + formsOldSpelling.length];
+		int i = 0;
+		for (final String form : forms) {
+			allForms[i++] = form;
+		}
+		for (final String form : formsOldSpelling) {
+			allForms[i++] = form;
+		}
+	}
+
 	/*
-	 * 1. Recherche:
+	 * 1. VForms
+	 * =========
+	 * 1.1. Recherche:
 	 * -------------
 	 * 16.12.2010 - Mischa Kuenzle
 	 * Die Formen in formsOldSpelling werden nach neuer Rechtschreibung nicht 
 	 * mehr gross geschrieben. Deshalb:
-	 * 1. Suche alle Forms in formsOldSpelling, ob sie irgendwo im Text ausser 
+	 * 
+	 * 1.1.1. Diskriminante Old/New
+	 * --------------------------
+	 * Suche alle Forms in formsOldSpelling, ob sie irgendwo im Text ausser 
 	 * am Satzanfang vorkommen. Wenn ja, ist das Dokument nach alter 
 	 * Rechtschreibung verfasst, und das Dokument sollte nach vforms im Array 
 	 * oldSpelling abgesucht werden. Wenn nicht, frage diese Formen gar nicht 
 	 * ab, sondern nur diejenigen im Array "forms".
 	 * 
+	 * 1.1.2. Binnen-Höflichkeitsformen
+	 * ------------------------------
 	 * 22.12.10 - Christian Waldvogel 
-	 * Achtung: Die "Binnen-Höflichkeitsformen" können in jedem Fall schon
+	 * Die "Binnen-Höflichkeitsformen" können in jedem Fall schon
 	 * als vforms markiert werden, der Benutzer muss diese nicht auch noch
 	 * abnicken!
 	 * Es geht dann nur noch um die potentiellen vForms am Satzanfang.
-	 * Frage: Was heisst Satzanfang?
+	 * 
+	 * 1.1.3. Frage: Was heisst Satzanfang?
 	 * 
 	 * 
 	 * 
 	 * 23.12.2010 - Mischa Kuenzle
-		
-	EBNF für Satzende:
-	--------------------
+	 *	
+	 * 1.1.3.1. EBNF für Satzende
+	 * ------------------------
 	
 	 Variations:
 	 1. Punkt                        Whitespace
@@ -64,7 +86,7 @@ public class VFormUtil {
 		      ([QuoteSign] [ClosingBrace] Whitespace [QuoteSign])
 		      
 	Problem with this syntax: We need 2-symbol lookahead!
-	If Punkt is followed by ClosingBrace, we need to look at one more sign:
+	If Punkt [QuoteSign] is followed by ClosingBrace, we need to look at one more sign:
 	Is it QuoteSign -> we're in the branch 9.
 	Is it Whitespace -> we're in the branch 12.
 	Is it something else -> we're not in a PhraseEnd.
@@ -75,7 +97,10 @@ public class VFormUtil {
 	
 	ClosingBrace = ")" | "]" | "}".
 	
-	Achtung: Warum wir auf DOM-Ebene und nicht String-Ebene arbeiten sollten:
+	 * 1.1.3.2. DOM vs. Text
+	 * -------------------
+
+	Achtung: Warum wir auf DOM-Ebene und nicht Text-Ebene arbeiten sollten:
 	Dies ist ein Beispiel für Satzende-Variation #2.
 	Würde aber von der Regexp nicht erkannt, weil uns die pagenum in die Quere
 	kommt.
@@ -93,9 +118,12 @@ public class VFormUtil {
 	-> Nachteile von DOM: Wie finden wir von der DOM-Repräsentation zurück in den Text?
 	-> Ist es erlaubt, dass wir den Text parsen, im DOM verändern und dann zurückschreiben?
 	-> dabei könnte Formatierung anders rauskommen.
+	-> dabei könnten die Kommentare, Processing Instructions (sonstiges?) verloren gehen.
+	-> DOM-Parser im Projekt DtBookParser (warum DOM? Sax nicht, weil ich sonst state
+	   zwischen Events pflegen muss)
 	
-	
-	 * 2. Auf Dtbook-Strukturebene
+	 * 1.1.3.3. Auf Dtbook-Strukturebene
+	 * -------------------------------
 	 * - Am Anfang eines
 	 * - Paragraphs (<p>)
 	 * - Headings (<h[1-6]>)
@@ -107,7 +135,8 @@ public class VFormUtil {
 	 * - <lic>
 	 * - <byline>
 	 * 
-	 * Frage: Wann soll dieser Test ablaufen?
+	 * 
+	 * Frage: Wann soll dieser Test (1.1.) ablaufen?
 	 * Mögliche Zeitpunkte:
 	 * 1. Beim Oeffnen eines Dokuments vom Typ dtbook.
 	 * 1.1 das Plugin merkt sich *pro Dokument*: boolean oldSPelling.
@@ -150,7 +179,7 @@ public class VFormUtil {
 	 (- anderes Dokument wählen: doch nicht: Cursor-Position bleibt erhalten)
 	 (- anderes Dokument öffnen: doch nicht: Cursor-Position bleibt erhalten)
 	 *
-	 * 2. Hypothese:
+	 * 1.2. Hypothese:
 	 * ------------
 	 * 1. Es gibt 3 (4) Buttons im Toolbar:
 	 * - StartVForm
@@ -165,9 +194,9 @@ public class VFormUtil {
 	 * Die ToolTips geben Hinweis, warum sie disabled sind (nice). (_1)
 	 * 
 	 * 2. Es liegt dtbook Dokument vor:
-	 * (nice: Ampel wird rot _g)
+	 * (nice: LED becomes green _g)
 	 * Benutzer klickt StartVForm. Flag isProcessingVforms = true; für dieses Dokument.
-	 * (nice: Ampel wird gelb _g)
+	 * (nice: LED becomes yellow _g)
 	 * Gesamtes Dokument wird nach formsOldSpelling *ausser am Satzanfang* 
 	 * abgesucht. Wenn etwas gefunden wird: Dialogbox mit Statistik anzeigen, wie oft
 	 * formsOldSpelling auftreten, sowie der Frage, ob Benutzer alle alten Formen
@@ -186,9 +215,9 @@ public class VFormUtil {
 	 * Für dieses Dokument wird ausserdem Flag isProcessingVforms = false
 	 * Benutzer in der Dialogbox eine Checkbox anbieten, ob Statistik in einem
 	 * Kommentar <!-- --> oben eingefügt werden soll.
-	 * Unterstützung des Prozesses mit einer "Ampel" im Toolbar (nice):
-	 * Dokument noch nicht vformed: rot, Dokument in Bearbeitung: gelb, Dokument
-	 * abgeschlossen: grün.
+	 * Unterstützung des Prozesses mit einer "LED" im Toolbar (nice):
+	 * Document not yet vformed: green, Document in progress: yellow, Document
+	 * done: blue.
 	 * (nice: während der Bearbeitung sieht der Benutzer einen Progressbar und eine
 	 * estimated completion time, welche aufgrund der Statistik und seiner persönlichen
 	 * Arbeitsgeschwnindigkeit berechnet wird. Nach einem Timeout wird die Zeit nicht
@@ -218,15 +247,55 @@ public class VFormUtil {
 	 * _6: Bekommen wir es mit, wenn das Dokument-Ende erreicht wird? Ja
 	 * _7: Bemerken von Cursorbewegung?
 	 * _8: Bemerken von Textänderungen?
-	 * _9: Bemerken von Editorclose? Ja, aber kann ich noch eingreifen?
-	 * _a: Bemerken von EditorOpen? Ja.
+	 * _9: Bemerken von Editorclose? Ja, aber ich nicht eingreifen!
+	 * _a: Bemerken von EditorOpen? Ja. -> aber nicht bei "Revert"!
 	 * _b: Bemerken von EditorSelect? Ja, aber weiss ich welcher Editor vorher gewählt war?
-	 * _c: Bemerken von applicationClosing? Ja, aber kann ich noch eingreifen?
+	 * _c: Bemerken von applicationClosing? Ja, ich kann eingreifen: return false
 	 * _d: Highlighten (Selektieren) von Text: Ja.
 	 * _e: toolbarbuttons enablen/disablen: Ja.
 	 * _f: Textmarke ("Bookmark"), welche unabhängig vom Einfügen oder Löschen
 	 *     immer auf die vermerkte Stelle zeigt? (javax.swing.text.Document)
-	 * _g: "Ampel" oder "LED" im Toolbar mit konfigurierbarer Farbe.
+	 * _g: "LED" in the toolbar with configurable colour: Yes
+	 * _h: Can I define what an atomic command is? (I'd like to define that
+	 *     inserting </brl:v-form> after and <brl:v-form> before a word is
+	 *     *one* command (not two separate ones), so an Undo will remove
+	 *     both elements.
+	 *     
+	 * Empirical findings on WSEditorChangeListener:
+	 * closing a document, if there's at least one other document open,
+	 * we get:
+	 * -> editorSelected + url next
+	 * -> editorClosed + url closing
+	 * -> editorSelected + url next
+
+	 * closing a document, if this is the last document open,
+	 * we get:
+	 * -> editorClosed + url closing
+	 * -> editorSelected + url null
+	 * 
+	 * Opening a document, we get:
+	 * -> editorSelected + new url
+	 * -> editorOpened + new url
+	 * 
+	 * Selecting a document (only possible if there's more than 1)
+	 * -> editorSelected + new url
+	 * 
+	 * Starting the app we get:
+	 * -> editorSelected + null (that's all we get when no docs where open)
+	 * For each open file:
+	 * -> editorSelected + url
+	 * -> editorOpened + url
+	 * At the end again for each open file:
+	 * -> editorSelected + url
+	 * 
+	 * Conclusion:
+	 * editorSelected always gets called when a document is opened.
+	 * 
+	 * 
+	 * 2. Balanced Parentheses:
+	 * ========================
+	 * http://redmine.sbszh.ch/issues/show/1059
+	 * 
 	 */
 
 	private static final Pattern vFormPattern;
@@ -236,7 +305,7 @@ public class VFormUtil {
 		final StringBuffer sb = new StringBuffer("(?:"); // non-capturing group,
 															// see
 		// http://download.oracle.com/javase/1.5.0/docs/api/java/util/regex/Pattern.html#special
-		for (final String form : forms) {
+		for (final String form : allForms) {
 			sb.append(form);
 			sb.append("|");
 		}
