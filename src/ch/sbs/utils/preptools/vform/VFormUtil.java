@@ -194,9 +194,10 @@ public class VFormUtil {
 	 * Die ToolTips geben Hinweis, warum sie disabled sind (nice). (_1)
 	 * 
 	 * 2. Es liegt dtbook Dokument vor:
-	 * (nice: LED becomes green _g)
-	 * Benutzer klickt StartVForm. Flag isProcessingVforms = true; für dieses Dokument.
-	 * (nice: LED becomes yellow _g)
+	 * DONE (nice: LED becomes green _g)
+	 * DONE Benutzer klickt StartVForm. Flag isProcessingVforms = true; für dieses Dokument.
+	 * DONE (nice: LED becomes yellow _g)
+	 * 
 	 * Gesamtes Dokument wird nach formsOldSpelling *ausser am Satzanfang* 
 	 * abgesucht. Wenn etwas gefunden wird: Dialogbox mit Statistik anzeigen, wie oft
 	 * formsOldSpelling auftreten, sowie der Frage, ob Benutzer alle alten Formen
@@ -210,22 +211,23 @@ public class VFormUtil {
 	 * potentielle vForm gesucht, gehighlightet (_d) und die Buttons FindVForm,
 	 * AcceptVForm werden enabled. Die Erwartung ist nun, dass der Benutzer nur anhand
 	 * der Buttons Find/Accept durch das Dokument bis ans Ende navigiert. Wenn er ans
+	 * 
 	 * Ende kommt (_6): Dialogbox: Dokument-Ende erreicht mit Angabe, 
 	 * welches Tool/Prozess angeben, z.B.: VForms, Parentheses, sowie Statistik.
 	 * Für dieses Dokument wird ausserdem Flag isProcessingVforms = false
 	 * Benutzer in der Dialogbox eine Checkbox anbieten, ob Statistik in einem
 	 * Kommentar <!-- --> oben eingefügt werden soll.
-	 * Unterstützung des Prozesses mit einer "LED" im Toolbar (nice):
-	 * Document not yet vformed: green, Document in progress: yellow, Document
-	 * done: blue.
+	 * DONE Unterstützung des Prozesses mit einer "LED" im Toolbar (nice):
+	 *      Document not yet vformed: green, Document in progress: yellow, Document
+	 *      done: blue.
 	 * (nice: während der Bearbeitung sieht der Benutzer einen Progressbar und eine
 	 * estimated completion time, welche aufgrund der Statistik und seiner persönlichen
 	 * Arbeitsgeschwnindigkeit berechnet wird. Nach einem Timeout wird die Zeit nicht
 	 * mehr berücksichtigt.)
 	 * 
 	 * Ausnahmen: Wenn Benutzer während des Prozesses (isProcessingVforms == true)
-	 * - StartVForm klickt, wird Dialogbox angezeigt "Start over?" 
-	 *  (verworfen: startVForm Button disablen)
+	 * DONE- StartVForm klickt, wird Dialogbox angezeigt "Start over?" 
+	 * DONE (verworfen: startVForm Button disablen)
 	 * - Wenn er Dokument schliesst (editorClosed _9), Dialogbox anzeigen "vorzeitig abbrechen?"
 	 * - Wenn er Applikation beendet (applicationClosing _c), Dialogbox anzeigen "vorzeitig abbrechen?"
 	 * - Cursor selber plaziert: (_7) Toolbar hat einen weiteren Button "Continue".

@@ -28,11 +28,12 @@ public class TrafficLight extends JComponent {
 	private STATE defaultLightState;
 	private STATE currentLightState;
 
-	private static int DELAY = 500;
-	private Thread runner;
-
 	static final int DEFAULT_SIZE = 100;
 	final int size;
+
+	// TODO: use this for tooltip
+	// Tooltip contents: build stamp version
+	private String info;
 
 	public TrafficLight() {
 		this(DEFAULT_SIZE);
@@ -72,12 +73,20 @@ public class TrafficLight extends JComponent {
 		repaint();
 	}
 
-	public void turnOff() {
+	public void off() {
 		setCurrentLightState(STATE.OFF);
 	}
 
-	public void sayStop() {
+	public void stop() {
 		setCurrentLightState(STATE.RED);
+	}
+
+	public void go() {
+		setCurrentLightState(STATE.GREEN);
+	}
+
+	public void inProgress() {
+		setCurrentLightState(STATE.YELLOW);
 	}
 
 	public void done() {
@@ -94,37 +103,11 @@ public class TrafficLight extends JComponent {
 		return defaultLightState;
 	}
 
-	public void initiate() {
-		startCycle();
+	public void setInfo(final String theInfo) {
+		info = theInfo;
 	}
 
-	private void startCycle() {
-		if (runner == null) {
-			Runnable runnable = new Runnable() {
-				@Override
-				public void run() {
-					while (runner != null) {
-						try {
-							Thread.sleep(DELAY);
-						} catch (InterruptedException e) {
-						}
-						if (currentLightState.equals(STATE.RED)) {
-							setCurrentLightState(STATE.GREEN);
-						}
-						else if (currentLightState.equals(STATE.GREEN)) {
-							setCurrentLightState(STATE.YELLOW);
-						}
-						else {
-							setCurrentLightState(STATE.RED);
-						}
-						if (currentLightState.equals(defaultLightState)) {
-							runner = null;
-						}
-					}
-				}
-			};
-			runner = new Thread(runnable);
-			runner.start();
-		}
+	public String getInfo() {
+		return info;
 	}
 }
