@@ -76,7 +76,7 @@ class VFormStartAction extends AbstractVFormAction {
 		final URL editorLocation = editorAccess.getEditorLocation();
 		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
 				.getDocumentMetaInfo(editorLocation);
-		if (dmi.isDoneCheckingVform) {
+		if (dmi.doneCheckingVform()) {
 			workspaceAccessPluginExtension
 					.showMessage("starting over? (document was finished)");
 			if (workspaceAccessPluginExtension
@@ -85,13 +85,13 @@ class VFormStartAction extends AbstractVFormAction {
 							+ " has already been vformed.\n Do you want to Start over?")
 
 			) {
-				dmi.isDoneCheckingVform = false;
+				dmi.setDoneCheckingVform(false);
 			}
 			else {
 				return;
 			}
 		}
-		else if (dmi.hasStartedCheckingVform) {
+		else if (dmi.hasStartedCheckingVform()) {
 			workspaceAccessPluginExtension.showMessage("starting over?");
 			if (workspaceAccessPluginExtension
 					.showConfirmDialog("The document "
@@ -99,7 +99,7 @@ class VFormStartAction extends AbstractVFormAction {
 							+ " is currently being vformed.\n Do you want to Start over?")
 
 			) {
-				dmi.isDoneCheckingVform = false;
+				dmi.setDoneCheckingVform(false);
 			}
 			else {
 				return;
@@ -109,8 +109,8 @@ class VFormStartAction extends AbstractVFormAction {
 		final VFormUtil.Match match = VFormUtil.find(text, 0);
 		aWSTextEditorPage.select(match.startOffset, match.endOffset);
 
-		dmi.hasStartedCheckingVform = true;
-		dmi.isDoneCheckingVform = false;
+		dmi.setHasStartedCheckingVform(true);
+		dmi.setDoneCheckingVform(false);
 		workspaceAccessPluginExtension.setCurrentState(dmi);
 	}
 }
@@ -145,9 +145,6 @@ abstract class ProceedAction extends AbstractVFormAction {
 	}
 }
 
-// Accept should only be enabled
-// 1.) when there's selected text in the editor
-// 2.) the selected text conforms to a vform.
 @SuppressWarnings("serial")
 class VFormAcceptAction extends ProceedAction {
 	VFormAcceptAction(
@@ -184,5 +181,22 @@ class VFormAcceptAction extends ProceedAction {
 				+ "<></>".length() + selText.length();
 
 		searchOn(document, aWSTextEditorPage, editorAccess, continueAt);
+	}
+}
+
+@SuppressWarnings("serial")
+class VFormFindAction extends ProceedAction {
+	VFormFindAction(
+			WorkspaceAccessPluginExtension theWorkspaceAccessPluginExtension) {
+		super(theWorkspaceAccessPluginExtension);
+	}
+
+	@Override
+	protected void doSomething(final WSEditor editorAccess,
+			final WSTextEditorPage aWSTextEditorPage, final Document document,
+			final String text) throws BadLocationException {
+
+		searchOn(document, aWSTextEditorPage, editorAccess,
+				aWSTextEditorPage.getSelectionEnd());
 	}
 }

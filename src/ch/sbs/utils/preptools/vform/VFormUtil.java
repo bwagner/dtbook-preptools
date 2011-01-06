@@ -187,10 +187,10 @@ public class VFormUtil {
 	 * - AcceptVForm
 	 * (- ContinueVForm)
 	 * 
-	 * Pro Dokument wird gespeichert, ob vForm-Prozess durchgeführt wird.
-	 * Solange das nicht der Fall ist, ist nur StartVForm enabled (_e), FindVorm,
-	 * AcceptVForm disabled. Wenn das Dokument kein dtbook ist, sind alle
-	 * drei Buttons disabled.
+	 * DONE Pro Dokument wird gespeichert, ob vForm-Prozess durchgeführt wird.
+	 *      Solange das nicht der Fall ist, ist nur StartVForm enabled (_e), FindVorm,
+	 *      AcceptVForm disabled. Wenn das Dokument kein dtbook ist, sind alle
+	 *      drei Buttons disabled.
 	 * Die ToolTips geben Hinweis, warum sie disabled sind (nice). (_1)
 	 * 
 	 * 2. Es liegt dtbook Dokument vor:
@@ -211,7 +211,6 @@ public class VFormUtil {
 	 * potentielle vForm gesucht, gehighlightet (_d) und die Buttons FindVForm,
 	 * AcceptVForm werden enabled. Die Erwartung ist nun, dass der Benutzer nur anhand
 	 * der Buttons Find/Accept durch das Dokument bis ans Ende navigiert. Wenn er ans
-	 * 
 	 * Ende kommt (_6): Dialogbox: Dokument-Ende erreicht mit Angabe, 
 	 * welches Tool/Prozess angeben, z.B.: VForms, Parentheses, sowie Statistik.
 	 * Für dieses Dokument wird ausserdem Flag isProcessingVforms = false
@@ -229,7 +228,11 @@ public class VFormUtil {
 	 * DONE- StartVForm klickt, wird Dialogbox angezeigt "Start over?" 
 	 * DONE (verworfen: startVForm Button disablen)
 	 * - Wenn er Dokument schliesst (editorClosed _9), Dialogbox anzeigen "vorzeitig abbrechen?"
-	 * - Wenn er Applikation beendet (applicationClosing _c), Dialogbox anzeigen "vorzeitig abbrechen?"
+	 *   -> leider bekomme ich das erst mit, wenn der editor bereits geschlossen ist!
+	 *   -> ich biete Dialog an, das Dokument nochmals zu öffnen. Leider wird beim Oeffnen
+	 *      der Editor mit den neuen Dokument nicht automatisch aktiviert.
+	 *      Ich finde auch keine Schnittstelle, wie ich einen Tab wählen kann.
+	 * DONE Wenn er Applikation beendet (applicationClosing _c), Dialogbox anzeigen "vorzeitig abbrechen?"
 	 * - Cursor selber plaziert: (_7) Toolbar hat einen weiteren Button "Continue".
 	 *   Implemenentation: für jedes Dokument wird die zuletzt bearbeitete Stelle 
 	 *   vermerkt (_f).
@@ -249,7 +252,7 @@ public class VFormUtil {
 	 * _6: Bekommen wir es mit, wenn das Dokument-Ende erreicht wird? Ja
 	 * _7: Bemerken von Cursorbewegung?
 	 * _8: Bemerken von Textänderungen?
-	 * _9: Bemerken von Editorclose? Ja, aber ich nicht eingreifen!
+	 * _9: Bemerken von Editorclose? Ja, aber ich kann nicht eingreifen!
 	 * _a: Bemerken von EditorOpen? Ja. -> aber nicht bei "Revert"!
 	 * _b: Bemerken von EditorSelect? Ja, aber weiss ich welcher Editor vorher gewählt war?
 	 * _c: Bemerken von applicationClosing? Ja, ich kann eingreifen: return false
@@ -292,6 +295,9 @@ public class VFormUtil {
 	 * 
 	 * Conclusion:
 	 * editorSelected always gets called when a document is opened.
+	 * 
+	 * Problems:
+	 * - When "Revert" is done on a file, I don't get notified!
 	 * 
 	 * 
 	 * 2. Balanced Parentheses:
