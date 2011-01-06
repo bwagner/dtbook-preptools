@@ -68,7 +68,8 @@ public class PropsUtils {
 				props.put("stamp", "loading from url " + url + " for "
 						+ filename + " failed " + e);
 			}
-		} else {
+		}
+		else {
 			props.put("stamp", "url was null for " + filename);
 		}
 		return props;
@@ -86,7 +87,8 @@ public class PropsUtils {
 				e.printStackTrace();
 				props.put("stamp", "loading from " + filename + "failed: " + e);
 			}
-		} else {
+		}
+		else {
 			props.put("stamp", "loading from " + filename + " failed!");
 
 		}
