@@ -1,6 +1,7 @@
 package ch.sbs.utils.preptools.vform;
 
 import java.io.File;
+import java.net.URL;
 
 public class FileUtils {
 
@@ -28,6 +29,16 @@ public class FileUtils {
 
 		if (!success)
 			throw new IllegalArgumentException("Delete: deletion failed");
+	}
+
+	public static String basename(final URL url) {
+		return url == null ? "" : basename(url.getFile());
+	}
+
+	public static String basename(final String path) {
+
+		return path == null ? "" : path.substring(path
+				.lastIndexOf(File.separatorChar) + 1);
 	}
 
 }
