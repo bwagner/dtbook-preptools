@@ -9,6 +9,7 @@ import javax.swing.text.Document;
 
 import ro.sync.exml.workspace.api.editor.WSEditor;
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
+import ch.sbs.utils.preptools.vform.FileUtils;
 import ch.sbs.utils.preptools.vform.VFormUtil;
 
 @SuppressWarnings("serial")
@@ -80,7 +81,7 @@ class VFormStartAction extends AbstractVFormAction {
 					.showMessage("starting over? (document was finished)");
 			if (workspaceAccessPluginExtension
 					.showConfirmDialog("The document "
-							+ editorLocation
+							+ FileUtils.basename(editorLocation)
 							+ " has already been vformed.\n Do you want to Start over?")
 
 			) {
@@ -94,7 +95,7 @@ class VFormStartAction extends AbstractVFormAction {
 			workspaceAccessPluginExtension.showMessage("starting over?");
 			if (workspaceAccessPluginExtension
 					.showConfirmDialog("The document "
-							+ editorLocation
+							+ FileUtils.basename(editorLocation)
 							+ " is currently being vformed.\n Do you want to Start over?")
 
 			) {

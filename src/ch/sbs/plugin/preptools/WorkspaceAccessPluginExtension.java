@@ -28,6 +28,7 @@ import ro.sync.exml.workspace.api.standalone.ToolbarInfo;
 import ro.sync.exml.workspace.api.standalone.ViewComponentCustomizer;
 import ro.sync.exml.workspace.api.standalone.ViewInfo;
 import ro.sync.ui.Icons;
+import ch.sbs.utils.preptools.vform.FileUtils;
 import ch.sbs.utils.preptools.vform.PropsUtils;
 
 /**
@@ -188,7 +189,8 @@ public class WorkspaceAccessPluginExtension implements
 
 						@Override
 						public void editorOpened(URL editorLocation) {
-							showMessage("editorOpened:" + editorLocation);
+							showMessage("editorOpened:"
+									+ FileUtils.basename(editorLocation));
 							final WSEditor editorAccess = getWsEditor();
 							final WSTextEditorPage page = getPage(editorAccess);
 							if (page == null) {
@@ -209,7 +211,8 @@ public class WorkspaceAccessPluginExtension implements
 
 						@Override
 						public void editorClosed(URL editorLocation) {
-							showMessage("editorClosed:" + editorLocation);
+							showMessage("editorClosed:"
+									+ FileUtils.basename(editorLocation));
 							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
 							if (!dmi.isDoneCheckingVform) {
 								// TODO: check the tutorial: can we inhibit
@@ -227,7 +230,8 @@ public class WorkspaceAccessPluginExtension implements
 
 						@Override
 						public void editorPageChanged(URL editorLocation) {
-							showMessage("editorPageChanged:" + editorLocation);
+							showMessage("editorPageChanged:"
+									+ FileUtils.basename(editorLocation));
 							final WSEditor editorAccess = getWsEditor();
 
 							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
@@ -246,7 +250,8 @@ public class WorkspaceAccessPluginExtension implements
 
 						@Override
 						public void editorSelected(URL editorLocation) {
-							showMessage("editorSelected: " + editorLocation);
+							showMessage("editorSelected: "
+									+ FileUtils.basename(editorLocation));
 							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
 							if (dmi != null) {
 								setCurrentState(dmi);
