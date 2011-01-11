@@ -81,29 +81,16 @@ class DocumentMetaInfo {
 			@Override
 			public void removeUpdate(DocumentEvent e) {
 				setManualEditOccurred(true);
-				theWorkspaceAccessPluginExtension
-						.showMessage("removed stuff from " + shortUrl() + ":\n"
-								+ "at offset" + e.getOffset() + " of length "
-								+ e.getLength() + " type " + e.getType());
 			}
 
 			@Override
 			public void insertUpdate(DocumentEvent e) {
 				setManualEditOccurred(true);
-				theWorkspaceAccessPluginExtension
-						.showMessage("inserted stuff into " + shortUrl()
-								+ ":\n" + "at offset" + e.getOffset()
-								+ " of length " + e.getLength() + " type "
-								+ e.getType());
 			}
 
 			@Override
 			public void changedUpdate(DocumentEvent e) {
 				setManualEditOccurred(true);
-				theWorkspaceAccessPluginExtension.showMessage("changed "
-						+ shortUrl() + ":\n" + "at offset" + e.getOffset()
-						+ " of length " + e.getLength() + " type "
-						+ e.getType());
 			}
 		};
 		document.addDocumentListener(documentListener);
