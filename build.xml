@@ -162,6 +162,17 @@
 			<arg line="search --onlyvisible --name '&lt;oXygen/&gt; XML Editor' windowactivate --sync key alt+F4"/>
 		</exec>
 		<sleep seconds="1"/>
+		<!-- http://code.google.com/p/semicomplete/issues/detail?id=45#hc4 -->
+		<exec executable="xdotool">
+			<arg line="search --onlyvisible --name '^Save$' windowactivate key --window 0 alt+n"/>
+		</exec>
+	</target>
+
+	<target name="stopoxyMouse">
+		<exec executable="xdotool">
+			<arg line="search --onlyvisible --name '&lt;oXygen/&gt; XML Editor' windowactivate --sync key alt+F4"/>
+		</exec>
+		<sleep seconds="1"/>
 		<exec executable="xdotool">
 			<arg line="search --onlyvisible --name '^Save$' windowactivate --sync mousemove --window %1 340 75 click 1"/>
 		</exec>
