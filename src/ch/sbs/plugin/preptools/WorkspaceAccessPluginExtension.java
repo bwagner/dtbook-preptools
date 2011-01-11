@@ -164,8 +164,6 @@ public class WorkspaceAccessPluginExtension implements
 
 						@Override
 						public void editorOpened(URL editorLocation) {
-							showMessage("editorOpened:"
-									+ FileUtils.basename(editorLocation));
 							final WSEditor editorAccess = getWsEditor();
 							final WSTextEditorPage page = getPage(editorAccess);
 							if (page == null) {
@@ -179,19 +177,13 @@ public class WorkspaceAccessPluginExtension implements
 														+ ")"));
 								return;
 							}
-							final DocumentMetaInfo documentMetaInformation = getDocumentMetaInfo(editorLocation);
-							showMessage("new doc dtbook:"
-									+ documentMetaInformation.isDtBook());
 						}
 
 						@Override
 						public void editorClosed(URL editorLocation) {
-							showMessage("editorClosed:"
-									+ FileUtils.basename(editorLocation));
 							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
 							if (dmi.isProcessing()) {
 								// we can't veto closing!
-								showMessage("editorClosed even though we hadn't finished!");
 								if (showConfirmDialog("Document "
 										+ FileUtils.basename(editorLocation)
 										+ " was still being processed. Want to start over?")) {
@@ -216,8 +208,6 @@ public class WorkspaceAccessPluginExtension implements
 
 						@Override
 						public void editorPageChanged(URL editorLocation) {
-							showMessage("editorPageChanged:"
-									+ FileUtils.basename(editorLocation));
 							final WSEditor editorAccess = getWsEditor();
 
 							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
@@ -228,8 +218,6 @@ public class WorkspaceAccessPluginExtension implements
 
 						@Override
 						public void editorSelected(URL editorLocation) {
-							showMessage("editorSelected: "
-									+ FileUtils.basename(editorLocation));
 							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
 							if (dmi != null) {
 								setCurrentState(dmi);
