@@ -9,9 +9,6 @@ import java.util.Map;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
@@ -21,7 +18,6 @@ import ro.sync.exml.editor.EditorPageConstants;
 import ro.sync.exml.workspace.api.editor.WSEditor;
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
 import ro.sync.exml.workspace.api.listeners.WSEditorChangeListener;
-import ro.sync.exml.workspace.api.standalone.MenuBarCustomizer;
 import ro.sync.exml.workspace.api.standalone.StandalonePluginWorkspace;
 import ro.sync.exml.workspace.api.standalone.ToolbarComponentsCustomizer;
 import ro.sync.exml.workspace.api.standalone.ToolbarInfo;
@@ -113,8 +109,6 @@ public class WorkspaceAccessPluginExtension implements
 	 */
 	private boolean runPlugin;
 
-	private JMenu menuPrepTools;
-
 	private Action vformStartAction;
 
 	private Action vformFindAction;
@@ -138,22 +132,6 @@ public class WorkspaceAccessPluginExtension implements
 			vformStartAction = new VFormStartAction(this);
 			vformFindAction = new VFormFindAction(this);
 			vformAcceptAction = new VFormAcceptAction(this);
-
-			menuPrepTools = createPrepToolsMenu(vformStartAction,
-					vformFindAction, vformAcceptAction);
-
-			pluginWorkspaceAccess.addMenuBarCustomizer(new MenuBarCustomizer() {
-				/**
-				 * @see ro.sync.exml.workspace.api.standalone.MenuBarCustomizer#customizeMainMenu(javax.swing.JMenuBar)
-				 */
-				@Override
-				public void customizeMainMenu(JMenuBar mainMenuBar) {
-					// PrepTools menu
-					// Add the PrepTools menu before the Help menu
-					mainMenuBar.add(menuPrepTools,
-							mainMenuBar.getMenuCount() - 1);
-				}
-			});
 
 			pluginWorkspaceAccess.addEditorChangeListener(
 					new WSEditorChangeListener() {
@@ -337,38 +315,6 @@ public class WorkspaceAccessPluginExtension implements
 		else {
 			return "'" + key + "' not found in props file " + filename;
 		}
-	}
-
-	/**
-	 * Create PrepTools menu that contains the following actions:
-	 * <code>Check In</code>, <code>Check Out</code> and
-	 * <code>Show Selection Source<code/>
-	 * 
-	 * @return
-	 */
-	private JMenu createPrepToolsMenu(final Action vformStartAction,
-			final Action vformAcceptAction, final Action VFormFindAction) {
-		// PrepTools menu
-		JMenu menuPrepTools = new JMenu("PrepTools");
-
-		// Add Check In action on the menu
-		final JMenuItem checkInItem = new JMenuItem(vformStartAction);
-		checkInItem.setText("Start VForms");
-		menuPrepTools.add(checkInItem);
-
-		// Add Show Section Source action on the menu
-		final JMenuItem vformFindItem = new JMenuItem(VFormFindAction);
-		vformFindItem.setText("Find");
-		vformFindItem.setEnabled(false);
-		menuPrepTools.add(vformFindItem);
-
-		// Add Check Out action on the menu
-		final JMenuItem vformAcceptItem = new JMenuItem(vformAcceptAction);
-		vformAcceptItem.setText("Accept");
-		vformAcceptItem.setEnabled(false);
-		menuPrepTools.add(vformAcceptItem);
-
-		return menuPrepTools;
 	}
 
 	/**
