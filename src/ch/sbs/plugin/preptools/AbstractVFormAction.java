@@ -78,8 +78,6 @@ class VFormStartAction extends AbstractVFormAction {
 
 		final URL editorLocation = editorAccess.getEditorLocation();
 		if (dmi.doneCheckingVform()) {
-			workspaceAccessPluginExtension
-					.showMessage("starting over? (document was finished)");
 			if (workspaceAccessPluginExtension
 					.showConfirmDialog("The document "
 							+ FileUtils.basename(editorLocation)
@@ -93,7 +91,6 @@ class VFormStartAction extends AbstractVFormAction {
 			}
 		}
 		else if (dmi.hasStartedCheckingVform()) {
-			workspaceAccessPluginExtension.showMessage("starting over?");
 			if (workspaceAccessPluginExtension
 					.showConfirmDialog("The document "
 							+ FileUtils.basename(editorLocation)
