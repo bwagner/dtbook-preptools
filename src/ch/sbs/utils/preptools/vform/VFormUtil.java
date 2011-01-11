@@ -3,6 +3,10 @@ package ch.sbs.utils.preptools.vform;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Position;
+
 public class VFormUtil {
 
 	private static final String[] forms = new String[] { "Sie", "Ihrethalber",
@@ -233,15 +237,15 @@ public class VFormUtil {
 	 *      der Editor mit den neuen Dokument nicht automatisch aktiviert.
 	 *      Ich finde auch keine Schnittstelle, wie ich einen Tab wählen kann.
 	 * DONE Wenn er Applikation beendet (applicationClosing _c), Dialogbox anzeigen "vorzeitig abbrechen?"
-	 * - Cursor selber plaziert: (_7) Toolbar hat einen weiteren Button "Continue".
-	 *   Implemenentation: für jedes Dokument wird die zuletzt bearbeitete Stelle 
+	 * DONE Cursor selber plaziert: (_7) Toolbar hat einen weiteren Button "Continue".
+	 * DONE  Implemenentation: für jedes Dokument wird die zuletzt bearbeitete Stelle 
 	 *   vermerkt (_f).
-	 *   Wenn der Cursor bewegt wurde, kann anhand dieser Stelle der vform-Prozess wieder
+	 * DONE  Wenn der Cursor bewegt wurde, kann anhand dieser Stelle der vform-Prozess wieder
 	 *   aufgenommen werden. 
-	 * - Text ändert: siehe "Cursor selber plaziert" (_8)?
+	 * DONE Text ändert: siehe "Cursor selber plaziert" (_8)?
 	 * - anderes Tool wählt: Dialogbox anzeigen "vorzeitig abbrechen?"
-	 * - anderes Dokument öffnet (editorOpened _a): siehe "Cursor selber plaziert"
-	 * - zu anderem Dokument umschaltet (editorSelected _b):siehe "Cursor selber plaziert"
+	 * (verworfen:- anderes Dokument öffnet (editorOpened _a): siehe "Cursor selber plaziert")
+	 * (verworfen:- zu anderem Dokument umschaltet (editorSelected _b):siehe "Cursor selber plaziert"
 	 * 
 	 * Erhoffte Features vom Oxygen API
 	 * _1: Dynamisches Aendern von Tooltips für Toolbar buttons?
@@ -250,8 +254,8 @@ public class VFormUtil {
 	 * _4: Tastaturaequivalent von Toolbar Buttons?
 	 * _5: Cursor an Dokumentanfang setzen: Ja
 	 * _6: Bekommen wir es mit, wenn das Dokument-Ende erreicht wird? Ja
-	 * _7: Bemerken von Cursorbewegung?
-	 * _8: Bemerken von Textänderungen?
+	 * _7: Bemerken von Cursorbewegung? Ja, aber nur wenn ich selber Buch führe.
+	 * _8: Bemerken von Textänderungen? Ja.
 	 * _9: Bemerken von Editorclose? Ja, aber ich kann nicht eingreifen!
 	 * _a: Bemerken von EditorOpen? Ja. -> aber nicht bei "Revert"!
 	 * _b: Bemerken von EditorSelect? Ja, aber weiss ich welcher Editor vorher gewählt war?
@@ -336,6 +340,26 @@ public class VFormUtil {
 
 	public static boolean matches(final String text) {
 		return text != null && vFormPattern.matcher(text).matches();
+	}
+
+	public static class PositionMatch {
+		public PositionMatch(final Document theDocument, final Match match) {
+			this(theDocument, match.startOffset, match.endOffset);
+		}
+
+		public PositionMatch(final Document theDocument, int start, int end) {
+			try {
+				document = theDocument;
+				startOffset = document.createPosition(start);
+				endOffset = document.createPosition(end);
+			} catch (BadLocationException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
+		public Document document;
+		public Position startOffset;
+		public Position endOffset;
 	}
 
 	public static class Match {
