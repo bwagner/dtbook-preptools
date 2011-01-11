@@ -424,8 +424,13 @@ public class WorkspaceAccessPluginExtension implements
 	}
 
 	boolean showConfirmDialog(final String msg) {
+		return showConfirmDialog(msg, "Ok", "Cancel");
+	}
+
+	boolean showConfirmDialog(final String msg, final String confirm,
+			final String deny) {
 		return pluginWorkspaceAccess.showConfirmDialog("v-forms", msg,
-				new String[] { "Ok", "Cancel" }, new int[] { 0, 1 }) == 0;
+				new String[] { confirm, deny }, new int[] { 0, 1 }) == 0;
 	}
 
 	public static WSTextEditorPage getPage(final WSEditor editorAccess) {
