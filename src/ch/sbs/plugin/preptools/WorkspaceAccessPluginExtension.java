@@ -98,8 +98,6 @@ public class WorkspaceAccessPluginExtension implements
 		}
 	}
 
-	private final Map<URL, DocumentMetaInfo> documents = new HashMap<URL, DocumentMetaInfo>();
-
 	/**
 	 * The PrepTools messages area.
 	 */
@@ -203,18 +201,15 @@ public class WorkspaceAccessPluginExtension implements
 									// don't force him to start over!
 									dmi.setHasStartedCheckingVform(false);
 									setCurrentState(dmi);
-									return;
 								}
 							}
 							else {
-								documents.remove(editorLocation);
+								removeDocumentMetaInfo(dmi);
 
 								// In case this was the last open document we
-								// turn
-								// traffic light off. If there are more
-								// documents
-								// open the trafficLight will be set accordingly
-								// by editorSelected()
+								// turn traffic light off. If there are more
+								// documents open the trafficLight will be set
+								// accordingly by editorSelected()
 								trafficLight.off();
 							}
 						};
@@ -311,6 +306,8 @@ public class WorkspaceAccessPluginExtension implements
 		}
 	}
 
+	private final Map<URL, DocumentMetaInfo> documents = new HashMap<URL, DocumentMetaInfo>();
+
 	DocumentMetaInfo getDocumentMetaInfo(final URL editorLocation) {
 		if (documents.containsKey(editorLocation)) {
 			return documents.get(editorLocation);
@@ -323,8 +320,9 @@ public class WorkspaceAccessPluginExtension implements
 			return null;
 		}
 		Document document = documentMetaInformation.page.getDocument();
+		documentMetaInformation.setUrl(editorLocation);
 
-		documentMetaInformation.setDocument(document);
+		documentMetaInformation.setDocument(document, this);
 
 		documentMetaInformation.setDtBook(isDtBook(document));
 
@@ -333,6 +331,11 @@ public class WorkspaceAccessPluginExtension implements
 
 		documents.put(editorLocation, documentMetaInformation);
 		return documentMetaInformation;
+	}
+
+	private void removeDocumentMetaInfo(final DocumentMetaInfo dmi) {
+		dmi.finish();
+		documents.remove(dmi.getUrl());
 	}
 
 	private String getVersion() {

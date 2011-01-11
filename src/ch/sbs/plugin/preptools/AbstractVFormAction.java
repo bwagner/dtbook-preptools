@@ -11,6 +11,7 @@ import ro.sync.exml.workspace.api.editor.WSEditor;
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
 import ch.sbs.utils.preptools.vform.FileUtils;
 import ch.sbs.utils.preptools.vform.VFormUtil;
+import ch.sbs.utils.preptools.vform.VFormUtil.PositionMatch;
 
 @SuppressWarnings("serial")
 abstract class AbstractVFormAction extends AbstractAction {
@@ -35,9 +36,10 @@ abstract class AbstractVFormAction extends AbstractAction {
 		if ((aWSTextEditorPage = WorkspaceAccessPluginExtension
 				.getPage(editorAccess)) != null) {
 			final Document document = aWSTextEditorPage.getDocument();
+			final DocumentMetaInfo dmi = workspaceAccessPluginExtension
+					.getDocumentMetaInfo(editorAccess.getEditorLocation());
 			try {
-				doSomething(editorAccess, aWSTextEditorPage, document,
-						document.getText(0, document.getLength()));
+				doSomething(editorAccess, aWSTextEditorPage, document, dmi);
 			} catch (final BadLocationException e) {
 				e.printStackTrace();
 			}
@@ -52,12 +54,13 @@ abstract class AbstractVFormAction extends AbstractAction {
 	 * @param editorAccess
 	 * @param aWSTextEditorPage
 	 * @param document
-	 * @param text
+	 * @param dmi
+	 *            TODO
 	 * @throws BadLocationException
 	 */
 	protected abstract void doSomething(final WSEditor editorAccess,
 			final WSTextEditorPage aWSTextEditorPage, final Document document,
-			final String text) throws BadLocationException;
+			final DocumentMetaInfo dmi) throws BadLocationException;
 
 }
 
@@ -71,11 +74,9 @@ class VFormStartAction extends AbstractVFormAction {
 	@Override
 	protected void doSomething(final WSEditor editorAccess,
 			final WSTextEditorPage aWSTextEditorPage, final Document document,
-			final String text) throws BadLocationException {
+			DocumentMetaInfo dmi) throws BadLocationException {
 
 		final URL editorLocation = editorAccess.getEditorLocation();
-		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
-				.getDocumentMetaInfo(editorLocation);
 		if (dmi.doneCheckingVform()) {
 			workspaceAccessPluginExtension
 					.showMessage("starting over? (document was finished)");
@@ -106,11 +107,13 @@ class VFormStartAction extends AbstractVFormAction {
 			}
 		}
 
-		final VFormUtil.Match match = VFormUtil.find(text, 0);
+		final VFormUtil.Match match = VFormUtil.find(
+				document.getText(0, document.getLength()), 0);
 		aWSTextEditorPage.select(match.startOffset, match.endOffset);
 
 		dmi.setHasStartedCheckingVform(true);
 		dmi.setDoneCheckingVform(false);
+		dmi.setCurrentPositionMatch(new PositionMatch(document, match));
 		workspaceAccessPluginExtension.setCurrentState(dmi);
 	}
 }
@@ -142,6 +145,7 @@ abstract class ProceedAction extends AbstractVFormAction {
 		}
 		workspaceAccessPluginExtension.setCurrentState(dmi);
 		aWSTextEditorPage.select(match.startOffset, match.endOffset);
+		dmi.setCurrentPositionMatch(new PositionMatch(document, match));
 	}
 }
 
@@ -155,22 +159,43 @@ class VFormAcceptAction extends ProceedAction {
 	@Override
 	protected void doSomething(final WSEditor editorAccess,
 			final WSTextEditorPage aWSTextEditorPage, final Document document,
-			final String text) throws BadLocationException {
+			DocumentMetaInfo dmi) throws BadLocationException {
 
 		final String ELEMENT_NAME = "brl:v-form";
 
 		final String selText = aWSTextEditorPage.getSelectedText();
 
 		if (selText == null) {
+			// TODO: this is already suspicious
+			// accepting should only be possible when user got here via
+			// start- ,accept-, or find-action.
+			// this means the cursor must have been moved in the mean time.
 			return;
 		}
 
 		if (!VFormUtil.matches(selText)) {
+			// TODO: this is already suspicious
+			// accepting should only be possible when user got here via
+			// start- ,accept-, or find-action.
+			// this means the cursor must have been moved in the mean time.
 			return;
 		}
 
 		final int MATCH_START = aWSTextEditorPage.getSelectionStart();
 		final int MATCH_END = aWSTextEditorPage.getSelectionEnd();
+		final PositionMatch pm = dmi.getCurrentPositionMatch();
+		if (MATCH_START != pm.startOffset.getOffset()
+				|| MATCH_END != pm.endOffset.getOffset()
+				|| dmi.manualEditOccurred()) {
+			if (workspaceAccessPluginExtension
+					.showConfirmDialog("Cursor position has changed!\n"
+							+ "Take up where we lef off last time? [OK]"
+							+ " or continue anyway [Cancel]")) {
+				aWSTextEditorPage.select(pm.startOffset.getOffset(),
+						pm.endOffset.getOffset());
+			}
+		}
+
 		aWSTextEditorPage.setCaretPosition(MATCH_START); // unselect text
 
 		// starting with the end, so the start position doesn't shift
@@ -194,7 +219,22 @@ class VFormFindAction extends ProceedAction {
 	@Override
 	protected void doSomething(final WSEditor editorAccess,
 			final WSTextEditorPage aWSTextEditorPage, final Document document,
-			final String text) throws BadLocationException {
+			DocumentMetaInfo dmi) throws BadLocationException {
+
+		final int MATCH_START = aWSTextEditorPage.getSelectionStart();
+		final int MATCH_END = aWSTextEditorPage.getSelectionEnd();
+		final PositionMatch pm = dmi.getCurrentPositionMatch();
+		if (MATCH_START != pm.startOffset.getOffset()
+				|| MATCH_END != pm.endOffset.getOffset()
+				|| dmi.manualEditOccurred()) {
+			if (workspaceAccessPluginExtension
+					.showConfirmDialog("Cursor position has changed!\n"
+							+ "Take up where we lef off last time? [OK]"
+							+ " or continue anyway [Cancel]")) {
+				aWSTextEditorPage.select(pm.startOffset.getOffset(),
+						pm.endOffset.getOffset());
+			}
+		}
 
 		searchOn(document, aWSTextEditorPage, editorAccess,
 				aWSTextEditorPage.getSelectionEnd());

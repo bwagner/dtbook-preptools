@@ -1,8 +1,14 @@
 package ch.sbs.plugin.preptools;
 
+import java.net.URL;
+
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
+import ch.sbs.utils.preptools.vform.FileUtils;
+import ch.sbs.utils.preptools.vform.VFormUtil.PositionMatch;
 
 /**
  * Keeps meta information about a document known to the plugin.
@@ -14,9 +20,13 @@ class DocumentMetaInfo {
 	private boolean hasStartedCheckingVform;
 	private boolean isDoneCheckingVform;
 	// private boolean isOldSpelling;
+	private boolean lastEditWasManual;
 	private String currentEditorPage;
 	protected WSTextEditorPage page;
 	private Document document;
+	private URL url;
+	private DocumentListener documentListener;
+	private PositionMatch currentPositionMatch;
 
 	public String getCurrentEditorPage() {
 		return currentEditorPage;
@@ -38,7 +48,7 @@ class DocumentMetaInfo {
 		return hasStartedCheckingVform() && !doneCheckingVform();
 	}
 
-	public void setHasStartedCheckingVform(boolean hasStartedCheckingVform) {
+	public void setHasStartedCheckingVform(final boolean hasStartedCheckingVform) {
 		this.hasStartedCheckingVform = hasStartedCheckingVform;
 	}
 
@@ -46,7 +56,7 @@ class DocumentMetaInfo {
 		return hasStartedCheckingVform;
 	}
 
-	public void setDtBook(boolean isDtBook) {
+	public void setDtBook(final boolean isDtBook) {
 		this.isDtBook = isDtBook;
 	}
 
@@ -54,7 +64,7 @@ class DocumentMetaInfo {
 		return isDtBook;
 	}
 
-	public void setDoneCheckingVform(boolean isDoneCheckingVform) {
+	public void setDoneCheckingVform(final boolean isDoneCheckingVform) {
 		this.isDoneCheckingVform = isDoneCheckingVform;
 	}
 
@@ -62,7 +72,78 @@ class DocumentMetaInfo {
 		return isDoneCheckingVform;
 	}
 
-	public void setDocument(Document theDocument) {
+	public void setDocument(
+			final Document theDocument,
+			final WorkspaceAccessPluginExtension theWorkspaceAccessPluginExtension) {
 		document = theDocument;
+		documentListener = new DocumentListener() {
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				setManualEditOccurred(true);
+				theWorkspaceAccessPluginExtension
+						.showMessage("removed stuff from " + shortUrl() + ":\n"
+								+ "at offset" + e.getOffset() + " of length "
+								+ e.getLength() + " type " + e.getType());
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				setManualEditOccurred(true);
+				theWorkspaceAccessPluginExtension
+						.showMessage("inserted stuff into " + shortUrl()
+								+ ":\n" + "at offset" + e.getOffset()
+								+ " of length " + e.getLength() + " type "
+								+ e.getType());
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				setManualEditOccurred(true);
+				theWorkspaceAccessPluginExtension.showMessage("changed "
+						+ shortUrl() + ":\n" + "at offset" + e.getOffset()
+						+ " of length " + e.getLength() + " type "
+						+ e.getType());
+			}
+		};
+		document.addDocumentListener(documentListener);
+	}
+
+	public void finish() {
+		document.removeDocumentListener(documentListener);
+	}
+
+	public Document getDocument() {
+		return document;
+	}
+
+	public String shortUrl() {
+		return FileUtils.basename(url);
+	}
+
+	public void setUrl(final URL theUrl) {
+		url = theUrl;
+	}
+
+	public URL getUrl() {
+		return url;
+	}
+
+	public void setCurrentPositionMatch(
+			final PositionMatch theCurrentPositionMatch) {
+		setManualEditOccurred(false);
+		currentPositionMatch = theCurrentPositionMatch;
+	}
+
+	public PositionMatch getCurrentPositionMatch() {
+		return currentPositionMatch;
+	}
+
+	public void setManualEditOccurred(boolean manualEditOccurred) {
+		lastEditWasManual = manualEditOccurred;
+	}
+
+	public boolean manualEditOccurred() {
+		return lastEditWasManual;
 	}
 }
