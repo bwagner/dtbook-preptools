@@ -318,7 +318,9 @@ public class VFormUtil {
 															// see
 		// http://download.oracle.com/javase/1.5.0/docs/api/java/util/regex/Pattern.html#special
 		for (final String form : allForms) {
+			sb.append("(?<!<brl:v-form>)"); // negative lookbehind
 			sb.append(form);
+			sb.append("(?!</brl:v-form>)"); // negative lookahead
 			sb.append("|");
 		}
 		sb.setLength(sb.length() - 1); // chop off last "|"
