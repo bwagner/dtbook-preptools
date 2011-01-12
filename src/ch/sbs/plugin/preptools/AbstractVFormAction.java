@@ -78,9 +78,11 @@ class VFormStartAction extends AbstractVFormAction {
 		final URL editorLocation = editorAccess.getEditorLocation();
 		if (dmi.doneCheckingVform()) {
 			if (workspaceAccessPluginExtension
-					.showConfirmDialog("The document "
-							+ FileUtils.basename(editorLocation)
-							+ " has already been vformed.\n Do you want to Start over?")
+					.showConfirmDialog(
+							"v-form: Start Over?",
+							"The document "
+									+ FileUtils.basename(editorLocation)
+									+ " has already been vformed.\n Do you want to Start over?")
 
 			) {
 				dmi.setDoneCheckingVform(false);
@@ -91,9 +93,11 @@ class VFormStartAction extends AbstractVFormAction {
 		}
 		else if (dmi.hasStartedCheckingVform()) {
 			if (workspaceAccessPluginExtension
-					.showConfirmDialog("The document "
-							+ FileUtils.basename(editorLocation)
-							+ " is currently being vformed.\n Do you want to Start over?")
+					.showConfirmDialog(
+							"v-form: Start Over?",
+							"The document "
+									+ FileUtils.basename(editorLocation)
+									+ " is currently being vformed.\n Do you want to Start over?")
 
 			) {
 				dmi.setDoneCheckingVform(false);
@@ -211,7 +215,7 @@ abstract class ProceedAction extends AbstractVFormAction {
 				|| lastMatchEnd != pm.endOffset.getOffset()
 				|| dmi.manualEditOccurred()) {
 			if (workspaceAccessPluginExtension.showConfirmDialog(
-					"Cursor position has changed!\n",
+					"v-form: Cursor", "Cursor position has changed!\n",
 					"Take up where we lef off last time", "continue anyway")) {
 				aWSTextEditorPage.select(pm.startOffset.getOffset(),
 						pm.endOffset.getOffset());

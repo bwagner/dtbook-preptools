@@ -1,5 +1,7 @@
 package ch.sbs.plugin.preptools;
 
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,10 +9,16 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.ComponentInputMap;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import javax.swing.plaf.ActionMapUIResource;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
@@ -38,8 +46,7 @@ public class WorkspaceAccessPluginExtension implements
 			showMessage("PROGRAMMER: document meta info was null");
 		}
 		else if (!theDocumentMetaInfo.isDtBook()) {
-			trafficLight.off();
-			disableAllActions();
+			disableVforms();
 		}
 		else if (!theDocumentMetaInfo.hasStartedCheckingVform()) {
 			if (theDocumentMetaInfo.getCurrentEditorPage().equals(
@@ -77,6 +84,11 @@ public class WorkspaceAccessPluginExtension implements
 				disableAllActions();
 			}
 		}
+	}
+
+	protected void disableVforms() {
+		trafficLight.off();
+		disableAllActions();
 	}
 
 	private void disableAllActions() {
@@ -162,15 +174,20 @@ public class WorkspaceAccessPluginExtension implements
 							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
 							if (dmi.isProcessing()) {
 								// we can't veto closing!
-								if (showConfirmDialog("Document "
-										+ FileUtils.basename(editorLocation)
-										+ " was still being processed. Want to start over?")) {
+								if (showConfirmDialog(
+										"v-form: Start Over?",
+										"Document "
+												+ FileUtils
+														.basename(editorLocation)
+												+ " was still being processed. Want to start over?")) {
 									pluginWorkspaceAccess.open(editorLocation);
 
-									// TODO: take up where user had left off,
-									// don't force him to start over!
 									dmi.setHasStartedCheckingVform(false);
 									setCurrentState(dmi);
+								}
+								else {
+									removeDocumentMetaInfo(dmi);
+									disableVforms();
 								}
 							}
 							else {
@@ -180,7 +197,7 @@ public class WorkspaceAccessPluginExtension implements
 								// turn traffic light off. If there are more
 								// documents open the trafficLight will be set
 								// accordingly by editorSelected()
-								trafficLight.off();
+								disableVforms();
 							}
 						};
 
@@ -212,20 +229,16 @@ public class WorkspaceAccessPluginExtension implements
 						public void customizeToolbar(ToolbarInfo toolbarInfo) {
 							if (ToolbarComponentsCustomizer.CUSTOM
 									.equals(toolbarInfo.getToolbarID())) {
-								// // VForm Start
-								JButton vFormButton = new JButton(
-										vformStartAction);
-								vFormButton.setText("Start VForms");
+								JButton vFormButton = makeButton(
+										vformStartAction, "Start",
+										KeyEvent.VK_7);
 
-								// VForm Find
-								JButton findButton = new JButton(
-										vformFindAction);
-								findButton.setText("Find");
+								JButton findButton = makeButton(
+										vformFindAction, "Find", KeyEvent.VK_8);
 
-								// VForm Accept
-								JButton acceptButton = new JButton(
-										vformAcceptAction);
-								acceptButton.setText("Accept");
+								JButton acceptButton = makeButton(
+										vformAcceptAction, "Accept",
+										KeyEvent.VK_9);
 
 								// Add in toolbar
 								List<JComponent> comps = new ArrayList<JComponent>();
@@ -238,7 +251,38 @@ public class WorkspaceAccessPluginExtension implements
 
 								// Set title
 								toolbarInfo.setTitle("PrepTools");
+								disableVforms();
 							}
+						}
+
+						/**
+						 * Utility method. Makes button.
+						 * 
+						 * @param theAction
+						 *            The action associated with the button
+						 * @param theLabel
+						 *            The label for the button.
+						 * @return the newly created button.
+						 */
+						protected JButton makeButton(final Action theAction,
+								String theLabel, int theKeyEvent) {
+							// assign accelerator key to JButton
+							// http://www.stratulat.com/assign_accelerator_key_to_a_JButton.html
+							final JButton jButton = new JButton(theAction);
+							jButton.setText(theLabel);
+							final InputMap keyMap = new ComponentInputMap(
+									jButton);
+							keyMap.put(KeyStroke.getKeyStroke(theKeyEvent,
+									InputEvent.CTRL_DOWN_MASK
+											| InputEvent.ALT_DOWN_MASK),
+									theLabel);
+							final ActionMap actionMap = new ActionMapUIResource();
+							actionMap.put(theLabel, theAction);
+							SwingUtilities.replaceUIActionMap(jButton,
+									actionMap);
+							SwingUtilities.replaceUIInputMap(jButton,
+									JComponent.WHEN_IN_FOCUSED_WINDOW, keyMap);
+							return jButton;
 						}
 					});
 
@@ -336,7 +380,7 @@ public class WorkspaceAccessPluginExtension implements
 				sb.insert(0,
 						"The following documents are still being processed:");
 				sb.append("\n\nProceed with closing anyway?");
-				return showConfirmDialog(sb.toString());
+				return showConfirmDialog("v-form: Close?", sb.toString());
 			}
 		}
 		return true;
@@ -369,13 +413,13 @@ public class WorkspaceAccessPluginExtension implements
 		pluginWorkspaceAccess.showView(ViewComponentCustomizer.CUSTOM, true);
 	}
 
-	boolean showConfirmDialog(final String msg) {
-		return showConfirmDialog(msg, "Ok", "Cancel");
+	boolean showConfirmDialog(final String title, final String msg) {
+		return showConfirmDialog(title, msg, "Ok", "Cancel");
 	}
 
-	boolean showConfirmDialog(final String msg, final String confirm,
-			final String deny) {
-		return pluginWorkspaceAccess.showConfirmDialog("v-forms", msg,
+	boolean showConfirmDialog(final String title, final String msg,
+			final String confirm, final String deny) {
+		return pluginWorkspaceAccess.showConfirmDialog(title, msg,
 				new String[] { confirm, deny }, new int[] { 0, 1 }) == 0;
 	}
 
