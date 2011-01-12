@@ -55,7 +55,6 @@ abstract class AbstractVFormAction extends AbstractAction {
 	 * @param aWSTextEditorPage
 	 * @param document
 	 * @param dmi
-	 *            TODO
 	 * @throws BadLocationException
 	 */
 	protected abstract void doSomething(final WSEditor editorAccess,
@@ -123,14 +122,66 @@ abstract class ProceedAction extends AbstractVFormAction {
 		super(theWorkspaceAccessPluginExtension);
 	}
 
-	// TODO: do it more nicely with template method
-	// .i.e. searchOn gets called from "doSomething"
-	protected void searchOn(final Document document,
+	/**
+	 * 
+	 * Hook to be implemented by subclasses. Handles selected text and returns
+	 * position where to continue with search.
+	 * 
+	 * @param document
+	 *            The document.
+	 * @param selText
+	 *            The current selection.
+	 * @return The position where to continue with search.
+	 * @throws BadLocationException
+	 */
+	protected abstract int handleText(final Document document,
+			final String selText) throws BadLocationException;
+
+	/**
+	 * Hook to be implemented by subclasses. If true the process is aborted.
+	 * 
+	 * @param selText
+	 * @return True if the process is to be aborted.
+	 */
+	protected boolean veto(final String selText) {
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractVFormAction#doSomething(ro.sync.exml.workspace.api.editor.WSEditor, ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage, javax.swing.text.Document, ch.sbs.plugin.preptools.DocumentMetaInfo)
+	 */
+	@Override
+	protected void doSomething(final WSEditor editorAccess,
+			final WSTextEditorPage aWSTextEditorPage, final Document document,
+			final DocumentMetaInfo dmi) throws BadLocationException {
+
+		final String selText = aWSTextEditorPage.getSelectedText();
+
+		if (veto(selText))
+			return;
+
+		handleManualCursorMovement(aWSTextEditorPage, dmi);
+
+		final int continueAt = handleText(document, selText);
+
+		searchOn(document, aWSTextEditorPage, editorAccess, continueAt);
+	}
+
+	/**
+	 * Utility method to search on in document starting at startAt.
+	 * 
+	 * @param document
+	 * @param aWSTextEditorPage
+	 * @param editorAccess
+	 * @param startAt
+	 * @throws BadLocationException
+	 */
+	private void searchOn(final Document document,
 			final WSTextEditorPage aWSTextEditorPage,
-			final WSEditor editorAccess, final int continueAt)
+			final WSEditor editorAccess, final int startAt)
 			throws BadLocationException {
 		final String newText = document.getText(0, document.getLength());
-		final VFormUtil.Match match = VFormUtil.find(newText, continueAt);
+		final VFormUtil.Match match = VFormUtil.find(newText, startAt);
 		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
 				.getDocumentMetaInfo(editorAccess.getEditorLocation());
 		if (match.equals(VFormUtil.NULL_MATCH)) {
@@ -144,6 +195,32 @@ abstract class ProceedAction extends AbstractVFormAction {
 		aWSTextEditorPage.select(match.startOffset, match.endOffset);
 		dmi.setCurrentPositionMatch(new PositionMatch(document, match));
 	}
+
+	/**
+	 * Utility method to handle user's manual cursor movement.
+	 * 
+	 * @param aWSTextEditorPage
+	 * @param dmi
+	 */
+	private void handleManualCursorMovement(
+			final WSTextEditorPage aWSTextEditorPage, DocumentMetaInfo dmi) {
+		lastMatchStart = aWSTextEditorPage.getSelectionStart();
+		lastMatchEnd = aWSTextEditorPage.getSelectionEnd();
+		final PositionMatch pm = dmi.getCurrentPositionMatch();
+		if (lastMatchStart != pm.startOffset.getOffset()
+				|| lastMatchEnd != pm.endOffset.getOffset()
+				|| dmi.manualEditOccurred()) {
+			if (workspaceAccessPluginExtension.showConfirmDialog(
+					"Cursor position has changed!\n",
+					"Take up where we lef off last time", "continue anyway")) {
+				aWSTextEditorPage.select(pm.startOffset.getOffset(),
+						pm.endOffset.getOffset());
+			}
+		}
+	}
+
+	protected int lastMatchStart;
+	protected int lastMatchEnd;
 }
 
 @SuppressWarnings("serial")
@@ -154,55 +231,24 @@ class VFormAcceptAction extends ProceedAction {
 	}
 
 	@Override
-	protected void doSomething(final WSEditor editorAccess,
-			final WSTextEditorPage aWSTextEditorPage, final Document document,
-			DocumentMetaInfo dmi) throws BadLocationException {
+	protected boolean veto(final String selText) {
+		return (selText == null || !VFormUtil.matches(selText));
+	}
 
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.ProceedAction#handleText(javax.swing.text.Document, java.lang.String)
+	 */
+	@Override
+	protected int handleText(final Document document, final String selText)
+			throws BadLocationException {
 		final String ELEMENT_NAME = "brl:v-form";
-
-		final String selText = aWSTextEditorPage.getSelectedText();
-
-		if (selText == null) {
-			// TODO: this is already suspicious
-			// accepting should only be possible when user got here via
-			// start- ,accept-, or find-action.
-			// this means the cursor must have been moved in the mean time.
-			return;
-		}
-
-		if (!VFormUtil.matches(selText)) {
-			// TODO: this is already suspicious
-			// accepting should only be possible when user got here via
-			// start- ,accept-, or find-action.
-			// this means the cursor must have been moved in the mean time.
-			return;
-		}
-
-		final int MATCH_START = aWSTextEditorPage.getSelectionStart();
-		final int MATCH_END = aWSTextEditorPage.getSelectionEnd();
-		final PositionMatch pm = dmi.getCurrentPositionMatch();
-		if (MATCH_START != pm.startOffset.getOffset()
-				|| MATCH_END != pm.endOffset.getOffset()
-				|| dmi.manualEditOccurred()) {
-			if (workspaceAccessPluginExtension
-					.showConfirmDialog("Cursor position has changed!\n"
-							+ "Take up where we lef off last time? [OK]"
-							+ " or continue anyway [Cancel]")) {
-				aWSTextEditorPage.select(pm.startOffset.getOffset(),
-						pm.endOffset.getOffset());
-			}
-		}
-
-		aWSTextEditorPage.setCaretPosition(MATCH_START); // unselect text
-
 		// starting with the end, so the start position doesn't shift
-		document.insertString(MATCH_END, "</" + ELEMENT_NAME + ">", null);
-		document.insertString(MATCH_START, "<" + ELEMENT_NAME + ">", null);
+		document.insertString(lastMatchEnd, "</" + ELEMENT_NAME + ">", null);
+		document.insertString(lastMatchStart, "<" + ELEMENT_NAME + ">", null);
 
-		final int continueAt = MATCH_START + ELEMENT_NAME.length() * 2
+		final int continueAt = lastMatchStart + ELEMENT_NAME.length() * 2
 				+ "<></>".length() + selText.length();
-
-		searchOn(document, aWSTextEditorPage, editorAccess, continueAt);
+		return continueAt;
 	}
 }
 
@@ -213,27 +259,25 @@ class VFormFindAction extends ProceedAction {
 		super(theWorkspaceAccessPluginExtension);
 	}
 
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.ProceedAction#handleText(javax.swing.text.Document, java.lang.String)
+	 */
 	@Override
-	protected void doSomething(final WSEditor editorAccess,
-			final WSTextEditorPage aWSTextEditorPage, final Document document,
-			DocumentMetaInfo dmi) throws BadLocationException {
+	protected int handleText(final Document document, final String selText)
+			throws BadLocationException {
+		return getSelectionEnd();
+	}
 
-		final int MATCH_START = aWSTextEditorPage.getSelectionStart();
-		final int MATCH_END = aWSTextEditorPage.getSelectionEnd();
-		final PositionMatch pm = dmi.getCurrentPositionMatch();
-		if (MATCH_START != pm.startOffset.getOffset()
-				|| MATCH_END != pm.endOffset.getOffset()
-				|| dmi.manualEditOccurred()) {
-			if (workspaceAccessPluginExtension
-					.showConfirmDialog("Cursor position has changed!\n"
-							+ "Take up where we lef off last time? [OK]"
-							+ " or continue anyway [Cancel]")) {
-				aWSTextEditorPage.select(pm.startOffset.getOffset(),
-						pm.endOffset.getOffset());
-			}
-		}
-
-		searchOn(document, aWSTextEditorPage, editorAccess,
-				aWSTextEditorPage.getSelectionEnd());
+	/**
+	 * Utility method that returns the end position of the current selection.
+	 * 
+	 * @return The end position of the current selection.
+	 */
+	private int getSelectionEnd() {
+		final WSEditor editorAccess = workspaceAccessPluginExtension
+				.getWsEditor();
+		final WSTextEditorPage aWSTextEditorPage = WorkspaceAccessPluginExtension
+				.getPage(editorAccess);
+		return aWSTextEditorPage.getSelectionEnd();
 	}
 }
