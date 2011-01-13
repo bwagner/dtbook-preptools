@@ -11,6 +11,9 @@
 
 	<!-- used by "jar" and "init" -->
 	<property name="build.dir" value="bin" />
+	
+	<!-- used by "jar" -->
+	<property name="app.manifest" value="MANIFEST.MF" />
 
 	<!-- used by "compile" -->
 	<property name="src.dir" value="src" />
@@ -68,7 +71,12 @@
 		-->
 	</target>
 
-	<target name="jar" depends="compile, stamp">
+	<target name="jar" depends="compile, stamp, git.revision">
+		<manifest file="${app.manifest}">
+			<attribute name="Built-By" value="${user.name}" />
+			<attribute name="Build-Time" value="${release.time}"/>
+			<attribute name="Implementation-Version" value="${repository.version}" />
+		</manifest>
 		<jar destfile="${jarfile}" basedir="${build.dir}">
 			<fileset dir="${build.dir}">
 				<include name="**/*" />
@@ -77,6 +85,11 @@
 				<include name="${stamp.properties}" />
 			</fileset>
 		</jar>
+		<echo>
+			Built-By: ${user.name}
+			Build-Time: ${release.time}
+			Implementation-Version: ${repository.version}
+			</echo>
 	</target>
 
 	<target name="oxygendir">
@@ -136,16 +149,16 @@
 
 	</target>
 
-	<target name="stamp">
+	<target name="stamp" depends="git.revision">
 		<tstamp>
 			<format property="release.time" pattern="dd.MM.yyyy HH:mm:ss" />
 		</tstamp>
 		<echo file="stamp.properties">
 			# ${header.generated}
-			stamp = ${release.time}
+			stamp = ${repository.version}  (${release.time})
 			</echo>
 		<echo>
-			expect stamp: ${release.time}
+			expect stamp: ${release.time} ${repository.version}
 		</echo>	</target>
 
 	<!-- alternative to do string manip in ant: -->
@@ -203,5 +216,24 @@
 	<target name="startoxy">
 		<exec executable="oxygen" />
 	</target>
+
+	<!-- begin git stuff -->
+	<available file=".git" type="dir" property="git.present" />
+
+	<target name="git.revision" description="Store git revision in ${repository.version}" if="git.present">
+		<exec executable="git" outputproperty="git.revision" failifexecutionfails="false" errorproperty="">
+			<arg value="describe" />
+			<arg value="--tags" />
+			<arg value="--always" />
+			<arg value="HEAD" />
+		</exec>
+		<condition property="repository.version" value="${git.revision}" else="unknown">
+			<and>
+				<isset property="git.revision" />
+				<length string="${git.revision}" trim="yes" length="0" when="greater" />
+			</and>
+		</condition>
+	</target>
+	<!-- end git stuff -->
 
 </project>
