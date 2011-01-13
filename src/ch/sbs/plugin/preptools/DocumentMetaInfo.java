@@ -1,6 +1,7 @@
 package ch.sbs.plugin.preptools;
 
 import java.net.URL;
+import java.util.regex.Pattern;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -8,6 +9,7 @@ import javax.swing.text.Document;
 
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
 import ch.sbs.utils.preptools.vform.FileUtils;
+import ch.sbs.utils.preptools.vform.VFormUtil;
 import ch.sbs.utils.preptools.vform.VFormUtil.PositionMatch;
 
 /**
@@ -19,7 +21,6 @@ class DocumentMetaInfo {
 	private boolean isDtBook;
 	private boolean hasStartedCheckingVform;
 	private boolean isDoneCheckingVform;
-	// private boolean isOldSpelling;
 	private boolean lastEditWasManual;
 	private String currentEditorPage;
 	protected WSTextEditorPage page;
@@ -27,6 +28,19 @@ class DocumentMetaInfo {
 	private URL url;
 	private DocumentListener documentListener;
 	private PositionMatch currentPositionMatch;
+	private Pattern currentVFormPattern;
+
+	public boolean vFormPatternIsAll() {
+		return currentVFormPattern == VFormUtil.getAllPattern();
+	}
+
+	public void setVFormPatternToAll() {
+		setCurrentVFormPattern(VFormUtil.getAllPattern());
+	}
+
+	public void setVFormPatternTo3rdPP() {
+		setCurrentVFormPattern(VFormUtil.get3rdPPPattern());
+	}
 
 	public String getCurrentEditorPage() {
 		return currentEditorPage;
@@ -132,5 +146,13 @@ class DocumentMetaInfo {
 
 	public boolean manualEditOccurred() {
 		return lastEditWasManual;
+	}
+
+	public void setCurrentVFormPattern(Pattern currentVFormPattern) {
+		this.currentVFormPattern = currentVFormPattern;
+	}
+
+	public Pattern getCurrentVFormPattern() {
+		return currentVFormPattern;
 	}
 }

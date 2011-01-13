@@ -1,6 +1,8 @@
 package ch.sbs.plugin.preptools;
 
 import java.awt.event.InputEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.net.URL;
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import javax.swing.ActionMap;
 import javax.swing.ComponentInputMap;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -44,8 +47,11 @@ public class WorkspaceAccessPluginExtension implements
 	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
 		if (theDocumentMetaInfo == null) {
 			showMessage("PROGRAMMER: document meta info was null");
+			return;
 		}
-		else if (!theDocumentMetaInfo.isDtBook()) {
+		allForms.setSelected(theDocumentMetaInfo.vFormPatternIsAll());
+
+		if (!theDocumentMetaInfo.isDtBook()) {
 			disableVforms();
 		}
 		else if (!theDocumentMetaInfo.hasStartedCheckingVform()) {
@@ -53,10 +59,12 @@ public class WorkspaceAccessPluginExtension implements
 					EditorPageConstants.PAGE_TEXT)) {
 				trafficLight.go();
 				vformStartAction.setEnabled(true);
+				allForms.setEnabled(true);
 			}
 			else {
 				trafficLight.stop();
 				vformStartAction.setEnabled(false);
+				allForms.setEnabled(false);
 			}
 			vformFindAction.setEnabled(false);
 			vformAcceptAction.setEnabled(false);
@@ -104,6 +112,7 @@ public class WorkspaceAccessPluginExtension implements
 				vformFindAction, vformAcceptAction }) {
 			action.setEnabled(enabled);
 		}
+		allForms.setEnabled(enabled);
 	}
 
 	/**
@@ -121,6 +130,8 @@ public class WorkspaceAccessPluginExtension implements
 	 */
 	private boolean runPlugin;
 
+	private boolean applicationClosing;
+
 	private Action vformStartAction;
 
 	private Action vformFindAction;
@@ -128,6 +139,8 @@ public class WorkspaceAccessPluginExtension implements
 	private Action vformAcceptAction;
 
 	private TrafficLight trafficLight;
+
+	private JCheckBox allForms;
 
 	/**
 	 * @see ro.sync.exml.plugin.workspace.WorkspaceAccessPluginExtension#applicationStarted(ro.sync.exml.workspace.api.standalone.StandalonePluginWorkspace)
@@ -148,9 +161,8 @@ public class WorkspaceAccessPluginExtension implements
 			pluginWorkspaceAccess.addEditorChangeListener(
 					new WSEditorChangeListener() {
 
-						// TODO: handle the case where editor was quit in a
-						// different
-						// page than PAGE_TEXT!
+						// explore modal dialog instead of toolbar:
+						// http://www.javacoffeebreak.com/faq/faq0019.html
 
 						@Override
 						public void editorOpened(URL editorLocation) {
@@ -161,10 +173,13 @@ public class WorkspaceAccessPluginExtension implements
 										.equals(editorAccess.getCurrentPageID());
 								showMessage("document could not be accessed "
 										+ (isText ? "(unknown reason)"
-												: "(current page is not Text but "
+												: "(current page is not "
+														+ EditorPageConstants.PAGE_TEXT
+														+ " but "
 														+ editorAccess
 																.getCurrentPageID()
 														+ ")"));
+								disableVforms();
 								return;
 							}
 						}
@@ -172,7 +187,7 @@ public class WorkspaceAccessPluginExtension implements
 						@Override
 						public void editorClosed(URL editorLocation) {
 							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
-							if (dmi.isProcessing()) {
+							if (dmi.isProcessing() && !applicationClosing) {
 								// we can't veto closing!
 								if (showConfirmDialog(
 										"v-form: Start Over?",
@@ -217,6 +232,9 @@ public class WorkspaceAccessPluginExtension implements
 							if (dmi != null) {
 								setCurrentState(dmi);
 							}
+							else {
+								disableVforms();
+							}
 						};
 					}, StandalonePluginWorkspace.MAIN_EDITING_AREA);
 
@@ -229,7 +247,7 @@ public class WorkspaceAccessPluginExtension implements
 						public void customizeToolbar(ToolbarInfo toolbarInfo) {
 							if (ToolbarComponentsCustomizer.CUSTOM
 									.equals(toolbarInfo.getToolbarID())) {
-								JButton vFormButton = makeButton(
+								final JButton vFormButton = makeButton(
 										vformStartAction, "Start",
 										KeyEvent.VK_7);
 
@@ -240,17 +258,35 @@ public class WorkspaceAccessPluginExtension implements
 										vformAcceptAction, "Accept",
 										KeyEvent.VK_9);
 
+								allForms = new JCheckBox("All");
+								allForms.addItemListener(new ItemListener() {
+
+									@Override
+									public void itemStateChanged(ItemEvent e) {
+										if (e.getStateChange() == ItemEvent.SELECTED) {
+											showMessage("now using all vforms");
+											getDocumentMetaInfo()
+													.setVFormPatternToAll();
+										}
+										else {
+											showMessage("now using only 3rd person plural vforms");
+											getDocumentMetaInfo()
+													.setVFormPatternTo3rdPP();
+										}
+									}
+								});
+
 								// Add in toolbar
-								List<JComponent> comps = new ArrayList<JComponent>();
+								final List<JComponent> comps = new ArrayList<JComponent>();
 								comps.add(vFormButton);
 								comps.add(findButton);
 								comps.add(acceptButton);
+								comps.add(allForms);
 								comps.add(trafficLight = new TrafficLight(26));
 								toolbarInfo.setComponents(comps
 										.toArray(new JComponent[0]));
 
-								// Set title
-								toolbarInfo.setTitle("PrepTools");
+								toolbarInfo.setTitle("PrepTools:V-Forms");
 								disableVforms();
 							}
 						}
@@ -318,6 +354,10 @@ public class WorkspaceAccessPluginExtension implements
 
 	private final Map<URL, DocumentMetaInfo> documents = new HashMap<URL, DocumentMetaInfo>();
 
+	DocumentMetaInfo getDocumentMetaInfo() {
+		return getDocumentMetaInfo(getWsEditor().getEditorLocation());
+	}
+
 	DocumentMetaInfo getDocumentMetaInfo(final URL editorLocation) {
 		if (documents.containsKey(editorLocation)) {
 			return documents.get(editorLocation);
@@ -329,7 +369,7 @@ public class WorkspaceAccessPluginExtension implements
 		if (documentMetaInformation.page == null) {
 			return null;
 		}
-		Document document = documentMetaInformation.page.getDocument();
+		final Document document = documentMetaInformation.page.getDocument();
 		documentMetaInformation.setUrl(editorLocation);
 
 		documentMetaInformation.setDocument(document, this);
@@ -338,6 +378,8 @@ public class WorkspaceAccessPluginExtension implements
 
 		documentMetaInformation.setCurrentEditorPage(getWsEditor()
 				.getCurrentPageID());
+
+		documentMetaInformation.setVFormPatternTo3rdPP();
 
 		documents.put(editorLocation, documentMetaInformation);
 		return documentMetaInformation;
@@ -380,9 +422,12 @@ public class WorkspaceAccessPluginExtension implements
 				sb.insert(0,
 						"The following documents are still being processed:");
 				sb.append("\n\nProceed with closing anyway?");
-				return showConfirmDialog("v-form: Close?", sb.toString());
+				applicationClosing = showConfirmDialog("v-form: Close?",
+						sb.toString());
+				return applicationClosing;
 			}
 		}
+		applicationClosing = true;
 		return true;
 	}
 

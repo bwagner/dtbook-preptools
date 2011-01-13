@@ -108,7 +108,8 @@ class VFormStartAction extends AbstractVFormAction {
 		}
 
 		final VFormUtil.Match match = VFormUtil.find(
-				document.getText(0, document.getLength()), 0);
+				document.getText(0, document.getLength()), 0,
+				dmi.getCurrentVFormPattern());
 		aWSTextEditorPage.select(match.startOffset, match.endOffset);
 
 		dmi.setHasStartedCheckingVform(true);
@@ -125,6 +126,8 @@ abstract class ProceedAction extends AbstractVFormAction {
 			final WorkspaceAccessPluginExtension theWorkspaceAccessPluginExtension) {
 		super(theWorkspaceAccessPluginExtension);
 	}
+
+	protected DocumentMetaInfo dmi;
 
 	/**
 	 * 
@@ -157,8 +160,9 @@ abstract class ProceedAction extends AbstractVFormAction {
 	@Override
 	protected void doSomething(final WSEditor editorAccess,
 			final WSTextEditorPage aWSTextEditorPage, final Document document,
-			final DocumentMetaInfo dmi) throws BadLocationException {
+			final DocumentMetaInfo theDmi) throws BadLocationException {
 
+		dmi = theDmi;
 		final String selText = aWSTextEditorPage.getSelectedText();
 
 		if (veto(selText))
@@ -185,9 +189,10 @@ abstract class ProceedAction extends AbstractVFormAction {
 			final WSEditor editorAccess, final int startAt)
 			throws BadLocationException {
 		final String newText = document.getText(0, document.getLength());
-		final VFormUtil.Match match = VFormUtil.find(newText, startAt);
 		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
 				.getDocumentMetaInfo(editorAccess.getEditorLocation());
+		final VFormUtil.Match match = VFormUtil.find(newText, startAt,
+				dmi.getCurrentVFormPattern());
 		if (match.equals(VFormUtil.NULL_MATCH)) {
 			workspaceAccessPluginExtension
 					.showDialog("You're done with v-forms!");
@@ -236,7 +241,8 @@ class VFormAcceptAction extends ProceedAction {
 
 	@Override
 	protected boolean veto(final String selText) {
-		return (selText == null || !VFormUtil.matches(selText));
+		return (selText == null || !VFormUtil.matches(selText,
+				dmi.getCurrentVFormPattern()));
 	}
 
 	/* (non-Javadoc)
