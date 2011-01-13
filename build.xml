@@ -163,8 +163,17 @@
 		</exec>
 		<sleep seconds="1"/>
 		<!-- http://code.google.com/p/semicomplete/issues/detail?id=45#hc4 -->
+		
+		<exec executable="xdotool">
+			<arg line="search --onlyvisible --name '^v-form' windowactivate key --window 0 Return"/>
+		</exec>
+
 		<exec executable="xdotool">
 			<arg line="search --onlyvisible --name '^Save$' windowactivate key --window 0 alt+n"/>
+		</exec>
+
+		<exec executable="xdotool">
+			<arg line="search --onlyvisible --name '^Modified files' windowactivate key --window 0 alt+n"/>
 		</exec>
 	</target>
 
