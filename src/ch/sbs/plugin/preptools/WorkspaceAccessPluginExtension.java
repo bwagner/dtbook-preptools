@@ -258,23 +258,7 @@ public class WorkspaceAccessPluginExtension implements
 										vformAcceptAction, "Accept",
 										KeyEvent.VK_9);
 
-								allForms = new JCheckBox("All");
-								allForms.addItemListener(new ItemListener() {
-
-									@Override
-									public void itemStateChanged(ItemEvent e) {
-										if (e.getStateChange() == ItemEvent.SELECTED) {
-											showMessage("now using all vforms");
-											getDocumentMetaInfo()
-													.setVFormPatternToAll();
-										}
-										else {
-											showMessage("now using only 3rd person plural vforms");
-											getDocumentMetaInfo()
-													.setVFormPatternTo3rdPP();
-										}
-									}
-								});
+								allForms = makeCheckbox();
 
 								// Add in toolbar
 								final List<JComponent> comps = new ArrayList<JComponent>();
@@ -289,6 +273,27 @@ public class WorkspaceAccessPluginExtension implements
 								toolbarInfo.setTitle("PrepTools:V-Forms");
 								disableVforms();
 							}
+						}
+
+						private JCheckBox makeCheckbox() {
+							final JCheckBox checkBox = new JCheckBox("All");
+							checkBox.addItemListener(new ItemListener() {
+
+								@Override
+								public void itemStateChanged(ItemEvent e) {
+									if (e.getStateChange() == ItemEvent.SELECTED) {
+										showMessage("now using all vforms");
+										getDocumentMetaInfo()
+												.setVFormPatternToAll();
+									}
+									else {
+										showMessage("now using only 3rd person plural vforms");
+										getDocumentMetaInfo()
+												.setVFormPatternTo3rdPP();
+									}
+								}
+							});
+							return checkBox;
 						}
 
 						/**
@@ -306,19 +311,26 @@ public class WorkspaceAccessPluginExtension implements
 							// http://www.stratulat.com/assign_accelerator_key_to_a_JButton.html
 							final JButton jButton = new JButton(theAction);
 							jButton.setText(theLabel);
+							assignAcceleratorKey(theAction, theLabel,
+									theKeyEvent, jButton);
+							return jButton;
+						}
+
+						private void assignAcceleratorKey(
+								final Action theAction, String theLabel,
+								int theKeyEvent, final JComponent jComponent) {
 							final InputMap keyMap = new ComponentInputMap(
-									jButton);
+									jComponent);
 							keyMap.put(KeyStroke.getKeyStroke(theKeyEvent,
 									InputEvent.CTRL_DOWN_MASK
 											| InputEvent.ALT_DOWN_MASK),
 									theLabel);
 							final ActionMap actionMap = new ActionMapUIResource();
 							actionMap.put(theLabel, theAction);
-							SwingUtilities.replaceUIActionMap(jButton,
+							SwingUtilities.replaceUIActionMap(jComponent,
 									actionMap);
-							SwingUtilities.replaceUIInputMap(jButton,
+							SwingUtilities.replaceUIInputMap(jComponent,
 									JComponent.WHEN_IN_FOCUSED_WINDOW, keyMap);
-							return jButton;
 						}
 					});
 
@@ -395,12 +407,15 @@ public class WorkspaceAccessPluginExtension implements
 		final String filename = "stamp.properties";
 		final String version = PropsUtils.loadForClass(this.getClass(),
 				filename).getProperty(key);
+		String returnString;
 		if (version != null && version.length() > 0) {
-			return version;
+			returnString = version;
 		}
 		else {
-			return "'" + key + "' not found in props file " + filename;
+			returnString = "'" + key + "' not found in props file " + filename;
 		}
+
+		return returnString;
 	}
 
 	/**
@@ -418,6 +433,7 @@ public class WorkspaceAccessPluginExtension implements
 					sb.append(FileUtils.basename(url));
 				}
 			}
+
 			if (showDialog) {
 				sb.insert(0,
 						"The following documents are still being processed:");
