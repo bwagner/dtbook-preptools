@@ -82,10 +82,11 @@ public class VFormUtil {
 
 	// Mail von Mischa Kuenzle 12.1.2011 15:09
 	// 3. Person PL (obligatorische Abfrage)
-	private static final String[] thirdPP = new String[] { "Ihnen", "Ihr", "Ihre",
-			"Ihrem", "Ihren", "Ihrer", "Ihrerseits", "Ihres", "Ihresgleichen",
-			"Ihrethalben", "Ihretwegen", "Ihretwillen", "Ihrige", "Ihrigem",
-			"Ihrigen", "Ihriger", "Ihriges", "Ihrs", "Sie", };
+	private static final String[] thirdPP = new String[] { "Ihnen", "Ihr",
+			"Ihre", "Ihrem", "Ihren", "Ihrer", "Ihrerseits", "Ihres",
+			"Ihresgleichen", "Ihrethalben", "Ihretwegen", "Ihretwillen",
+			"Ihrige", "Ihrigem", "Ihrigen", "Ihriger", "Ihriges", "Ihrs",
+			"Sie", };
 
 	// Mail von Mischa Kuenzle 12.1.2011 15:09
 	// 2. Person (optionale Abfrage)
@@ -391,6 +392,7 @@ public class VFormUtil {
 	 * 
 	 * Problems:
 	 * - When "Revert" is done on a file, I don't get notified!
+	 * - accelerator for checkbox didn't succeed.
 	 * 
 	 * 
 	 * 2. Balanced Parentheses:
