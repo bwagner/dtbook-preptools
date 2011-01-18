@@ -7,7 +7,6 @@ import java.net.URL;
 
 import org.junit.Test;
 
-import ch.sbs.utils.preptools.vform.FileUtils;
 
 public class FileUtilsTest {
 

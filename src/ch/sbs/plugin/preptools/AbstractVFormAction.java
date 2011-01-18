@@ -9,9 +9,10 @@ import javax.swing.text.Document;
 
 import ro.sync.exml.workspace.api.editor.WSEditor;
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
-import ch.sbs.utils.preptools.vform.FileUtils;
+import ch.sbs.utils.preptools.FileUtils;
+import ch.sbs.utils.preptools.Match;
+import ch.sbs.utils.preptools.Match.PositionMatch;
 import ch.sbs.utils.preptools.vform.VFormUtil;
-import ch.sbs.utils.preptools.vform.VFormUtil.PositionMatch;
 
 @SuppressWarnings("serial")
 abstract class AbstractVFormAction extends AbstractAction {
@@ -107,14 +108,14 @@ class VFormStartAction extends AbstractVFormAction {
 			}
 		}
 
-		final VFormUtil.Match match = VFormUtil.find(
+		final Match match = VFormUtil.find(
 				document.getText(0, document.getLength()), 0,
 				dmi.getCurrentVFormPattern());
 		aWSTextEditorPage.select(match.startOffset, match.endOffset);
 
 		dmi.setHasStartedCheckingVform(true);
 		dmi.setDoneCheckingVform(false);
-		dmi.setCurrentPositionMatch(new PositionMatch(document, match));
+		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
 		workspaceAccessPluginExtension.setCurrentState(dmi);
 	}
 }
@@ -191,7 +192,7 @@ abstract class ProceedAction extends AbstractVFormAction {
 		final String newText = document.getText(0, document.getLength());
 		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
 				.getDocumentMetaInfo(editorAccess.getEditorLocation());
-		final VFormUtil.Match match = VFormUtil.find(newText, startAt,
+		final Match match = VFormUtil.find(newText, startAt,
 				dmi.getCurrentVFormPattern());
 		if (match.equals(VFormUtil.NULL_MATCH)) {
 			workspaceAccessPluginExtension
@@ -202,7 +203,7 @@ abstract class ProceedAction extends AbstractVFormAction {
 		}
 		workspaceAccessPluginExtension.setCurrentState(dmi);
 		aWSTextEditorPage.select(match.startOffset, match.endOffset);
-		dmi.setCurrentPositionMatch(new PositionMatch(document, match));
+		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
 	}
 
 	/**
@@ -215,7 +216,7 @@ abstract class ProceedAction extends AbstractVFormAction {
 			final WSTextEditorPage aWSTextEditorPage, DocumentMetaInfo dmi) {
 		lastMatchStart = aWSTextEditorPage.getSelectionStart();
 		lastMatchEnd = aWSTextEditorPage.getSelectionEnd();
-		final PositionMatch pm = dmi.getCurrentPositionMatch();
+		final Match.PositionMatch pm = dmi.getCurrentPositionMatch();
 		if (lastMatchStart != pm.startOffset.getOffset()
 				|| lastMatchEnd != pm.endOffset.getOffset()
 				|| dmi.manualEditOccurred()) {

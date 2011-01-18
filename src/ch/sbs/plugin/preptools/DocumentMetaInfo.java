@@ -8,9 +8,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
-import ch.sbs.utils.preptools.vform.FileUtils;
+import ch.sbs.utils.preptools.FileUtils;
+import ch.sbs.utils.preptools.Match;
+import ch.sbs.utils.preptools.Match.PositionMatch;
 import ch.sbs.utils.preptools.vform.VFormUtil;
-import ch.sbs.utils.preptools.vform.VFormUtil.PositionMatch;
 
 /**
  * Keeps meta information about a document known to the plugin.
@@ -27,7 +28,7 @@ class DocumentMetaInfo {
 	private Document document;
 	private URL url;
 	private DocumentListener documentListener;
-	private PositionMatch currentPositionMatch;
+	private Match.PositionMatch currentPositionMatch;
 	private Pattern currentVFormPattern;
 
 	public boolean vFormPatternIsAll() {
@@ -131,12 +132,12 @@ class DocumentMetaInfo {
 	}
 
 	public void setCurrentPositionMatch(
-			final PositionMatch theCurrentPositionMatch) {
+			final Match.PositionMatch theCurrentPositionMatch) {
 		setManualEditOccurred(false);
 		currentPositionMatch = theCurrentPositionMatch;
 	}
 
-	public PositionMatch getCurrentPositionMatch() {
+	public Match.PositionMatch getCurrentPositionMatch() {
 		return currentPositionMatch;
 	}
 

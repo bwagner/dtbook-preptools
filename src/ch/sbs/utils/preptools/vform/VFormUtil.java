@@ -3,9 +3,8 @@ package ch.sbs.utils.preptools.vform;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Position;
+import ch.sbs.utils.preptools.Match;
+
 
 public class VFormUtil {
 
@@ -505,36 +504,6 @@ public class VFormUtil {
 	 */
 	public static boolean matches(final String text) {
 		return matches(text, vFormDefaultPattern);
-	}
-
-	public static class PositionMatch {
-		public PositionMatch(final Document theDocument, final Match match) {
-			this(theDocument, match.startOffset, match.endOffset);
-		}
-
-		public PositionMatch(final Document theDocument, int start, int end) {
-			try {
-				document = theDocument;
-				startOffset = document.createPosition(start);
-				endOffset = document.createPosition(end);
-			} catch (BadLocationException e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		public Document document;
-		public Position startOffset;
-		public Position endOffset;
-	}
-
-	public static class Match {
-		public Match(int start, int end) {
-			startOffset = start;
-			endOffset = end;
-		}
-
-		public int startOffset;
-		public int endOffset;
 	}
 
 	public static final String wrap(final String theString) {

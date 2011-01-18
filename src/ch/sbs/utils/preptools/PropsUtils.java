@@ -1,4 +1,4 @@
-package ch.sbs.utils.preptools.vform;
+package ch.sbs.utils.preptools;
 
 import java.io.File;
 import java.io.FileInputStream;

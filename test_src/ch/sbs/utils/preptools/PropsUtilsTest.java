@@ -11,8 +11,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import ch.sbs.utils.preptools.vform.FileUtils;
-import ch.sbs.utils.preptools.vform.PropsUtils;
 
 public class PropsUtilsTest {
 	private static final String PROPS_FILENAME = "stamp.properties";

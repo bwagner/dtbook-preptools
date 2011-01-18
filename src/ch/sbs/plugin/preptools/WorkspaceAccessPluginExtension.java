@@ -35,8 +35,8 @@ import ro.sync.exml.workspace.api.standalone.ToolbarInfo;
 import ro.sync.exml.workspace.api.standalone.ViewComponentCustomizer;
 import ro.sync.exml.workspace.api.standalone.ViewInfo;
 import ro.sync.ui.Icons;
-import ch.sbs.utils.preptools.vform.FileUtils;
-import ch.sbs.utils.preptools.vform.PropsUtils;
+import ch.sbs.utils.preptools.FileUtils;
+import ch.sbs.utils.preptools.PropsUtils;
 
 /**
  * Plugin extension - workspace access extension.

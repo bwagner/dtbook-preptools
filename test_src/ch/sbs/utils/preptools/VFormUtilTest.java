@@ -31,7 +31,7 @@ public class VFormUtilTest {
 	@Test
 	public void testReplaceKeep() {
 		assertEquals(VFormUtil.NULL_MATCH, VFormUtil.find("Sieb", 0));
-		final VFormUtil.Match m = VFormUtil.find("Sieben können Sie haben.", 0);
+		final Match m = VFormUtil.find("Sieben können Sie haben.", 0);
 		assertEquals(14, m.startOffset);
 		assertEquals(14 + "Sie".length(), m.endOffset);
 	}
@@ -69,7 +69,7 @@ public class VFormUtilTest {
 		// __________________01234567890123456789012345678901234
 		final String text = "Das können Sie zu Ihren Akten legen.";
 
-		VFormUtil.Match match = VFormUtil.find(text, 0);
+		Match match = VFormUtil.find(text, 0);
 
 		assertEquals(11, match.startOffset);
 		assertEquals(14, match.endOffset);
@@ -92,7 +92,7 @@ public class VFormUtilTest {
 		// ____________01234567890123456789012345678901234
 		final String text = "Dann können Sie's Ihrem Kollegen geben.";
 
-		VFormUtil.Match match = VFormUtil.find(text, 0);
+		Match match = VFormUtil.find(text, 0);
 
 		assertEquals(12, match.startOffset);
 		assertEquals(15, match.endOffset);
@@ -113,7 +113,7 @@ public class VFormUtilTest {
 
 		final String text = "Dann kann Anna es ihrem Kollegen geben.";
 
-		VFormUtil.Match match = VFormUtil.find(text, 0);
+		Match match = VFormUtil.find(text, 0);
 
 		assertEquals(VFormUtil.NULL_MATCH, match);
 
@@ -126,7 +126,7 @@ public class VFormUtilTest {
 		// __________________01234567890123456789012345678901234
 		final String text = "Dann kann Anna es Ihrem Kollegen geben.";
 
-		VFormUtil.Match match = VFormUtil.find(text, 0);
+		Match match = VFormUtil.find(text, 0);
 
 		assertEquals(18, match.startOffset);
 		assertEquals(23, match.endOffset);
@@ -138,7 +138,7 @@ public class VFormUtilTest {
 
 		final String text = "Dann kann Anna es <brl:v-form>Ihrem</brl:v-form> Kollegen geben.";
 
-		VFormUtil.Match match = VFormUtil.find(text, 0);
+		Match match = VFormUtil.find(text, 0);
 
 		assertEquals(VFormUtil.NULL_MATCH, match);
 
@@ -177,7 +177,7 @@ public class VFormUtilTest {
 		// __________________01234567890123456789012345678901234
 		final String text = "Dann kann Anna es Deinem Kollegen geben.";
 
-		VFormUtil.Match match = VFormUtil.find(text, 0,
+		Match match = VFormUtil.find(text, 0,
 				VFormUtil.getAllPattern());
 
 		assertEquals(18, match.startOffset);
@@ -191,7 +191,7 @@ public class VFormUtilTest {
 		// __________________01234567890123456789012345678901234
 		final String text = "Dann kann Anna es Deinem Kollegen geben.";
 
-		VFormUtil.Match match = VFormUtil.find(text, 0,
+		Match match = VFormUtil.find(text, 0,
 				VFormUtil.get3rdPPPattern());
 
 		assertEquals(match, VFormUtil.NULL_MATCH);
