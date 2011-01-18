@@ -1,4 +1,4 @@
-package ch.sbs.utils.preptools;
+package ch.sbs.utils.preptools.vform;
 
 import static ch.sbs.utils.preptools.vform.VFormUtil.wrap;
 import static org.junit.Assert.assertEquals;
@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import ch.sbs.utils.preptools.Match;
 import ch.sbs.utils.preptools.vform.VFormUtil;
 
 public class VFormUtilTest {
