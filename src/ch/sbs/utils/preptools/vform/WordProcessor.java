@@ -1,4 +1,5 @@
 package ch.sbs.utils.preptools.vform;
+
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -89,9 +90,14 @@ class StringifyWordProcessor implements WordProcessor {
 
 	@Override
 	public boolean processWord(final WordHierarchyBuilder.Word word) {
+		final boolean DEBUG = false;
+		if (word.getWord() == null)
+			return false;
 		sb.append(makeIndent());
-		sb.append(indent);
-		sb.append(": '");
+		if (DEBUG) {
+			sb.append(indent);
+			sb.append(": '");
+		}
 		sb.append(word);
 		sb.append(" ");
 		if (withId) {
@@ -99,7 +105,10 @@ class StringifyWordProcessor implements WordProcessor {
 			sb.append(" ");
 		}
 		sb.append(word.isComplete() ? "" : "-");
-		sb.append("'\n");
+		if (DEBUG) {
+			sb.append("'");
+		}
+		sb.append("\n");
 		return false;
 	}
 
