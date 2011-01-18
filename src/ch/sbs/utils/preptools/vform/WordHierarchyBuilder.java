@@ -281,4 +281,15 @@ public class WordHierarchyBuilder {
 		}
 		return root;
 	}
+
+	public static void main(final String[] args) {
+		if (args.length == 0) {
+			System.out.println("Usage: pass a list of strings as arguments");
+			System.exit(1);
+		}
+		final Word word = createWordTree(args);
+		System.out.println(word.myToString(false));
+		System.out.println(word.toRegex());
+		System.out.println();
+	}
 }
