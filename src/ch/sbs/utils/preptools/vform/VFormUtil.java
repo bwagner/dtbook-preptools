@@ -5,79 +5,7 @@ import java.util.regex.Pattern;
 
 import ch.sbs.utils.preptools.Match;
 
-
 public class VFormUtil {
-
-	/*
-	 * Mail von Mischa 12.1.2011 
-	 * 3. Person PL
-	(obligatorische Abfrage)
-
-	Ihnen
-	Ihr
-	Ihre
-	Ihrem
-	Ihren
-	Ihrer
-	Ihrerseits
-	Ihres
-	Ihresgleichen
-	Ihrethalben
-	Ihretwegen
-	Ihretwillen
-	Ihrige
-	Ihrigem
-	Ihrigen
-	Ihriger
-	Ihriges
-	Ihrs
-	Sie
-	2. Person
-	(optionale Abfrage)
-
-	Dein
-	Deine
-	Deinem
-	Deinen
-	Deiner
-	Deinerseits
-	Deines
-	Deinesgleichen
-	Deinethalben
-	Deinetwegen
-	Deinetwillen
-	Deinige
-	Deinigem
-	Deinigen
-	Deiniger
-	Deiniges
-	Deins
-	Dich
-	Dir
-	Du
-	Euch
-	Euer
-	Euere
-	Euerem
-	Euerer
-	Eueres
-	Euers
-	Euerseits
-	Eure
-	Eurem
-	Euren
-	Eurerseits
-	Eures
-	Euresgleichen
-	Eurethalben
-	Euretwegen
-	Euretwillen
-	Eurige
-	Eurigem
-	Eurigen
-	Euriger
-	Euriges
-	 */
 
 	// Mail von Mischa Kuenzle 12.1.2011 15:09
 	// 3. Person PL (obligatorische Abfrage)
