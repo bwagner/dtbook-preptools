@@ -221,7 +221,7 @@ abstract class ProceedAction extends AbstractVFormAction {
 				|| dmi.manualEditOccurred()) {
 			if (workspaceAccessPluginExtension.showConfirmDialog(
 					"v-form: Cursor", "Cursor position has changed!\n",
-					"Take up where we lef off last time", "continue anyway")) {
+					"Take up where we left off last time", "continue anyway")) {
 				aWSTextEditorPage.select(pm.startOffset.getOffset(),
 						pm.endOffset.getOffset());
 			}
