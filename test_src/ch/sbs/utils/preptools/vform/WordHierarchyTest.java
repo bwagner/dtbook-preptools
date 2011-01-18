@@ -1,4 +1,4 @@
-package ch.sbs.plugin.preptools.vform;
+package ch.sbs.utils.preptools.vform;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 import org.junit.Test;
 
-import ch.sbs.plugin.preptools.PermutationHelper;
+import ch.sbs.utils.preptools.PermutationHelper;
 import ch.sbs.utils.preptools.vform.WordHierarchyBuilder;
 import ch.sbs.utils.preptools.vform.WordHierarchyBuilder.Word;
 

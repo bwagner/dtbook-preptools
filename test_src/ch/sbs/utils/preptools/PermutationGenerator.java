@@ -1,4 +1,4 @@
-package ch.sbs.plugin.preptools;
+package ch.sbs.utils.preptools;
 //--------------------------------------
 // Systematically generate permutations. 
 // http://www.merriampark.com/perm.htm

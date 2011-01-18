@@ -1,4 +1,4 @@
-package ch.sbs.plugin.preptools;
+package ch.sbs.utils.preptools;
 import java.util.Iterator;
 
 public class PermutationHelper implements Iterator<String[]>,

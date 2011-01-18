@@ -1,4 +1,4 @@
-package ch.sbs.plugin.preptools;
+package ch.sbs.utils.preptools;
 
 import static ch.sbs.utils.preptools.vform.VFormUtil.wrap;
 import static org.junit.Assert.assertEquals;
