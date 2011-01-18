@@ -31,7 +31,7 @@ public class VFormUtilTest {
 
 	@Test
 	public void testReplaceKeep() {
-		assertEquals(VFormUtil.NULL_MATCH, VFormUtil.find("Sieb", 0));
+		assertEquals(Match.NULL_MATCH, VFormUtil.find("Sieb", 0));
 		final Match m = VFormUtil.find("Sieben können Sie haben.", 0);
 		assertEquals(14, m.startOffset);
 		assertEquals(14 + "Sie".length(), m.endOffset);
@@ -82,7 +82,7 @@ public class VFormUtilTest {
 
 		match = VFormUtil.find(text, match.endOffset);
 
-		assertEquals(VFormUtil.NULL_MATCH, match);
+		assertEquals(Match.NULL_MATCH, match);
 
 	}
 
@@ -105,7 +105,7 @@ public class VFormUtilTest {
 
 		match = VFormUtil.find(text, match.endOffset);
 
-		assertEquals(VFormUtil.NULL_MATCH, match);
+		assertEquals(Match.NULL_MATCH, match);
 
 	}
 
@@ -116,7 +116,7 @@ public class VFormUtilTest {
 
 		Match match = VFormUtil.find(text, 0);
 
-		assertEquals(VFormUtil.NULL_MATCH, match);
+		assertEquals(Match.NULL_MATCH, match);
 
 	}
 
@@ -141,7 +141,7 @@ public class VFormUtilTest {
 
 		Match match = VFormUtil.find(text, 0);
 
-		assertEquals(VFormUtil.NULL_MATCH, match);
+		assertEquals(Match.NULL_MATCH, match);
 
 	}
 
@@ -195,7 +195,7 @@ public class VFormUtilTest {
 		Match match = VFormUtil.find(text, 0,
 				VFormUtil.get3rdPPPattern());
 
-		assertEquals(match, VFormUtil.NULL_MATCH);
+		assertEquals(match, Match.NULL_MATCH);
 
 	}
 }

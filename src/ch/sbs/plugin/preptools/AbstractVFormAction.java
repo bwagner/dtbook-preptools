@@ -194,7 +194,7 @@ abstract class ProceedAction extends AbstractVFormAction {
 				.getDocumentMetaInfo(editorAccess.getEditorLocation());
 		final Match match = VFormUtil.find(newText, startAt,
 				dmi.getCurrentVFormPattern());
-		if (match.equals(VFormUtil.NULL_MATCH)) {
+		if (match.equals(Match.NULL_MATCH)) {
 			workspaceAccessPluginExtension
 					.showDialog("You're done with v-forms!");
 			dmi.done();

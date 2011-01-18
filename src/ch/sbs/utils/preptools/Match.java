@@ -33,4 +33,5 @@ public class Match {
 
 	public int startOffset;
 	public int endOffset;
+	public static final Match NULL_MATCH = new Match(-1, -1);
 }

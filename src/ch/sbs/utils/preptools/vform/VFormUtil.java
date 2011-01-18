@@ -399,7 +399,7 @@ public class VFormUtil {
 	 */
 	public static Match find(final String text, int i, final Pattern pattern) {
 		final Matcher m = pattern.matcher(text);
-		return m.find(i) ? new Match(m.start(), m.end()) : NULL_MATCH;
+		return m.find(i) ? new Match(m.start(), m.end()) : Match.NULL_MATCH;
 	}
 
 	/**
@@ -449,6 +449,4 @@ public class VFormUtil {
 		sb.append(">");
 		return sb.toString();
 	}
-
-	public static final Match NULL_MATCH = new Match(-1, -1);
 }
