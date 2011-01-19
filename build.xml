@@ -28,10 +28,17 @@
 	<property name="description" value="Test" />
 	<!-- TODO: possibly the following values can be found from the sources -->
 	<property name="package" value="ch.sbs.plugin.preptools" />
+	
 	<property name="clazz" value="PrepToolsPlugin" />
 	<property name="fqnclazz" value="${package}.${clazz}" />
 	<property name="type" value="WorkspaceAccess" />
 	<property name="extensionClazz" value="${fqnclazz}Extension" />
+	
+	<property name="clazz2" value="PrepToolsValidatorPlugin" />
+	<property name="fqnclazz2" value="${package}.${clazz2}" />
+	<property name="type2" value="componentsValidator" />
+	<property name="extensionClazz2" value="${fqnclazz2}Extension" />
+	
 	<property name="lib.dir" value="lib" />
 	<path id="classpath.path">
 		<pathelement location="${build.dir}" />
@@ -113,8 +120,10 @@
 				&lt;runtime&gt;
 					&lt;library name="lib/${jarfile}"/&gt;
 				&lt;/runtime&gt;
-				&lt;extension type="${type}" 
-					class="${extensionClazz}"/&gt;
+			&lt;extension type="${type}" 
+				class="${extensionClazz}"/&gt;
+			&lt;extension type="${type2}" 
+				class="${extensionClazz2}"/&gt;
 			&lt;/plugin&gt;
 		</echo>
 	</target>
@@ -142,6 +151,32 @@
 				}
 
 				public static ${clazz} getInstance() {
+					return instance;
+				}
+			}
+		</echo>
+
+		<echo file="${src.generated}/${packagedir}/${clazz2}.java">
+			// ${header.generated}
+			package ${package};
+
+			import ro.sync.exml.plugin.Plugin;
+			import ro.sync.exml.plugin.PluginDescriptor;
+
+			public class ${clazz2} extends Plugin {
+
+				private static ${clazz2} instance = null;
+
+				public ${clazz2}(PluginDescriptor descriptor) {
+					super(descriptor);
+
+					if (instance != null) {
+						throw new IllegalStateException("Already instantiated!");
+					}
+					instance = this;
+				}
+
+				public static ${clazz2} getInstance() {
 					return instance;
 				}
 			}
