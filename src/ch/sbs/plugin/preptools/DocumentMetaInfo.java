@@ -142,6 +142,10 @@ class DocumentMetaInfo {
 		return currentPositionMatch;
 	}
 
+	public void setManualEdit() {
+		lastEditWasManual = true;
+	}
+
 	public boolean manualEditOccurred() {
 		return lastEditWasManual;
 	}
