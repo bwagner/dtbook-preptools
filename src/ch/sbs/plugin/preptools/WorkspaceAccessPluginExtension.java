@@ -142,6 +142,8 @@ public class WorkspaceAccessPluginExtension implements
 
 	private JCheckBox allForms;
 
+	private MyCaretListener caretHandler;
+
 	/**
 	 * @see ro.sync.exml.plugin.workspace.WorkspaceAccessPluginExtension#applicationStarted(ro.sync.exml.workspace.api.standalone.StandalonePluginWorkspace)
 	 */
@@ -154,6 +156,8 @@ public class WorkspaceAccessPluginExtension implements
 		runPlugin = "jar".equals(resource.getProtocol()) ? true : System
 				.getProperty("cms.sample.plugin") != null;
 		if (runPlugin) {
+
+			caretHandler = new MyCaretListener();
 			vformStartAction = new VFormStartAction(this);
 			vformFindAction = new VFormFindAction(this);
 			vformAcceptAction = new VFormAcceptAction(this);
@@ -192,15 +196,7 @@ public class WorkspaceAccessPluginExtension implements
 								return;
 							}
 							final JTextArea ta = (JTextArea) tc;
-							ta.addCaretListener(new CaretListener() {
-
-								@Override
-								public void caretUpdate(CaretEvent e) {
-									// showMessage("caret changed: " +
-									// e.getDot()
-									// + " " + e.getMark());
-								}
-							});
+							ta.addCaretListener(caretHandler);
 						}
 
 						@Override
@@ -237,11 +233,8 @@ public class WorkspaceAccessPluginExtension implements
 
 						@Override
 						public void editorPageChanged(URL editorLocation) {
-							final WSEditor editorAccess = getWsEditor();
-
 							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
-							dmi.setCurrentEditorPage(editorAccess
-									.getCurrentPageID());
+							dmi.setCurrentEditorPage(getPageId());
 							setCurrentState(dmi);
 						};
 
@@ -386,7 +379,7 @@ public class WorkspaceAccessPluginExtension implements
 	private final Map<URL, DocumentMetaInfo> documents = new HashMap<URL, DocumentMetaInfo>();
 
 	DocumentMetaInfo getDocumentMetaInfo() {
-		return getDocumentMetaInfo(getWsEditor().getEditorLocation());
+		return getDocumentMetaInfo(getEditorLocation());
 	}
 
 	DocumentMetaInfo getDocumentMetaInfo(final URL editorLocation) {
@@ -512,12 +505,15 @@ public class WorkspaceAccessPluginExtension implements
 		return getWsEditor().getCurrentPageID();
 	}
 
+	/*
+	 * This is actually redundant to my own book-keeping in
+	 * ProceedAction.handleManualCursorMovement
+	 */
 	class MyCaretListener implements CaretListener {
 
 		@Override
 		public void caretUpdate(CaretEvent e) {
-			// TODO Auto-generated method stub
-
+			getDocumentMetaInfo().setManualEdit();
 		}
 
 	}
