@@ -21,9 +21,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.plaf.ActionMapUIResource;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 
 import ro.sync.exml.editor.EditorPageConstants;
 import ro.sync.exml.workspace.api.editor.WSEditor;
@@ -182,6 +182,25 @@ public class WorkspaceAccessPluginExtension implements
 								disableVforms();
 								return;
 							}
+							addCaretHandler();
+						}
+
+						private void addCaretHandler() {
+							final Object tc = getPage(getWsEditor())
+									.getTextComponent();
+							if (!(tc instanceof JTextArea)) {
+								return;
+							}
+							final JTextArea ta = (JTextArea) tc;
+							ta.addCaretListener(new CaretListener() {
+
+								@Override
+								public void caretUpdate(CaretEvent e) {
+									// showMessage("caret changed: " +
+									// e.getDot()
+									// + " " + e.getMark());
+								}
+							});
 						}
 
 						@Override
@@ -374,24 +393,12 @@ public class WorkspaceAccessPluginExtension implements
 		if (documents.containsKey(editorLocation)) {
 			return documents.get(editorLocation);
 		}
-
-		final DocumentMetaInfo documentMetaInformation = new DocumentMetaInfo();
-		documentMetaInformation.page = getPage();
-
-		if (documentMetaInformation.page == null) {
+		if (getPage() == null) {
 			return null;
 		}
-		final Document document = documentMetaInformation.page.getDocument();
-		documentMetaInformation.setUrl(editorLocation);
 
-		documentMetaInformation.setDocument(document, this);
-
-		documentMetaInformation.setDtBook(isDtBook(document));
-
-		documentMetaInformation.setCurrentEditorPage(getWsEditor()
-				.getCurrentPageID());
-
-		documentMetaInformation.setVFormPatternTo3rdPP();
+		final DocumentMetaInfo documentMetaInformation = new DocumentMetaInfo(
+				this);
 
 		documents.put(editorLocation, documentMetaInformation);
 		return documentMetaInformation;
@@ -447,16 +454,6 @@ public class WorkspaceAccessPluginExtension implements
 		return true;
 	}
 
-	public boolean isDtBook(final Document document) {
-		try {
-			return document.getText(0, document.getLength())
-					.contains("<dtbook");
-		} catch (final BadLocationException e) {
-			showMessage("determining dtbookness failed:" + e);
-			return false;
-		}
-	}
-
 	void showMessage(final String msg) {
 		if (prepToolsMessagesArea != null) {
 			prepToolsMessagesArea.append("\n");
@@ -505,5 +502,23 @@ public class WorkspaceAccessPluginExtension implements
 		final WSEditor editorAccess = pluginWorkspaceAccess
 				.getCurrentEditorAccess(StandalonePluginWorkspace.MAIN_EDITING_AREA);
 		return editorAccess;
+	}
+
+	URL getEditorLocation() {
+		return getWsEditor().getEditorLocation();
+	}
+
+	String getPageId() {
+		return getWsEditor().getCurrentPageID();
+	}
+
+	class MyCaretListener implements CaretListener {
+
+		@Override
+		public void caretUpdate(CaretEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
 	}
 }

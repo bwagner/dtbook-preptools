@@ -5,12 +5,11 @@ import java.util.regex.Pattern;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
-import ch.sbs.utils.preptools.FileUtils;
 import ch.sbs.utils.preptools.Match;
-import ch.sbs.utils.preptools.Match.PositionMatch;
 import ch.sbs.utils.preptools.vform.VFormUtil;
 
 /**
@@ -19,28 +18,41 @@ import ch.sbs.utils.preptools.vform.VFormUtil;
  * 
  */
 class DocumentMetaInfo {
+
 	private boolean isDtBook;
 	private boolean hasStartedCheckingVform;
 	private boolean isDoneCheckingVform;
 	private boolean lastEditWasManual;
 	private String currentEditorPage;
-	protected WSTextEditorPage page;
+	private final WSTextEditorPage page;
 	private Document document;
-	private URL url;
+	private final URL url;
 	private DocumentListener documentListener;
 	private Match.PositionMatch currentPositionMatch;
 	private Pattern currentVFormPattern;
+
+	public DocumentMetaInfo(
+			final WorkspaceAccessPluginExtension theWorkspaceAccessPluginExtension) {
+		page = theWorkspaceAccessPluginExtension.getPage();
+
+		setDocument(page.getDocument());
+
+		setCurrentEditorPage(theWorkspaceAccessPluginExtension.getPageId());
+		url = theWorkspaceAccessPluginExtension.getEditorLocation();
+
+		setVFormPatternTo3rdPP();
+	}
 
 	public boolean vFormPatternIsAll() {
 		return currentVFormPattern == VFormUtil.getAllPattern();
 	}
 
 	public void setVFormPatternToAll() {
-		setCurrentVFormPattern(VFormUtil.getAllPattern());
+		currentVFormPattern = VFormUtil.getAllPattern();
 	}
 
 	public void setVFormPatternTo3rdPP() {
-		setCurrentVFormPattern(VFormUtil.get3rdPPPattern());
+		currentVFormPattern = VFormUtil.get3rdPPPattern();
 	}
 
 	public String getCurrentEditorPage() {
@@ -55,10 +67,6 @@ class DocumentMetaInfo {
 		setDoneCheckingVform(true);
 	}
 
-	public boolean isDone() {
-		return doneCheckingVform();
-	}
-
 	public boolean isProcessing() {
 		return hasStartedCheckingVform() && !doneCheckingVform();
 	}
@@ -69,10 +77,6 @@ class DocumentMetaInfo {
 
 	public boolean hasStartedCheckingVform() {
 		return hasStartedCheckingVform;
-	}
-
-	public void setDtBook(final boolean isDtBook) {
-		this.isDtBook = isDtBook;
 	}
 
 	public boolean isDtBook() {
@@ -87,44 +91,41 @@ class DocumentMetaInfo {
 		return isDoneCheckingVform;
 	}
 
-	public void setDocument(
-			final Document theDocument,
-			final WorkspaceAccessPluginExtension theWorkspaceAccessPluginExtension) {
+	private void setDocument(final Document theDocument) {
 		document = theDocument;
 		documentListener = new DocumentListener() {
 
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				setManualEditOccurred(true);
+				lastEditWasManual = true;
 			}
 
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				setManualEditOccurred(true);
+				lastEditWasManual = true;
 			}
 
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-				setManualEditOccurred(true);
+				lastEditWasManual = true;
 			}
 		};
 		document.addDocumentListener(documentListener);
+		isDtBook = isDtBook(document);
+	}
+
+	private static boolean isDtBook(final Document document) {
+		try {
+			return document.getText(0, document.getLength())
+					.contains("<dtbook");
+		} catch (final BadLocationException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	public void finish() {
 		document.removeDocumentListener(documentListener);
-	}
-
-	public Document getDocument() {
-		return document;
-	}
-
-	public String shortUrl() {
-		return FileUtils.basename(url);
-	}
-
-	public void setUrl(final URL theUrl) {
-		url = theUrl;
 	}
 
 	public URL getUrl() {
@@ -133,7 +134,7 @@ class DocumentMetaInfo {
 
 	public void setCurrentPositionMatch(
 			final Match.PositionMatch theCurrentPositionMatch) {
-		setManualEditOccurred(false);
+		lastEditWasManual = false;
 		currentPositionMatch = theCurrentPositionMatch;
 	}
 
@@ -141,16 +142,8 @@ class DocumentMetaInfo {
 		return currentPositionMatch;
 	}
 
-	public void setManualEditOccurred(boolean manualEditOccurred) {
-		lastEditWasManual = manualEditOccurred;
-	}
-
 	public boolean manualEditOccurred() {
 		return lastEditWasManual;
-	}
-
-	public void setCurrentVFormPattern(Pattern currentVFormPattern) {
-		this.currentVFormPattern = currentVFormPattern;
 	}
 
 	public Pattern getCurrentVFormPattern() {
