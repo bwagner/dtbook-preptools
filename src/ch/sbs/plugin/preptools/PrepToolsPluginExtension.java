@@ -43,6 +43,7 @@ import ch.sbs.utils.preptools.PropsUtils;
  * Plugin extension - workspace access extension.
  */
 public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension {
+	static final String TOOLBAR_TITLE = "PrepTools:V-Forms";
 
 	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
 		if (theDocumentMetaInfo == null) {
@@ -282,7 +283,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 								toolbarInfo.setComponents(comps
 										.toArray(new JComponent[0]));
 
-								toolbarInfo.setTitle("PrepTools:V-Forms");
+								toolbarInfo.setTitle(TOOLBAR_TITLE);
 								disableVforms();
 							}
 						}
@@ -345,9 +346,6 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 									JComponent.WHEN_IN_FOCUSED_WINDOW, keyMap);
 						}
 					});
-
-			// apparently not required:
-			// pluginWorkspaceAccess.showToolbar(ToolbarComponentsCustomizer.CUSTOM);
 
 			pluginWorkspaceAccess
 					.addViewComponentCustomizer(new ViewComponentCustomizer() {
