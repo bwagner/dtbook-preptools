@@ -32,7 +32,7 @@ class DocumentMetaInfo {
 	private Pattern currentVFormPattern;
 
 	public DocumentMetaInfo(
-			final WorkspaceAccessPluginExtension theWorkspaceAccessPluginExtension) {
+			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
 		page = theWorkspaceAccessPluginExtension.getPage();
 
 		setDocument(page.getDocument());

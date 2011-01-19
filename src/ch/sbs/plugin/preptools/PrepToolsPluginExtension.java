@@ -26,6 +26,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.plaf.ActionMapUIResource;
 
 import ro.sync.exml.editor.EditorPageConstants;
+import ro.sync.exml.plugin.workspace.WorkspaceAccessPluginExtension;
 import ro.sync.exml.workspace.api.editor.WSEditor;
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
 import ro.sync.exml.workspace.api.listeners.WSEditorChangeListener;
@@ -41,8 +42,7 @@ import ch.sbs.utils.preptools.PropsUtils;
 /**
  * Plugin extension - workspace access extension.
  */
-public class WorkspaceAccessPluginExtension implements
-		ro.sync.exml.plugin.workspace.WorkspaceAccessPluginExtension {
+public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension {
 
 	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
 		if (theDocumentMetaInfo == null) {

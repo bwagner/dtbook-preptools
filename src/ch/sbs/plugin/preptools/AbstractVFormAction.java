@@ -18,13 +18,13 @@ abstract class AbstractVFormAction extends AbstractAction {
 	/**
 	 * 
 	 */
-	protected final WorkspaceAccessPluginExtension workspaceAccessPluginExtension;
+	protected final PrepToolsPluginExtension workspaceAccessPluginExtension;
 
 	/**
 	 * @param theWorkspaceAccessPluginExtension
 	 */
 	AbstractVFormAction(
-			final WorkspaceAccessPluginExtension theWorkspaceAccessPluginExtension) {
+			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
 		workspaceAccessPluginExtension = theWorkspaceAccessPluginExtension;
 	}
 
@@ -33,7 +33,7 @@ abstract class AbstractVFormAction extends AbstractAction {
 		final WSEditor editorAccess = workspaceAccessPluginExtension
 				.getWsEditor();
 		final WSTextEditorPage aWSTextEditorPage;
-		if ((aWSTextEditorPage = WorkspaceAccessPluginExtension
+		if ((aWSTextEditorPage = PrepToolsPluginExtension
 				.getPage(editorAccess)) != null) {
 			final Document document = aWSTextEditorPage.getDocument();
 			final DocumentMetaInfo dmi = workspaceAccessPluginExtension
@@ -66,7 +66,7 @@ abstract class AbstractVFormAction extends AbstractAction {
 @SuppressWarnings("serial")
 class VFormStartAction extends AbstractVFormAction {
 	VFormStartAction(
-			final WorkspaceAccessPluginExtension workspaceAccessPluginExtension) {
+			final PrepToolsPluginExtension workspaceAccessPluginExtension) {
 		super(workspaceAccessPluginExtension);
 	}
 
@@ -123,7 +123,7 @@ class VFormStartAction extends AbstractVFormAction {
 abstract class ProceedAction extends AbstractVFormAction {
 
 	ProceedAction(
-			final WorkspaceAccessPluginExtension theWorkspaceAccessPluginExtension) {
+			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
 		super(theWorkspaceAccessPluginExtension);
 	}
 
@@ -235,7 +235,7 @@ abstract class ProceedAction extends AbstractVFormAction {
 @SuppressWarnings("serial")
 class VFormAcceptAction extends ProceedAction {
 	VFormAcceptAction(
-			final WorkspaceAccessPluginExtension theWorkspaceAccessPluginExtension) {
+			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
 		super(theWorkspaceAccessPluginExtension);
 	}
 
@@ -265,7 +265,7 @@ class VFormAcceptAction extends ProceedAction {
 @SuppressWarnings("serial")
 class VFormFindAction extends ProceedAction {
 	VFormFindAction(
-			WorkspaceAccessPluginExtension theWorkspaceAccessPluginExtension) {
+			PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
 		super(theWorkspaceAccessPluginExtension);
 	}
 
@@ -286,7 +286,7 @@ class VFormFindAction extends ProceedAction {
 	private int getSelectionEnd() {
 		final WSEditor editorAccess = workspaceAccessPluginExtension
 				.getWsEditor();
-		final WSTextEditorPage aWSTextEditorPage = WorkspaceAccessPluginExtension
+		final WSTextEditorPage aWSTextEditorPage = PrepToolsPluginExtension
 				.getPage(editorAccess);
 		return aWSTextEditorPage.getSelectionEnd();
 	}

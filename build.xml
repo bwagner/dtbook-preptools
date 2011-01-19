@@ -28,7 +28,7 @@
 	<property name="description" value="Test" />
 	<!-- TODO: possibly the following values can be found from the sources -->
 	<property name="package" value="ch.sbs.plugin.preptools" />
-	<property name="clazz" value="WorkspaceAccessPlugin" />
+	<property name="clazz" value="PrepToolsPlugin" />
 	<property name="fqnclazz" value="${package}.${clazz}" />
 	<property name="type" value="WorkspaceAccess" />
 	<property name="extensionClazz" value="${fqnclazz}Extension" />
