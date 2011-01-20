@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<jardesc>
+    <jar path="PrepToolsPlugin.jar"/>
+    <options buildIfNeeded="true" compress="false" descriptionLocation="/OxygenExtPrepTools/preptools_src.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="true"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <selectedElements exportClassFiles="false" exportJavaFiles="true" exportOutputFolder="false">
+        <javaElement handleIdentifier="=OxygenExtPrepTools/test_src"/>
+        <javaElement handleIdentifier="=OxygenExtPrepTools/src"/>
+        <file path="/OxygenExtPrepTools/.project"/>
+        <file path="/OxygenExtPrepTools/.gitignore"/>
+        <file path="/OxygenExtPrepTools/build.xml"/>
+        <file path="/OxygenExtPrepTools/vform_specs.txt"/>
+        <file path="/OxygenExtPrepTools/preptools_src.jardesc"/>
+        <file path="/OxygenExtPrepTools/.classpath"/>
+    </selectedElements>
+</jardesc>
