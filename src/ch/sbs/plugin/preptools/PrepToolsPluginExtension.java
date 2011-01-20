@@ -1,5 +1,6 @@
 package ch.sbs.plugin.preptools;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.ComponentInputMap;
@@ -17,6 +19,9 @@ import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
@@ -43,7 +48,101 @@ import ch.sbs.utils.preptools.PropsUtils;
  * Plugin extension - workspace access extension.
  */
 public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension {
+
+	private void makeVformToolbar() {
+
+		final List<JComponent> comps = new ArrayList<JComponent>();
+		comps.add(makeButton(vformStartAction, "Start", KeyEvent.VK_7));
+		comps.add(makeButton(vformFindAction, "Find", KeyEvent.VK_8));
+		comps.add(makeButton(vformAcceptAction, "Accept", KeyEvent.VK_9));
+		comps.add(allForms = makeCheckbox());
+		comps.add(trafficLight = new TrafficLight(26));
+		comps.add(new JLabel("VForms"));
+		toolbarInfo.setComponents(comps.toArray(new JComponent[0]));
+
+		toolbarInfo.setTitle(TOOLBAR_TITLE);
+		pluginWorkspaceAccess.showToolbar(ToolbarComponentsCustomizer.CUSTOM);
+	}
+
+	private void makeParensToolbar() {
+
+		final List<JComponent> comps = new ArrayList<JComponent>();
+		comps.add(new JLabel("Parens"));
+		toolbarInfo.setComponents(comps.toArray(new JComponent[0]));
+
+		toolbarInfo.setTitle("PrEpToOls:Parens");
+		pluginWorkspaceAccess.showToolbar(ToolbarComponentsCustomizer.CUSTOM);
+	}
+
+	private JCheckBox makeCheckbox() {
+		final JCheckBox checkBox = new JCheckBox("All");
+		checkBox.addItemListener(new ItemListener() {
+
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					showMessage("now using all vforms");
+					getDocumentMetaInfo().setVFormPatternToAll();
+				}
+				else {
+					showMessage("now using only 3rd person plural vforms");
+					getDocumentMetaInfo().setVFormPatternTo3rdPP();
+				}
+			}
+		});
+		return checkBox;
+	}
+
+	/**
+	 * Utility method. Makes button.
+	 * 
+	 * @param theAction
+	 *            The action associated with the button
+	 * @param theLabel
+	 *            The label for the button.
+	 * @return the newly created button.
+	 */
+	protected JButton makeButton(final Action theAction, String theLabel,
+			int theKeyEvent) {
+		// assign accelerator key to JButton
+		// http://www.stratulat.com/assign_accelerator_key_to_a_JButton.html
+		final JButton jButton = new JButton(theAction);
+		jButton.setText(theLabel);
+		assignAcceleratorKey(theAction, theLabel, theKeyEvent, jButton);
+		return jButton;
+	}
+
+	private void assignAcceleratorKey(final Action theAction, String theLabel,
+			int theKeyEvent, final JComponent jComponent) {
+		final InputMap keyMap = new ComponentInputMap(jComponent);
+		keyMap.put(
+				KeyStroke.getKeyStroke(theKeyEvent, InputEvent.CTRL_DOWN_MASK
+						| InputEvent.ALT_DOWN_MASK), theLabel);
+		final ActionMap actionMap = new ActionMapUIResource();
+		actionMap.put(theLabel, theAction);
+		SwingUtilities.replaceUIActionMap(jComponent, actionMap);
+		SwingUtilities.replaceUIInputMap(jComponent,
+				JComponent.WHEN_IN_FOCUSED_WINDOW, keyMap);
+	}
+
+	/*
+	 current hypothesis:
+	 	define class Task
+	 		Task.Name is what gets entered in the PrepTools-Menu
+	 	Every Task has a set of actions
+	 		Every action has a name
+	 		Every action has a button
+	 		The button's names are the action's names
+	 	When choosing a Task from the PrepTools-Menu
+	 		the ToolbarComponentsCustomizer.CUSTOM toolbar gets purged
+	 		of its current contents and the new buttons according to
+	 		the chosen task get entered into the ToolbarComponentsCustomizer.CUSTOM toolbar
+	 	
+	 
+	 */
 	static final String TOOLBAR_TITLE = "PrepTools:V-Forms";
+
+	private ToolbarInfo toolbarInfo;
 
 	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
 		if (theDocumentMetaInfo == null) {
@@ -163,6 +262,22 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 			vformFindAction = new VFormFindAction(this);
 			vformAcceptAction = new VFormAcceptAction(this);
 
+			// pluginWorkspaceAccess.addMenuBarCustomizer(new
+			// MenuBarCustomizer() {
+			// /**
+			// * @see
+			// ro.sync.exml.workspace.api.standalone.MenuBarCustomizer#customizeMainMenu(javax.swing.JMenuBar)
+			// */
+			// @Override
+			// public void customizeMainMenu(final JMenuBar mainMenuBar) {
+			// // PrepTools menu
+			// final JMenu menuPrepTools = createPrepToolsMenu();
+			// // Add the CMS menu before the Help menu
+			// mainMenuBar.add(menuPrepTools,
+			// mainMenuBar.getMenuCount() - 1);
+			// }
+			// });
+
 			pluginWorkspaceAccess.addEditorChangeListener(
 					new WSEditorChangeListener() {
 
@@ -201,7 +316,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 						}
 
 						@Override
-						public void editorClosed(URL editorLocation) {
+						public void editorClosed(final URL editorLocation) {
 							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
 							if (dmi.isProcessing() && !applicationClosing) {
 								// we can't veto closing!
@@ -211,7 +326,13 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 												+ FileUtils
 														.basename(editorLocation)
 												+ " was still being processed. Want to start over?")) {
-									pluginWorkspaceAccess.open(editorLocation);
+									SwingUtilities.invokeLater(new Runnable() {
+										@Override
+										public void run() {
+											pluginWorkspaceAccess
+													.open(editorLocation);
+										}
+									});
 
 									dmi.setHasStartedCheckingVform(false);
 									setCurrentState(dmi);
@@ -257,93 +378,14 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 						 * @see ro.sync.exml.workspace.api.standalone.ToolbarComponentsCustomizer#customizeToolbar(ro.sync.exml.workspace.api.standalone.ToolbarInfo)
 						 */
 						@Override
-						public void customizeToolbar(ToolbarInfo toolbarInfo) {
+						public void customizeToolbar(ToolbarInfo theToolbarInfo) {
 							if (ToolbarComponentsCustomizer.CUSTOM
-									.equals(toolbarInfo.getToolbarID())) {
-								final JButton vFormButton = makeButton(
-										vformStartAction, "Start",
-										KeyEvent.VK_7);
+									.equals(theToolbarInfo.getToolbarID())) {
 
-								JButton findButton = makeButton(
-										vformFindAction, "Find", KeyEvent.VK_8);
-
-								JButton acceptButton = makeButton(
-										vformAcceptAction, "Accept",
-										KeyEvent.VK_9);
-
-								allForms = makeCheckbox();
-
-								// Add in toolbar
-								final List<JComponent> comps = new ArrayList<JComponent>();
-								comps.add(vFormButton);
-								comps.add(findButton);
-								comps.add(acceptButton);
-								comps.add(allForms);
-								comps.add(trafficLight = new TrafficLight(26));
-								toolbarInfo.setComponents(comps
-										.toArray(new JComponent[0]));
-
-								toolbarInfo.setTitle(TOOLBAR_TITLE);
+								toolbarInfo = theToolbarInfo;
+								makeVformToolbar();
 								disableVforms();
 							}
-						}
-
-						private JCheckBox makeCheckbox() {
-							final JCheckBox checkBox = new JCheckBox("All");
-							checkBox.addItemListener(new ItemListener() {
-
-								@Override
-								public void itemStateChanged(ItemEvent e) {
-									if (e.getStateChange() == ItemEvent.SELECTED) {
-										showMessage("now using all vforms");
-										getDocumentMetaInfo()
-												.setVFormPatternToAll();
-									}
-									else {
-										showMessage("now using only 3rd person plural vforms");
-										getDocumentMetaInfo()
-												.setVFormPatternTo3rdPP();
-									}
-								}
-							});
-							return checkBox;
-						}
-
-						/**
-						 * Utility method. Makes button.
-						 * 
-						 * @param theAction
-						 *            The action associated with the button
-						 * @param theLabel
-						 *            The label for the button.
-						 * @return the newly created button.
-						 */
-						protected JButton makeButton(final Action theAction,
-								String theLabel, int theKeyEvent) {
-							// assign accelerator key to JButton
-							// http://www.stratulat.com/assign_accelerator_key_to_a_JButton.html
-							final JButton jButton = new JButton(theAction);
-							jButton.setText(theLabel);
-							assignAcceleratorKey(theAction, theLabel,
-									theKeyEvent, jButton);
-							return jButton;
-						}
-
-						private void assignAcceleratorKey(
-								final Action theAction, String theLabel,
-								int theKeyEvent, final JComponent jComponent) {
-							final InputMap keyMap = new ComponentInputMap(
-									jComponent);
-							keyMap.put(KeyStroke.getKeyStroke(theKeyEvent,
-									InputEvent.CTRL_DOWN_MASK
-											| InputEvent.ALT_DOWN_MASK),
-									theLabel);
-							final ActionMap actionMap = new ActionMapUIResource();
-							actionMap.put(theLabel, theAction);
-							SwingUtilities.replaceUIActionMap(jComponent,
-									actionMap);
-							SwingUtilities.replaceUIInputMap(jComponent,
-									JComponent.WHEN_IN_FOCUSED_WINDOW, keyMap);
 						}
 					});
 
@@ -372,6 +414,34 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 					});
 		}
+	}
+
+	protected JMenu createPrepToolsMenu() {
+		JMenu menuPrepTools = new JMenu("PrepTools");
+
+		final JMenuItem vFormItem = new JMenuItem(new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				showMessage("makeVformToolbar");
+				makeVformToolbar();
+			}
+		});
+		vFormItem.setText("VForms");
+		menuPrepTools.add(vFormItem);
+
+		JMenuItem parensItem = new JMenuItem(new AbstractAction() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				showMessage("makeParensToolbar");
+				makeParensToolbar();
+			}
+		});
+		parensItem.setText("Parens");
+		menuPrepTools.add(parensItem);
+
+		return menuPrepTools;
 	}
 
 	private final Map<URL, DocumentMetaInfo> documents = new HashMap<URL, DocumentMetaInfo>();
