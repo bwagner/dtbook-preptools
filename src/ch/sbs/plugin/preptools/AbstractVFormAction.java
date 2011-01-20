@@ -30,16 +30,9 @@ abstract class AbstractVFormAction extends AbstractAction {
 
 	@Override
 	public void actionPerformed(final ActionEvent arg0) {
-		final WSEditor editorAccess = workspaceAccessPluginExtension
-				.getWsEditor();
-		final WSTextEditorPage aWSTextEditorPage;
-		if ((aWSTextEditorPage = PrepToolsPluginExtension
-				.getPage(editorAccess)) != null) {
-			final Document document = aWSTextEditorPage.getDocument();
-			final DocumentMetaInfo dmi = workspaceAccessPluginExtension
-					.getDocumentMetaInfo(editorAccess.getEditorLocation());
+		if ((workspaceAccessPluginExtension.getPage()) != null) {
 			try {
-				doSomething(editorAccess, aWSTextEditorPage, document, dmi);
+				doSomething();
 			} catch (final BadLocationException e) {
 				e.printStackTrace();
 			}
@@ -51,15 +44,9 @@ abstract class AbstractVFormAction extends AbstractAction {
 	 * Hook that gets called only when editor, page, document, text have
 	 * successfully been retrieved.
 	 * 
-	 * @param editorAccess
-	 * @param aWSTextEditorPage
-	 * @param document
-	 * @param dmi
 	 * @throws BadLocationException
 	 */
-	protected abstract void doSomething(final WSEditor editorAccess,
-			final WSTextEditorPage aWSTextEditorPage, final Document document,
-			final DocumentMetaInfo dmi) throws BadLocationException;
+	protected abstract void doSomething() throws BadLocationException;
 
 }
 
@@ -71,9 +58,13 @@ class VFormStartAction extends AbstractVFormAction {
 	}
 
 	@Override
-	protected void doSomething(final WSEditor editorAccess,
-			final WSTextEditorPage aWSTextEditorPage, final Document document,
-			DocumentMetaInfo dmi) throws BadLocationException {
+	protected void doSomething() throws BadLocationException {
+		final WSEditor editorAccess = workspaceAccessPluginExtension
+				.getWsEditor();
+		final WSTextEditorPage aWSTextEditorPage = workspaceAccessPluginExtension
+				.getPage();
+		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
+				.getDocumentMetaInfo();
 
 		final URL editorLocation = editorAccess.getEditorLocation();
 		if (dmi.doneCheckingVform()) {
@@ -106,7 +97,7 @@ class VFormStartAction extends AbstractVFormAction {
 				return;
 			}
 		}
-
+		final Document document = aWSTextEditorPage.getDocument();
 		final Match match = VFormUtil.find(
 				document.getText(0, document.getLength()), 0,
 				dmi.getCurrentVFormPattern());
@@ -158,9 +149,13 @@ abstract class ProceedAction extends AbstractVFormAction {
 	 * @see ch.sbs.plugin.preptools.AbstractVFormAction#doSomething(ro.sync.exml.workspace.api.editor.WSEditor, ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage, javax.swing.text.Document, ch.sbs.plugin.preptools.DocumentMetaInfo)
 	 */
 	@Override
-	protected void doSomething(final WSEditor editorAccess,
-			final WSTextEditorPage aWSTextEditorPage, final Document document,
-			final DocumentMetaInfo theDmi) throws BadLocationException {
+	protected void doSomething() throws BadLocationException {
+		final WSEditor editorAccess = workspaceAccessPluginExtension
+				.getWsEditor();
+		final WSTextEditorPage aWSTextEditorPage = workspaceAccessPluginExtension
+				.getPage();
+		final DocumentMetaInfo theDmi = workspaceAccessPluginExtension
+				.getDocumentMetaInfo();
 
 		dmi = theDmi;
 		final String selText = aWSTextEditorPage.getSelectedText();
@@ -170,24 +165,25 @@ abstract class ProceedAction extends AbstractVFormAction {
 
 		handleManualCursorMovement(aWSTextEditorPage, dmi);
 
+		final Document document = aWSTextEditorPage.getDocument();
 		final int continueAt = handleText(document, selText);
 
-		searchOn(document, aWSTextEditorPage, editorAccess, continueAt);
+		searchOn(aWSTextEditorPage, editorAccess, continueAt);
 	}
 
 	/**
 	 * Utility method to search on in document starting at startAt.
 	 * 
-	 * @param document
 	 * @param aWSTextEditorPage
 	 * @param editorAccess
 	 * @param startAt
+	 * 
 	 * @throws BadLocationException
 	 */
-	private void searchOn(final Document document,
-			final WSTextEditorPage aWSTextEditorPage,
+	private void searchOn(final WSTextEditorPage aWSTextEditorPage,
 			final WSEditor editorAccess, final int startAt)
 			throws BadLocationException {
+		final Document document = aWSTextEditorPage.getDocument();
 		final String newText = document.getText(0, document.getLength());
 		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
 				.getDocumentMetaInfo(editorAccess.getEditorLocation());
@@ -212,7 +208,7 @@ abstract class ProceedAction extends AbstractVFormAction {
 	 * @param dmi
 	 */
 	private void handleManualCursorMovement(
-			final WSTextEditorPage aWSTextEditorPage, DocumentMetaInfo dmi) {
+			final WSTextEditorPage aWSTextEditorPage, final DocumentMetaInfo dmi) {
 		lastMatchStart = aWSTextEditorPage.getSelectionStart();
 		lastMatchEnd = aWSTextEditorPage.getSelectionEnd();
 		final Match.PositionMatch pm = dmi.getCurrentPositionMatch();
@@ -265,7 +261,7 @@ class VFormAcceptAction extends ProceedAction {
 @SuppressWarnings("serial")
 class VFormFindAction extends ProceedAction {
 	VFormFindAction(
-			PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
+			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
 		super(theWorkspaceAccessPluginExtension);
 	}
 
