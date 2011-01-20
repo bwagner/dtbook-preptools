@@ -159,10 +159,10 @@
 	 * - accept
 	 * (- continue)
 	 * 
-	 * DONE Pro Dokument wird gespeichert, ob vForm-Prozess durchgeführt wird.
-	 *      Solange das nicht der Fall ist, ist nur StartVForm enabled (_e), FindVorm,
-	 *      AcceptVForm disabled. Wenn das Dokument kein dtbook ist, sind alle
-	 *      drei Buttons disabled.
+	 * DONE We maintain state per document, whether vForm is in process.
+	 *      As long as it's not, only the button start is enabled (_e), find and
+	 *      accept are disabled. If the document is not a dtbook, all buttons
+	 *      are disabled.
 	 * tooltips indicate why they are disabled. (_1)
 	 * 
 	 * 2. user opened dtbook document:
