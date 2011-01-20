@@ -42,6 +42,7 @@ import ro.sync.exml.workspace.api.standalone.ViewComponentCustomizer;
 import ro.sync.exml.workspace.api.standalone.ViewInfo;
 import ro.sync.ui.Icons;
 import ch.sbs.utils.preptools.FileUtils;
+import ch.sbs.utils.preptools.Match.PositionMatch;
 import ch.sbs.utils.preptools.PropsUtils;
 
 /**
@@ -153,10 +154,20 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 		if (!theDocumentMetaInfo.isDtBook()) {
 			disableVforms();
+			return;
 		}
-		else if (!theDocumentMetaInfo.hasStartedCheckingVform()) {
-			if (theDocumentMetaInfo.getCurrentEditorPage().equals(
-					EditorPageConstants.PAGE_TEXT)) {
+		final boolean isTextPage = theDocumentMetaInfo.getCurrentEditorPage()
+				.equals(EditorPageConstants.PAGE_TEXT);
+
+		/*
+		 TODO: make this table driven or something
+			 We have:
+			 - isTextPage: true/false
+			 - hasStartedCheckingVform
+			 - doneCheckingVform
+		 */
+		if (!theDocumentMetaInfo.hasStartedCheckingVform()) {
+			if (isTextPage) {
 				trafficLight.go();
 				vformStartAction.setEnabled(true);
 				allForms.setEnabled(true);
@@ -171,8 +182,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		}
 		else if (theDocumentMetaInfo.doneCheckingVform()) {
 			trafficLight.done();
-			if (theDocumentMetaInfo.getCurrentEditorPage().equals(
-					EditorPageConstants.PAGE_TEXT)) {
+			if (isTextPage) {
 				vformStartAction.setEnabled(true);
 			}
 			else {
@@ -182,8 +192,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 			vformAcceptAction.setEnabled(false);
 		}
 		else {
-			if (theDocumentMetaInfo.getCurrentEditorPage().equals(
-					EditorPageConstants.PAGE_TEXT)) {
+			if (isTextPage) {
 				trafficLight.inProgress();
 				enableAllActions();
 			}
@@ -302,9 +311,10 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 								disableVforms();
 								return;
 							}
-							addCaretHandler();
+							// addCaretHandler();
 						}
 
+						@SuppressWarnings("unused")
 						private void addCaretHandler() {
 							final Object tc = getPage(getWsEditor())
 									.getTextComponent();
@@ -331,11 +341,19 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 										public void run() {
 											pluginWorkspaceAccess
 													.open(editorLocation);
+											dmi.setPage(PrepToolsPluginExtension.this);
+											setCurrentState(dmi);
+											final PositionMatch match = dmi
+													.getCurrentPositionMatch();
+											getPage()
+													.select(match.startOffset
+															.getOffset(),
+															match.endOffset
+																	.getOffset());
+											dmi.resetManualEdit();
 										}
 									});
 
-									dmi.setHasStartedCheckingVform(false);
-									setCurrentState(dmi);
 								}
 								else {
 									removeDocumentMetaInfo(dmi);

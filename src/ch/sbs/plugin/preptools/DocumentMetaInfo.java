@@ -24,7 +24,7 @@ class DocumentMetaInfo {
 	private boolean isDoneCheckingVform;
 	private boolean lastEditWasManual;
 	private String currentEditorPage;
-	private final WSTextEditorPage page;
+	private WSTextEditorPage page;
 	private Document document;
 	private final URL url;
 	private DocumentListener documentListener;
@@ -33,14 +33,26 @@ class DocumentMetaInfo {
 
 	public DocumentMetaInfo(
 			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
-		page = theWorkspaceAccessPluginExtension.getPage();
-
-		setDocument(page.getDocument());
+		setPage(theWorkspaceAccessPluginExtension);
 
 		setCurrentEditorPage(theWorkspaceAccessPluginExtension.getPageId());
 		url = theWorkspaceAccessPluginExtension.getEditorLocation();
 
 		setVFormPatternTo3rdPP();
+	}
+
+	/**
+	 * This method normally shouldn't be called from outside. The only case is
+	 * where the user accidentally closed the document which was still being
+	 * processed and he wants to take up again where he left off.
+	 * 
+	 * @param theWorkspaceAccessPluginExtension
+	 */
+	public void setPage(
+			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
+		page = theWorkspaceAccessPluginExtension.getPage();
+
+		setDocument(page.getDocument());
 	}
 
 	public boolean vFormPatternIsAll() {
@@ -144,6 +156,10 @@ class DocumentMetaInfo {
 
 	public void setManualEdit() {
 		lastEditWasManual = true;
+	}
+
+	public void resetManualEdit() {
+		lastEditWasManual = false;
 	}
 
 	public boolean manualEditOccurred() {
