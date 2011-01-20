@@ -11,7 +11,7 @@
 
 	<!-- used by "jar" and "init" -->
 	<property name="build.dir" value="bin" />
-	
+
 	<!-- used by "jar" -->
 	<property name="app.manifest" value="MANIFEST.MF" />
 
@@ -28,17 +28,17 @@
 	<property name="description" value="Test" />
 	<!-- TODO: possibly the following values can be found from the sources -->
 	<property name="package" value="ch.sbs.plugin.preptools" />
-	
+
 	<property name="clazz" value="PrepToolsPlugin" />
 	<property name="fqnclazz" value="${package}.${clazz}" />
 	<property name="type" value="WorkspaceAccess" />
 	<property name="extensionClazz" value="${fqnclazz}Extension" />
-	
+
 	<property name="clazz2" value="PrepToolsValidatorPlugin" />
 	<property name="fqnclazz2" value="${package}.${clazz2}" />
 	<property name="type2" value="componentsValidator" />
 	<property name="extensionClazz2" value="${fqnclazz2}Extension" />
-	
+
 	<property name="lib.dir" value="lib" />
 	<path id="classpath.path">
 		<pathelement location="${build.dir}" />
@@ -81,7 +81,7 @@
 	<target name="jar" depends="compile, stamp, git.revision">
 		<manifest file="${app.manifest}">
 			<attribute name="Built-By" value="${user.name}" />
-			<attribute name="Build-Time" value="${release.time}"/>
+			<attribute name="Build-Time" value="${release.time}" />
 			<attribute name="Implementation-Version" value="${repository.version}" />
 		</manifest>
 		<jar destfile="${jarfile}" basedir="${build.dir}">
@@ -192,9 +192,7 @@
 			# ${header.generated}
 			stamp = ${repository.version}  (${release.time})
 			</echo>
-		<echo>
-			expect stamp: ${release.time} ${repository.version}
-		</echo>	</target>
+	</target>
 
 	<!-- alternative to do string manip in ant: -->
 	<!-- http://ptrthomas.wordpress.com/2007/04/22/how-to-do-string-operations-in-ant/ -->
@@ -207,37 +205,37 @@
 
 	<target name="stopoxy">
 		<exec executable="xdotool">
-			<arg line="search --onlyvisible --name '&lt;oXygen/&gt; XML Editor' windowactivate --sync key alt+F4"/>
+			<arg line="search --onlyvisible --name '&lt;oXygen/&gt; XML Editor' windowactivate --sync key alt+F4" />
 		</exec>
-		<sleep seconds="1"/>
+		<sleep seconds="1" />
 		<!-- http://code.google.com/p/semicomplete/issues/detail?id=45#hc4 -->
-		
+
 		<exec executable="xdotool">
-			<arg line="search --onlyvisible --name '^v-form' windowactivate key --window 0 Return"/>
+			<arg line="search --onlyvisible --name '^v-form' windowactivate key --window 0 Return" />
 		</exec>
 
 		<exec executable="xdotool">
-			<arg line="search --onlyvisible --name '^Save$' windowactivate key --window 0 alt+n"/>
+			<arg line="search --onlyvisible --name '^Save$' windowactivate key --window 0 alt+n" />
 		</exec>
 
 		<exec executable="xdotool">
-			<arg line="search --onlyvisible --name '^Modified files' windowactivate key --window 0 alt+n"/>
+			<arg line="search --onlyvisible --name '^Modified files' windowactivate key --window 0 alt+n" />
 		</exec>
 	</target>
 
 	<target name="stopoxyMouse">
 		<exec executable="xdotool">
-			<arg line="search --onlyvisible --name '&lt;oXygen/&gt; XML Editor' windowactivate --sync key alt+F4"/>
+			<arg line="search --onlyvisible --name '&lt;oXygen/&gt; XML Editor' windowactivate --sync key alt+F4" />
 		</exec>
-		<sleep seconds="1"/>
+		<sleep seconds="1" />
 		<exec executable="xdotool">
-			<arg line="search --onlyvisible --name '^Save$' windowactivate --sync mousemove --window %1 340 75 click 1"/>
+			<arg line="search --onlyvisible --name '^Save$' windowactivate --sync mousemove --window %1 340 75 click 1" />
 		</exec>
 	</target>
 
 	<target name="stopoxyOneLinerIsTooFast">
 		<exec executable="xdotool">
-			<arg line="search --onlyvisible --name '&lt;oXygen/&gt; XML Editor' key alt+F4 search --onlyvisible --name '^Save$' windowactivate --sync mousemove --window %1 340 75 click 1"/>
+			<arg line="search --onlyvisible --name '&lt;oXygen/&gt; XML Editor' key alt+F4 search --onlyvisible --name '^Save$' windowactivate --sync mousemove --window %1 340 75 click 1" />
 		</exec>
 	</target>
 
