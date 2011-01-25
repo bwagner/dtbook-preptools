@@ -1,6 +1,7 @@
 package ch.sbs.plugin.preptools;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -32,7 +33,7 @@ class DocumentMetaInfo {
 	private DocumentListener documentListener;
 	private Match.PositionMatch currentPositionMatch;
 	private Pattern currentVFormPattern;
-	private Iterator<Match> orphanedParensIterator;
+	private Iterator<Match.PositionMatch> orphanedParensIterator;
 
 	public DocumentMetaInfo(
 			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
@@ -174,14 +175,19 @@ class DocumentMetaInfo {
 	}
 
 	public void setOrphanedParens(final List<Match> theOrphanedParens) {
-		orphanedParensIterator = theOrphanedParens.iterator();
+		final List<Match.PositionMatch> pml = new ArrayList<Match.PositionMatch>();
+		for (final Match match : theOrphanedParens) {
+			Match.PositionMatch mp = new Match.PositionMatch(document, match);
+			pml.add(mp);
+		}
+		orphanedParensIterator = pml.iterator();
 	}
 
 	public boolean hasMoreOrphanedParens() {
 		return orphanedParensIterator.hasNext();
 	}
 
-	public Match getNextOrphanedParen() {
+	public Match.PositionMatch getNextOrphanedParen() {
 		return orphanedParensIterator.next();
 	}
 }

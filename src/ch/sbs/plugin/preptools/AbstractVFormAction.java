@@ -328,7 +328,7 @@ abstract class OrphanParenAbstractAction extends AbstractVFormAction {
 	}
 
 	protected void select(DocumentMetaInfo dmi) {
-		final Match match = dmi.getNextOrphanedParen();
+		final Match.PositionMatch match = dmi.getNextOrphanedParen();
 		select(match);
 	}
 
