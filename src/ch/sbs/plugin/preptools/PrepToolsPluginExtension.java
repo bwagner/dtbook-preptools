@@ -14,6 +14,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.ComponentInputMap;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -24,6 +25,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
@@ -96,11 +98,9 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
-					showMessage("now using all vforms");
 					getDocumentMetaInfo().setVFormPatternToAll();
 				}
 				else {
-					showMessage("now using only 3rd person plural vforms");
 					getDocumentMetaInfo().setVFormPatternTo3rdPP();
 				}
 			}
@@ -466,29 +466,35 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 	@SuppressWarnings("serial")
 	protected JMenu createPrepToolsMenu() {
-		JMenu menuPrepTools = new JMenu("PrepTools");
+		final JMenu menuPrepTools = new JMenu("PrepTools");
+		final ButtonGroup group = new ButtonGroup();
 
-		final JMenuItem vFormItem = new JMenuItem(new AbstractAction() {
+		final JMenuItem vFormItem = new JRadioButtonMenuItem(
+				new AbstractAction() {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				makeVformToolbar();
-			}
-		});
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						makeVformToolbar();
+					}
+				});
 		vFormItem.setText("VForms");
 		vFormItem.setMnemonic(KeyEvent.VK_V);
+		vFormItem.setSelected(true);
 		menuPrepTools.add(vFormItem);
+		group.add(vFormItem);
 
-		JMenuItem parensItem = new JMenuItem(new AbstractAction() {
+		final JMenuItem parensItem = new JRadioButtonMenuItem(
+				new AbstractAction() {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				makeParensToolbar();
-			}
-		});
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						makeParensToolbar();
+					}
+				});
 		parensItem.setText("Parens");
 		parensItem.setMnemonic(KeyEvent.VK_P);
 		menuPrepTools.add(parensItem);
+		group.add(parensItem);
 
 		return menuPrepTools;
 	}
@@ -524,7 +530,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		final String filename = "stamp.properties";
 		final String version = PropsUtils.loadForClass(this.getClass(),
 				filename).getProperty(key);
-		String returnString;
+		final String returnString;
 		if (version != null && version.length() > 0) {
 			returnString = version;
 		}
