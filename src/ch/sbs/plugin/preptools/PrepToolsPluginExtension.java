@@ -1,19 +1,19 @@
 package ch.sbs.plugin.preptools;
 
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.BoxLayout;
 import javax.swing.ComponentInputMap;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -21,7 +21,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
@@ -35,6 +37,7 @@ import ro.sync.exml.plugin.workspace.WorkspaceAccessPluginExtension;
 import ro.sync.exml.workspace.api.editor.WSEditor;
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
 import ro.sync.exml.workspace.api.listeners.WSEditorChangeListener;
+import ro.sync.exml.workspace.api.standalone.MenuBarCustomizer;
 import ro.sync.exml.workspace.api.standalone.StandalonePluginWorkspace;
 import ro.sync.exml.workspace.api.standalone.ToolbarComponentsCustomizer;
 import ro.sync.exml.workspace.api.standalone.ToolbarInfo;
@@ -51,28 +54,39 @@ import ch.sbs.utils.preptools.PropsUtils;
 public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension {
 
 	private void makeVformToolbar() {
+		final String LABEL = "VForms";
 
-		final List<JComponent> comps = new ArrayList<JComponent>();
-		comps.add(makeButton(vformStartAction, "Start", KeyEvent.VK_7));
-		comps.add(makeButton(vformFindAction, "Find", KeyEvent.VK_8));
-		comps.add(makeButton(vformAcceptAction, "Accept", KeyEvent.VK_9));
-		comps.add(allForms = makeCheckbox());
-		comps.add(trafficLight = new TrafficLight(26));
-		comps.add(new JLabel("VForms"));
-		toolbarInfo.setComponents(comps.toArray(new JComponent[0]));
+		toolbarPanel.removeAll();
+		toolbarPanel.add(makeButton(vformStartAction, "Start", KeyEvent.VK_7));
+		toolbarPanel.add(makeButton(vformFindAction, "Find", KeyEvent.VK_8));
+		toolbarPanel
+				.add(makeButton(vformAcceptAction, "Accept", KeyEvent.VK_9));
+		toolbarPanel.add(allForms = makeCheckbox());
+		toolbarPanel.add(trafficLight = new TrafficLight(26));
+		toolbarPanel.add(new JLabel(" " + LABEL));
+		relayout();
+	}
 
-		toolbarInfo.setTitle(TOOLBAR_TITLE);
-		pluginWorkspaceAccess.showToolbar(ToolbarComponentsCustomizer.CUSTOM);
+	private void relayout() {
+		Container parent = toolbarPanel;
+		while (parent.getParent() != null) {
+			parent = parent.getParent();
+			parent.invalidate();
+			parent.validate();
+		}
 	}
 
 	private void makeParensToolbar() {
+		final String LABEL = "Parens";
 
-		final List<JComponent> comps = new ArrayList<JComponent>();
-		comps.add(new JLabel("Parens"));
-		toolbarInfo.setComponents(comps.toArray(new JComponent[0]));
+		toolbarPanel.removeAll();
+		toolbarPanel.add(makeButton(orphanedParensStartAction, "Start",
+				KeyEvent.VK_7));
+		toolbarPanel.add(makeButton(orphanedParensFindNextAction, "Find",
+				KeyEvent.VK_8));
 
-		toolbarInfo.setTitle("PrEpToOls:Parens");
-		pluginWorkspaceAccess.showToolbar(ToolbarComponentsCustomizer.CUSTOM);
+		toolbarPanel.add(new JLabel(" " + LABEL));
+		relayout();
 	}
 
 	private JCheckBox makeCheckbox() {
@@ -143,11 +157,10 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	 */
 	static final String TOOLBAR_TITLE = "PrepTools:V-Forms";
 
-	private ToolbarInfo toolbarInfo;
+	private JPanel toolbarPanel;
 
 	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
 		if (theDocumentMetaInfo == null) {
-			showMessage("PROGRAMMER: document meta info was null");
 			return;
 		}
 		allForms.setSelected(theDocumentMetaInfo.vFormPatternIsAll());
@@ -163,8 +176,14 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		 TODO: make this table driven or something
 			 We have:
 			 - isTextPage: true/false
-			 - hasStartedCheckingVform
-			 - doneCheckingVform
+			                           possible states
+			 - hasStartedCheckingVform  0 1 1
+			 - doneCheckingVform        0 0 1
+			 UI elements
+			 - trafficLight:      go/inProgress/stop/done
+			 - vformStartAction:  enabled/disabled
+			 - vformFindAction:   enabled/disabled
+			 - vformAcceptAction: enabled/disabled
 		 */
 		if (!theDocumentMetaInfo.hasStartedCheckingVform()) {
 			if (isTextPage) {
@@ -242,10 +261,11 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	private boolean applicationClosing;
 
 	private Action vformStartAction;
-
 	private Action vformFindAction;
-
 	private Action vformAcceptAction;
+
+	private Action orphanedParensStartAction;
+	private Action orphanedParensFindNextAction;
 
 	private TrafficLight trafficLight;
 
@@ -271,21 +291,23 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 			vformFindAction = new VFormFindAction(this);
 			vformAcceptAction = new VFormAcceptAction(this);
 
-			// pluginWorkspaceAccess.addMenuBarCustomizer(new
-			// MenuBarCustomizer() {
-			// /**
-			// * @see
-			// ro.sync.exml.workspace.api.standalone.MenuBarCustomizer#customizeMainMenu(javax.swing.JMenuBar)
-			// */
-			// @Override
-			// public void customizeMainMenu(final JMenuBar mainMenuBar) {
-			// // PrepTools menu
-			// final JMenu menuPrepTools = createPrepToolsMenu();
-			// // Add the CMS menu before the Help menu
-			// mainMenuBar.add(menuPrepTools,
-			// mainMenuBar.getMenuCount() - 1);
-			// }
-			// });
+			orphanedParensStartAction = new OrphanParenStartAction(this);
+			orphanedParensFindNextAction = new OrphanParenFindNextAction(this);
+
+			pluginWorkspaceAccess.addMenuBarCustomizer(new MenuBarCustomizer() {
+				/**
+				 * @see ro.sync.exml.workspace.api.standalone.MenuBarCustomizer#customizeMainMenu(javax.swing.JMenuBar)
+				 */
+				@Override
+				public void customizeMainMenu(final JMenuBar mainMenuBar) {
+					// PrepTools menu
+					final JMenu menuPrepTools = createPrepToolsMenu();
+					menuPrepTools.setMnemonic(KeyEvent.VK_R);
+					// Add the CMS menu before the Help menu
+					mainMenuBar.add(menuPrepTools,
+							mainMenuBar.getMenuCount() - 1);
+				}
+			});
 
 			pluginWorkspaceAccess.addEditorChangeListener(
 					new WSEditorChangeListener() {
@@ -316,12 +338,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 						@SuppressWarnings("unused")
 						private void addCaretHandler() {
-							final Object tc = getPage(getWsEditor())
-									.getTextComponent();
-							if (!(tc instanceof JTextArea)) {
-								return;
-							}
-							final JTextArea ta = (JTextArea) tc;
+							final JTextArea ta = getJTextArea();
 							ta.addCaretListener(caretHandler);
 						}
 
@@ -400,9 +417,22 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 							if (ToolbarComponentsCustomizer.CUSTOM
 									.equals(theToolbarInfo.getToolbarID())) {
 
-								toolbarInfo = theToolbarInfo;
-								makeVformToolbar();
-								disableVforms();
+								toolbarPanel = new JPanel();
+								toolbarPanel.setLayout(new BoxLayout(
+										toolbarPanel, BoxLayout.LINE_AXIS));
+								theToolbarInfo
+										.setComponents(new JComponent[] { toolbarPanel });
+								theToolbarInfo.setTitle("PrepTools");
+
+								SwingUtilities.invokeLater(new Runnable() {
+
+									@Override
+									public void run() {
+										makeVformToolbar();
+										disableVforms();
+									}
+
+								});
 							}
 						}
 					});
@@ -434,6 +464,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		}
 	}
 
+	@SuppressWarnings("serial")
 	protected JMenu createPrepToolsMenu() {
 		JMenu menuPrepTools = new JMenu("PrepTools");
 
@@ -441,22 +472,22 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				showMessage("makeVformToolbar");
 				makeVformToolbar();
 			}
 		});
 		vFormItem.setText("VForms");
+		vFormItem.setMnemonic(KeyEvent.VK_V);
 		menuPrepTools.add(vFormItem);
 
 		JMenuItem parensItem = new JMenuItem(new AbstractAction() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				showMessage("makeParensToolbar");
 				makeParensToolbar();
 			}
 		});
 		parensItem.setText("Parens");
+		parensItem.setMnemonic(KeyEvent.VK_P);
 		menuPrepTools.add(parensItem);
 
 		return menuPrepTools;
@@ -584,11 +615,20 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	}
 
 	URL getEditorLocation() {
-		return getWsEditor().getEditorLocation();
+		return getWsEditor() != null ? getWsEditor().getEditorLocation() : null;
 	}
 
 	String getPageId() {
 		return getWsEditor().getCurrentPageID();
+	}
+
+	private JTextArea getJTextArea() {
+		final Object tc = getPage(getWsEditor()).getTextComponent();
+		if (!(tc instanceof JTextArea)) {
+			return null;
+		}
+		final JTextArea ta = (JTextArea) tc;
+		return ta;
 	}
 
 	/*

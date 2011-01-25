@@ -2,6 +2,7 @@ package ch.sbs.plugin.preptools;
 
 import java.awt.event.ActionEvent;
 import java.net.URL;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.text.BadLocationException;
@@ -11,6 +12,7 @@ import ro.sync.exml.workspace.api.editor.WSEditor;
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
 import ch.sbs.utils.preptools.FileUtils;
 import ch.sbs.utils.preptools.Match;
+import ch.sbs.utils.preptools.parens.ParensUtil;
 import ch.sbs.utils.preptools.vform.VFormUtil;
 
 @SuppressWarnings("serial")
@@ -48,6 +50,28 @@ abstract class AbstractVFormAction extends AbstractAction {
 	 */
 	protected abstract void doSomething() throws BadLocationException;
 
+	/**
+	 * Utility method that returns the end position of the current selection.
+	 * 
+	 * @return The end position of the current selection.
+	 */
+	protected int getSelectionEnd() {
+		final WSEditor editorAccess = workspaceAccessPluginExtension
+				.getWsEditor();
+		final WSTextEditorPage aWSTextEditorPage = PrepToolsPluginExtension
+				.getPage(editorAccess);
+		return aWSTextEditorPage.getSelectionEnd();
+	}
+
+	protected void select(final Match match) {
+		workspaceAccessPluginExtension.getPage().select(match.startOffset,
+				match.endOffset);
+	}
+
+	protected void select(final Match.PositionMatch pm) {
+		workspaceAccessPluginExtension.getPage().select(
+				pm.startOffset.getOffset(), pm.endOffset.getOffset());
+	}
 }
 
 @SuppressWarnings("serial")
@@ -101,7 +125,7 @@ class VFormStartAction extends AbstractVFormAction {
 		final Match match = VFormUtil.find(
 				document.getText(0, document.getLength()), 0,
 				dmi.getCurrentVFormPattern());
-		aWSTextEditorPage.select(match.startOffset, match.endOffset);
+		select(match);
 
 		dmi.setHasStartedCheckingVform(true);
 		dmi.setDoneCheckingVform(false);
@@ -197,7 +221,7 @@ abstract class ProceedAction extends AbstractVFormAction {
 			match.endOffset = 0;
 		}
 		workspaceAccessPluginExtension.setCurrentState(dmi);
-		aWSTextEditorPage.select(match.startOffset, match.endOffset);
+		select(match);
 		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
 	}
 
@@ -218,8 +242,7 @@ abstract class ProceedAction extends AbstractVFormAction {
 			if (workspaceAccessPluginExtension.showConfirmDialog(
 					"v-form: Cursor", "Cursor position has changed!\n",
 					"Take up where we left off last time", "continue anyway")) {
-				aWSTextEditorPage.select(pm.startOffset.getOffset(),
-						pm.endOffset.getOffset());
+				select(pm);
 			}
 		}
 	}
@@ -273,17 +296,88 @@ class VFormFindAction extends ProceedAction {
 			throws BadLocationException {
 		return getSelectionEnd();
 	}
+}
 
-	/**
-	 * Utility method that returns the end position of the current selection.
-	 * 
-	 * @return The end position of the current selection.
-	 */
-	private int getSelectionEnd() {
-		final WSEditor editorAccess = workspaceAccessPluginExtension
-				.getWsEditor();
-		final WSTextEditorPage aWSTextEditorPage = PrepToolsPluginExtension
-				.getPage(editorAccess);
-		return aWSTextEditorPage.getSelectionEnd();
+@SuppressWarnings("serial")
+abstract class OrphanParenAbstractAction extends AbstractVFormAction {
+
+	@Override
+	protected void doSomething() throws BadLocationException {
+		init();
+		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
+				.getDocumentMetaInfo();
+		if (dmi.hasMoreOrphanedParens()) {
+			select(dmi);
+		}
+		else {
+			handleNoneFound();
+		}
+	}
+
+	protected void init() {
+
+	}
+
+	protected void handleNoneFound() {
+
+	}
+
+	OrphanParenAbstractAction(
+			PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
+		super(theWorkspaceAccessPluginExtension);
+	}
+
+	protected void select(DocumentMetaInfo dmi) {
+		final Match match = dmi.getNextOrphanedParen();
+		select(match);
+	}
+
+}
+
+@SuppressWarnings("serial")
+class OrphanParenStartAction extends OrphanParenAbstractAction {
+
+	OrphanParenStartAction(
+			PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
+		super(theWorkspaceAccessPluginExtension);
+	}
+
+	@Override
+	protected void init() {
+		final WSTextEditorPage aWSTextEditorPage = workspaceAccessPluginExtension
+				.getPage();
+		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
+				.getDocumentMetaInfo();
+		final Document document = aWSTextEditorPage.getDocument();
+		List<Match> orphans = null;
+		try {
+			orphans = ParensUtil.findOrphans(document.getText(0,
+					document.getLength()));
+		} catch (BadLocationException e) {
+			workspaceAccessPluginExtension.showMessage(e.getMessage());
+			e.printStackTrace();
+		}
+		dmi.setOrphanedParens(orphans);
+	}
+
+	@Override
+	protected void handleNoneFound() {
+		workspaceAccessPluginExtension.showDialog("No orphaned parens found.");
+	}
+
+}
+
+@SuppressWarnings("serial")
+class OrphanParenFindNextAction extends OrphanParenAbstractAction {
+
+	OrphanParenFindNextAction(
+			PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
+		super(theWorkspaceAccessPluginExtension);
+	}
+
+	@Override
+	protected void handleNoneFound() {
+		workspaceAccessPluginExtension
+				.showDialog("You're done with orphaned parens.");
 	}
 }
