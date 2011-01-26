@@ -55,18 +55,22 @@ import ch.sbs.utils.preptools.PropsUtils;
  */
 public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension {
 
-	private void makeVformToolbar() {
-		final String LABEL = "VForms";
-
+	private void makeToolbar(final String LABEL, JComponent... components) {
 		toolbarPanel.removeAll();
-		toolbarPanel.add(makeButton(vformStartAction, "Start", KeyEvent.VK_7));
-		toolbarPanel.add(makeButton(vformFindAction, "Find", KeyEvent.VK_8));
-		toolbarPanel
-				.add(makeButton(vformAcceptAction, "Accept", KeyEvent.VK_9));
-		toolbarPanel.add(allForms = makeCheckbox());
-		toolbarPanel.add(trafficLight = new TrafficLight(26));
+		for (final JComponent component : components) {
+			toolbarPanel.add(component);
+		}
 		toolbarPanel.add(new JLabel(" " + LABEL));
+		setCurrentState();
 		relayout();
+	}
+
+	private void makeVformToolbar() {
+		makeToolbar("VForms",
+				makeButton(vformStartAction, "Start", KeyEvent.VK_7),
+				makeButton(vformFindAction, "Find", KeyEvent.VK_8),
+				makeButton(vformAcceptAction, "Accept", KeyEvent.VK_9),
+				allForms = makeCheckbox(), trafficLight = new TrafficLight(26));
 	}
 
 	private void relayout() {
@@ -79,16 +83,10 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	}
 
 	private void makeParensToolbar() {
-		final String LABEL = "Parens";
+		makeToolbar("Parens",
+				makeButton(orphanedParensStartAction, "Start", KeyEvent.VK_7),
+				makeButton(orphanedParensFindNextAction, "Find", KeyEvent.VK_8));
 
-		toolbarPanel.removeAll();
-		toolbarPanel.add(makeButton(orphanedParensStartAction, "Start",
-				KeyEvent.VK_7));
-		toolbarPanel.add(makeButton(orphanedParensFindNextAction, "Find",
-				KeyEvent.VK_8));
-
-		toolbarPanel.add(new JLabel(" " + LABEL));
-		relayout();
 	}
 
 	private JCheckBox makeCheckbox() {
@@ -220,6 +218,10 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 				disableAllActions();
 			}
 		}
+	}
+
+	private void setCurrentState() {
+		setCurrentState(getDocumentMetaInfo());
 	}
 
 	protected void disableVforms() {
