@@ -4,7 +4,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 
-public class Match {
+public class Match implements Comparable<Match> {
 
 	public static class PositionMatch {
 		public PositionMatch(final Document theDocument, final Match match) {
@@ -34,4 +34,14 @@ public class Match {
 	public int startOffset;
 	public int endOffset;
 	public static final Match NULL_MATCH = new Match(-1, -1);
+
+	@Override
+	public int compareTo(Match o) {
+		return startOffset - (o).startOffset;
+	}
+
+	@Override
+	public String toString() {
+		return "Match[" + startOffset + ", " + endOffset + "]";
+	}
 }
