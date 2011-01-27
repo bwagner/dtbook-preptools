@@ -53,6 +53,8 @@ public class ParensUtil {
 			}
 		}
 
+		// TODO: This could be optimized by a binary search.
+		// The regionsToSkip are sorted anyway.
 		private boolean inSkipRegion(final Matcher matcher) {
 			boolean inSkipRegion = false;
 			final Iterator<Match> it = regionsToSkip.iterator();
