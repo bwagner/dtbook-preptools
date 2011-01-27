@@ -25,7 +25,15 @@ public class RegionSkipper {
 
 	// TODO: This could be optimized by a binary search.
 	// The regionsToSkip are sorted anyway.
+	/**
+	 * @param matcher
+	 * @return
+	 */
 	public boolean inSkipRegion(final Matcher matcher) {
+		if (regionsToSkip == null) {
+			throw new RuntimeException(
+					"You need to call findRegionsToSkip first!");
+		}
 		boolean inSkipRegion = false;
 		final Iterator<Match> it = regionsToSkip.iterator();
 		while (!inSkipRegion && it.hasNext()) {
@@ -34,6 +42,26 @@ public class RegionSkipper {
 					&& skipRegion.endOffset > matcher.start();
 		}
 		return inSkipRegion;
+	}
+
+	private static final RegionSkipper literalSkipper;
+	static {
+		final String OPENING_TAG = "<\\s*brl\\s*:\\s*literal";
+		final String OPTIONAL_ARG = "(?:\\s+brl\\s*:grade\\s*=\\s*\"\\d\")?";
+		final String CLOSING_ANGLE = ">";
+		final String NON_GREEDY_CONTENT = ".*?";
+		final String CLOSING_TAG = "<\\s*/\\s*brl\\s*:\\s*literal\\s*>";
+		final StringBuilder sb = new StringBuilder();
+		sb.append(OPENING_TAG);
+		sb.append(OPTIONAL_ARG);
+		sb.append(CLOSING_ANGLE);
+		sb.append(NON_GREEDY_CONTENT);
+		sb.append(CLOSING_TAG);
+		literalSkipper = new RegionSkipper(sb.toString());
+	}
+
+	public static RegionSkipper getLiteralSkipper() {
+		return literalSkipper;
 	}
 
 }
