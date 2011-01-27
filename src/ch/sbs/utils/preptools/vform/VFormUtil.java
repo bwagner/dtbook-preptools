@@ -4,9 +4,22 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ch.sbs.utils.preptools.Match;
+import ch.sbs.utils.preptools.RegionSkipper;
 
 public class VFormUtil {
-	static final String ELEMENT_NAME = "brl:v-form";
+	private static final String ELEMENT_NAME = "brl:v-form";
+
+	private static final RegionSkipper skipAlreadyMarkedUp;
+	static {
+		final StringBuilder sb = new StringBuilder();
+		final String OPENING_TAG = "<\\s*brl\\s*:\\s*v-form\\s*>";
+		final String NON_GREEDY_CONTENT = ".*?";
+		final String CLOSING_TAG = "<\\s*/\\s*brl\\s*:\\s*v-form\\s*>";
+		sb.append(OPENING_TAG);
+		sb.append(NON_GREEDY_CONTENT);
+		sb.append(CLOSING_TAG);
+		skipAlreadyMarkedUp = new RegionSkipper(sb.toString());
+	}
 
 	// Mail von Mischa Kuenzle 12.1.2011 15:09
 	// 3. Person PL (obligatorische Abfrage)
@@ -71,9 +84,7 @@ public class VFormUtil {
 															// see
 		// http://download.oracle.com/javase/1.5.0/docs/api/java/util/regex/Pattern.html#special
 		for (final String form : forms) {
-			sb.append("(?<!<" + ELEMENT_NAME + ">)"); // negative lookbehind
 			sb.append(form);
-			sb.append("(?!</" + ELEMENT_NAME + ">)"); // negative lookahead
 			sb.append("|");
 		}
 		sb.setLength(sb.length() - 1); // chop off last "|"
@@ -94,7 +105,17 @@ public class VFormUtil {
 	 */
 	public static Match find(final String text, int start, final Pattern pattern) {
 		final Matcher m = pattern.matcher(text);
-		return m.find(start) ? new Match(m.start(), m.end()) : Match.NULL_MATCH;
+		boolean inSkipRegion = true;
+		skipAlreadyMarkedUp.findRegionsToSkip(text);
+		while (inSkipRegion && m.find(start)) {
+			start++;
+			inSkipRegion = skipAlreadyMarkedUp.inSkipRegion(m);
+
+		}
+		if (inSkipRegion) {
+			return Match.NULL_MATCH;
+		}
+		return new Match(m.start(), m.end());
 	}
 
 	/**
@@ -109,14 +130,14 @@ public class VFormUtil {
 	}
 
 	/**
-	 * Indicates whether text matches pattern
+	 * Indicates whether pattern matches entire region
 	 * 
-	 * @param text
+	 * @param region
 	 * @param pattern
 	 * @return
 	 */
-	public static boolean matches(final String text, final Pattern pattern) {
-		return text != null && pattern.matcher(text).matches();
+	public static boolean matches(final String region, final Pattern pattern) {
+		return region != null && pattern.matcher(region).matches();
 	}
 
 	/**
