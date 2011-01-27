@@ -34,6 +34,7 @@ class DocumentMetaInfo {
 	private Match.PositionMatch currentPositionMatch;
 	private Pattern currentVFormPattern;
 	private Iterator<Match.PositionMatch> orphanedParensIterator;
+	private PrepTool currentPrepTool;
 
 	public DocumentMetaInfo(
 			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
@@ -189,5 +190,13 @@ class DocumentMetaInfo {
 
 	public Match.PositionMatch getNextOrphanedParen() {
 		return orphanedParensIterator.next();
+	}
+
+	public PrepTool getCurrentPrepTool() {
+		return currentPrepTool;
+	}
+
+	public void setCurrentPrepTool(final PrepTool theCurrentPrepTool) {
+		currentPrepTool = theCurrentPrepTool;
 	}
 }

@@ -46,14 +46,9 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 	private final List<PrepTool> prepTools = new ArrayList<PrepTool>();
 
-	// TODO: we should check what tool is currently active!
-	// only update that tool!
-	// this depends on the document!
-	// hence must be part of DocumentMetaInfo!
 	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
-		for (final PrepTool preptool : prepTools) {
-			preptool.setCurrentState(getDocumentMetaInfo());
-		}
+		theDocumentMetaInfo.getCurrentPrepTool().setCurrentState(
+				theDocumentMetaInfo);
 	}
 
 	private void disableAllActions() {
@@ -61,14 +56,19 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	}
 
 	private void setAllActions(final boolean enabled) {
-		for (final PrepTool preptool : prepTools) {
-			preptool.setAllActionsEnabled(enabled);
+		final DocumentMetaInfo documentMetaInfo = getDocumentMetaInfo();
+		if (documentMetaInfo != null) {
+			documentMetaInfo.getCurrentPrepTool().setAllActionsEnabled(enabled);
 		}
 	}
 
 	private void populatePrepTools() {
 		prepTools.add(new VFormPrepTool(this));
 		prepTools.add(new ParensPrepTool(this));
+	}
+
+	private PrepTool getDefaultPrepTool() {
+		return prepTools.get(0);
 	}
 
 	JPanel toolbarPanel;
@@ -148,6 +148,9 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 								disableAllActions();
 								return;
 							}
+							// we don't do much else here since in every case
+							// editorSelected will be called after editorOpened.
+
 							// addCaretHandler();
 						}
 
@@ -209,6 +212,12 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 						public void editorSelected(URL editorLocation) {
 							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
 							if (dmi != null) {
+								PrepTool currentPrepTool = dmi
+										.getCurrentPrepTool();
+								if (currentPrepTool == null) {
+									currentPrepTool = getDefaultPrepTool();
+								}
+								currentPrepTool.activate();
 								setCurrentState(dmi);
 							}
 							else {
@@ -238,10 +247,9 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 									@Override
 									public void run() {
-										prepTools.get(0).makeToolbar();
+										getDefaultPrepTool().activate();
 										disableAllActions();
 									}
-
 								});
 							}
 						}
@@ -285,7 +293,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							preptool.makeToolbar();
+							preptool.activate();
 						}
 					});
 			item.setText(preptool.getLabel());

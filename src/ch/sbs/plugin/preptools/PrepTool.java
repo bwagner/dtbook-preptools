@@ -31,7 +31,16 @@ abstract class PrepTool {
 		prepToolsPluginExtension = thePrepToolsPluginExtension;
 	}
 
-	public void makeToolbar() {
+	public void activate() {
+		makeToolbar();
+		final DocumentMetaInfo documentMetaInfo = prepToolsPluginExtension
+				.getDocumentMetaInfo();
+		if (documentMetaInfo != null) {
+			documentMetaInfo.setCurrentPrepTool(this);
+		}
+	}
+
+	private void makeToolbar() {
 		final JComponent[] components = getComponents();
 		prepToolsPluginExtension.toolbarPanel.removeAll();
 		for (final JComponent component : components) {
