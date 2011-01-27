@@ -1,26 +1,17 @@
 package ch.sbs.plugin.preptools;
 
-import java.awt.Container;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
-import javax.swing.ComponentInputMap;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -28,11 +19,9 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
-import javax.swing.plaf.ActionMapUIResource;
 
 import ro.sync.exml.editor.EditorPageConstants;
 import ro.sync.exml.plugin.workspace.WorkspaceAccessPluginExtension;
@@ -55,195 +44,34 @@ import ch.sbs.utils.preptools.PropsUtils;
  */
 public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension {
 
-	private void makeToolbar(final String LABEL, JComponent... components) {
-		toolbarPanel.removeAll();
-		for (final JComponent component : components) {
-			toolbarPanel.add(component);
-		}
-		toolbarPanel.add(new JLabel(" " + LABEL));
-		setCurrentState();
-		relayout();
-	}
+	private final List<PrepTool> prepTools = new ArrayList<PrepTool>();
 
-	private void makeVformToolbar() {
-		makeToolbar("VForms",
-				makeButton(vformStartAction, "Start", KeyEvent.VK_7),
-				makeButton(vformFindAction, "Find", KeyEvent.VK_8),
-				makeButton(vformAcceptAction, "Accept", KeyEvent.VK_9),
-				allForms = makeCheckbox(), trafficLight = new TrafficLight(26));
-	}
-
-	private void relayout() {
-		Container parent = toolbarPanel;
-		while (parent.getParent() != null) {
-			parent = parent.getParent();
-			parent.invalidate();
-			parent.validate();
-		}
-	}
-
-	private void makeParensToolbar() {
-		makeToolbar("Parens",
-				makeButton(orphanedParensStartAction, "Start", KeyEvent.VK_7),
-				makeButton(orphanedParensFindNextAction, "Find", KeyEvent.VK_8));
-
-	}
-
-	private JCheckBox makeCheckbox() {
-		final JCheckBox checkBox = new JCheckBox("All");
-		checkBox.addItemListener(new ItemListener() {
-
-			@Override
-			public void itemStateChanged(ItemEvent e) {
-				if (e.getStateChange() == ItemEvent.SELECTED) {
-					getDocumentMetaInfo().setVFormPatternToAll();
-				}
-				else {
-					getDocumentMetaInfo().setVFormPatternTo3rdPP();
-				}
-			}
-		});
-		return checkBox;
-	}
-
-	/**
-	 * Utility method. Makes button.
-	 * 
-	 * @param theAction
-	 *            The action associated with the button
-	 * @param theLabel
-	 *            The label for the button.
-	 * @return the newly created button.
-	 */
-	protected JButton makeButton(final Action theAction, String theLabel,
-			int theKeyEvent) {
-		// assign accelerator key to JButton
-		// http://www.stratulat.com/assign_accelerator_key_to_a_JButton.html
-		final JButton jButton = new JButton(theAction);
-		jButton.setText(theLabel);
-		assignAcceleratorKey(theAction, theLabel, theKeyEvent, jButton);
-		return jButton;
-	}
-
-	private void assignAcceleratorKey(final Action theAction, String theLabel,
-			int theKeyEvent, final JComponent jComponent) {
-		final InputMap keyMap = new ComponentInputMap(jComponent);
-		keyMap.put(
-				KeyStroke.getKeyStroke(theKeyEvent, InputEvent.CTRL_DOWN_MASK
-						| InputEvent.ALT_DOWN_MASK), theLabel);
-		final ActionMap actionMap = new ActionMapUIResource();
-		actionMap.put(theLabel, theAction);
-		SwingUtilities.replaceUIActionMap(jComponent, actionMap);
-		SwingUtilities.replaceUIInputMap(jComponent,
-				JComponent.WHEN_IN_FOCUSED_WINDOW, keyMap);
-	}
-
-	/*
-	 current hypothesis:
-	 	define class Task
-	 		Task.Name is what gets entered in the PrepTools-Menu
-	 	Every Task has a set of actions
-	 		Every action has a name
-	 		Every action has a button
-	 		The button's names are the action's names
-	 	When choosing a Task from the PrepTools-Menu
-	 		the ToolbarComponentsCustomizer.CUSTOM toolbar gets purged
-	 		of its current contents and the new buttons according to
-	 		the chosen task get entered into the ToolbarComponentsCustomizer.CUSTOM toolbar
-	 	
-	 
-	 */
-	static final String TOOLBAR_TITLE = "PrepTools:V-Forms";
-
-	private JPanel toolbarPanel;
-
+	// TODO: we should check what tool is currently active!
+	// only update that tool!
+	// this depends on the document!
+	// hence must be part of DocumentMetaInfo!
 	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
-		if (theDocumentMetaInfo == null) {
-			return;
+		for (final PrepTool preptool : prepTools) {
+			preptool.setCurrentState(getDocumentMetaInfo());
 		}
-		allForms.setSelected(theDocumentMetaInfo.vFormPatternIsAll());
-
-		if (!theDocumentMetaInfo.isDtBook()) {
-			disableVforms();
-			return;
-		}
-		final boolean isTextPage = theDocumentMetaInfo.getCurrentEditorPage()
-				.equals(EditorPageConstants.PAGE_TEXT);
-
-		/*
-		 TODO: make this table driven or something
-			 We have:
-			 - isTextPage: true/false
-			                           possible states
-			 - hasStartedCheckingVform  0 1 1
-			 - doneCheckingVform        0 0 1
-			 UI elements
-			 - trafficLight:      go/inProgress/stop/done
-			 - vformStartAction:  enabled/disabled
-			 - vformFindAction:   enabled/disabled
-			 - vformAcceptAction: enabled/disabled
-		 */
-		if (!theDocumentMetaInfo.hasStartedCheckingVform()) {
-			if (isTextPage) {
-				trafficLight.go();
-				vformStartAction.setEnabled(true);
-				allForms.setEnabled(true);
-			}
-			else {
-				trafficLight.stop();
-				vformStartAction.setEnabled(false);
-				allForms.setEnabled(false);
-			}
-			vformFindAction.setEnabled(false);
-			vformAcceptAction.setEnabled(false);
-		}
-		else if (theDocumentMetaInfo.doneCheckingVform()) {
-			trafficLight.done();
-			if (isTextPage) {
-				vformStartAction.setEnabled(true);
-			}
-			else {
-				vformStartAction.setEnabled(false);
-			}
-			vformFindAction.setEnabled(false);
-			vformAcceptAction.setEnabled(false);
-		}
-		else {
-			if (isTextPage) {
-				trafficLight.inProgress();
-				enableAllActions();
-			}
-			else {
-				trafficLight.stop();
-				disableAllActions();
-			}
-		}
-	}
-
-	private void setCurrentState() {
-		setCurrentState(getDocumentMetaInfo());
-	}
-
-	protected void disableVforms() {
-		trafficLight.off();
-		disableAllActions();
 	}
 
 	private void disableAllActions() {
 		setAllActions(false);
 	}
 
-	private void enableAllActions() {
-		setAllActions(true);
+	private void setAllActions(final boolean enabled) {
+		for (final PrepTool preptool : prepTools) {
+			preptool.setAllActionsEnabled(enabled);
+		}
 	}
 
-	private void setAllActions(final boolean enabled) {
-		for (final Action action : new Action[] { vformStartAction,
-				vformFindAction, vformAcceptAction }) {
-			action.setEnabled(enabled);
-		}
-		allForms.setEnabled(enabled);
+	private void populatePrepTools() {
+		prepTools.add(new VFormPrepTool(this));
+		prepTools.add(new ParensPrepTool(this));
 	}
+
+	JPanel toolbarPanel;
 
 	/**
 	 * The PrepTools messages area.
@@ -262,17 +90,6 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 	private boolean applicationClosing;
 
-	private Action vformStartAction;
-	private Action vformFindAction;
-	private Action vformAcceptAction;
-
-	private Action orphanedParensStartAction;
-	private Action orphanedParensFindNextAction;
-
-	private TrafficLight trafficLight;
-
-	private JCheckBox allForms;
-
 	private MyCaretListener caretHandler;
 
 	/**
@@ -289,12 +106,8 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		if (runPlugin) {
 
 			caretHandler = new MyCaretListener();
-			vformStartAction = new VFormStartAction(this);
-			vformFindAction = new VFormFindAction(this);
-			vformAcceptAction = new VFormAcceptAction(this);
 
-			orphanedParensStartAction = new OrphanParenStartAction(this);
-			orphanedParensFindNextAction = new OrphanParenFindNextAction(this);
+			populatePrepTools();
 
 			pluginWorkspaceAccess.addMenuBarCustomizer(new MenuBarCustomizer() {
 				/**
@@ -332,7 +145,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 														+ editorAccess
 																.getCurrentPageID()
 														+ ")"));
-								disableVforms();
+								disableAllActions();
 								return;
 							}
 							// addCaretHandler();
@@ -376,17 +189,12 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 								}
 								else {
 									removeDocumentMetaInfo(dmi);
-									disableVforms();
+									disableAllActions();
 								}
 							}
 							else {
 								removeDocumentMetaInfo(dmi);
-
-								// In case this was the last open document we
-								// turn traffic light off. If there are more
-								// documents open the trafficLight will be set
-								// accordingly by editorSelected()
-								disableVforms();
+								disableAllActions();
 							}
 						};
 
@@ -404,7 +212,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 								setCurrentState(dmi);
 							}
 							else {
-								disableVforms();
+								disableAllActions();
 							}
 						};
 					}, StandalonePluginWorkspace.MAIN_EDITING_AREA);
@@ -430,8 +238,8 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 									@Override
 									public void run() {
-										makeVformToolbar();
-										disableVforms();
+										prepTools.get(0).makeToolbar();
+										disableAllActions();
 									}
 
 								});
@@ -457,7 +265,6 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 								showMessage(getVersion());
 							}
 							else if ("Project".equals(viewInfo.getViewID())) {
-								// Change the 'Project' view title.
 								viewInfo.setTitle("PrepTools Project");
 							}
 						}
@@ -471,32 +278,22 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		final JMenu menuPrepTools = new JMenu("PrepTools");
 		final ButtonGroup group = new ButtonGroup();
 
-		final JMenuItem vFormItem = new JRadioButtonMenuItem(
-				new AbstractAction() {
+		int i = 0;
+		for (final PrepTool preptool : prepTools) {
+			final JMenuItem item = new JRadioButtonMenuItem(
+					new AbstractAction() {
 
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						makeVformToolbar();
-					}
-				});
-		vFormItem.setText("VForms");
-		vFormItem.setMnemonic(KeyEvent.VK_V);
-		vFormItem.setSelected(true);
-		menuPrepTools.add(vFormItem);
-		group.add(vFormItem);
-
-		final JMenuItem parensItem = new JRadioButtonMenuItem(
-				new AbstractAction() {
-
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						makeParensToolbar();
-					}
-				});
-		parensItem.setText("Parens");
-		parensItem.setMnemonic(KeyEvent.VK_P);
-		menuPrepTools.add(parensItem);
-		group.add(parensItem);
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							preptool.makeToolbar();
+						}
+					});
+			item.setText(preptool.getLabel());
+			item.setMnemonic(preptool.getMnemonic());
+			item.setSelected(i++ == 0); // the first is selected
+			menuPrepTools.add(item);
+			group.add(item);
+		}
 
 		return menuPrepTools;
 	}
