@@ -176,7 +176,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 										public void run() {
 											pluginWorkspaceAccess
 													.open(editorLocation);
-											dmi.setPage(PrepToolsPluginExtension.this);
+											dmi.setPageAndDocument(PrepToolsPluginExtension.this);
 											setCurrentState(dmi);
 											final PositionMatch match = dmi
 													.getCurrentPositionMatch();
@@ -306,15 +306,15 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		return menuPrepTools;
 	}
 
-	private final Map<URL, DocumentMetaInfo> documents = new HashMap<URL, DocumentMetaInfo>();
+	private final Map<URL, DocumentMetaInfo> documentMetaInfos = new HashMap<URL, DocumentMetaInfo>();
 
 	DocumentMetaInfo getDocumentMetaInfo() {
 		return getDocumentMetaInfo(getEditorLocation());
 	}
 
 	DocumentMetaInfo getDocumentMetaInfo(final URL editorLocation) {
-		if (documents.containsKey(editorLocation)) {
-			return documents.get(editorLocation);
+		if (documentMetaInfos.containsKey(editorLocation)) {
+			return documentMetaInfos.get(editorLocation);
 		}
 		if (getPage() == null) {
 			return null;
@@ -323,13 +323,13 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		final DocumentMetaInfo documentMetaInformation = new DocumentMetaInfo(
 				this);
 
-		documents.put(editorLocation, documentMetaInformation);
+		documentMetaInfos.put(editorLocation, documentMetaInformation);
 		return documentMetaInformation;
 	}
 
 	private void removeDocumentMetaInfo(final DocumentMetaInfo dmi) {
 		dmi.finish();
-		documents.remove(dmi.getUrl());
+		documentMetaInfos.remove(dmi.getUrl());
 	}
 
 	private String getVersion() {
@@ -356,8 +356,8 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		final StringBuilder sb = new StringBuilder();
 		boolean showDialog = false;
 		if (runPlugin) {
-			for (final URL url : documents.keySet()) {
-				if (documents.get(url).isProcessing()) {
+			for (final URL url : documentMetaInfos.keySet()) {
+				if (documentMetaInfos.get(url).isProcessing()) {
 					showDialog = true;
 					sb.append("\n- ");
 					sb.append(FileUtils.basename(url));

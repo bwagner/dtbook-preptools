@@ -3,6 +3,7 @@ package ch.sbs.plugin.preptools;
 import java.awt.event.ActionEvent;
 import java.net.URL;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.text.BadLocationException;
@@ -91,7 +92,7 @@ class VFormStartAction extends AbstractVFormAction {
 				.getDocumentMetaInfo();
 
 		final URL editorLocation = editorAccess.getEditorLocation();
-		if (dmi.doneCheckingVform()) {
+		if (dmi.vform.doneChecking()) {
 			if (workspaceAccessPluginExtension
 					.showConfirmDialog(
 							"v-form: Start Over?",
@@ -100,13 +101,13 @@ class VFormStartAction extends AbstractVFormAction {
 									+ " has already been vformed.\n Do you want to Start over?")
 
 			) {
-				dmi.setDoneCheckingVform(false);
+				dmi.vform.setDoneChecking(false);
 			}
 			else {
 				return;
 			}
 		}
-		else if (dmi.hasStartedCheckingVform()) {
+		else if (dmi.vform.hasStartedChecking()) {
 			if (workspaceAccessPluginExtension
 					.showConfirmDialog(
 							"v-form: Start Over?",
@@ -115,7 +116,7 @@ class VFormStartAction extends AbstractVFormAction {
 									+ " is currently being vformed.\n Do you want to Start over?")
 
 			) {
-				dmi.setDoneCheckingVform(false);
+				dmi.vform.setDoneChecking(false);
 			}
 			else {
 				return;
@@ -124,11 +125,11 @@ class VFormStartAction extends AbstractVFormAction {
 		final Document document = aWSTextEditorPage.getDocument();
 		final Match match = VFormUtil.find(
 				document.getText(0, document.getLength()), 0,
-				dmi.getCurrentVFormPattern());
+				dmi.vform.getCurrentPattern());
 		select(match);
 
-		dmi.setHasStartedCheckingVform(true);
-		dmi.setDoneCheckingVform(false);
+		dmi.vform.setHasStartedChecking(true);
+		dmi.vform.setDoneChecking(false);
 		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
 		workspaceAccessPluginExtension.setCurrentState(dmi);
 	}
@@ -211,12 +212,12 @@ abstract class ProceedAction extends AbstractVFormAction {
 		final String newText = document.getText(0, document.getLength());
 		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
 				.getDocumentMetaInfo(editorAccess.getEditorLocation());
-		final Match match = VFormUtil.find(newText, startAt,
-				dmi.getCurrentVFormPattern());
+		final Pattern currentPattern = dmi.vform.getCurrentPattern();
+		final Match match = VFormUtil.find(newText, startAt, currentPattern);
 		if (match.equals(Match.NULL_MATCH)) {
 			workspaceAccessPluginExtension
 					.showDialog("You're done with v-forms!");
-			dmi.done();
+			dmi.vform.done();
 			match.startOffset = 0;
 			match.endOffset = 0;
 		}
@@ -261,7 +262,7 @@ class VFormAcceptAction extends ProceedAction {
 	@Override
 	protected boolean veto(final String selText) {
 		return (selText == null || !VFormUtil.matches(selText,
-				dmi.getCurrentVFormPattern()));
+				dmi.vform.getCurrentPattern()));
 	}
 
 	/* (non-Javadoc)
@@ -306,7 +307,7 @@ abstract class OrphanParenAbstractAction extends AbstractVFormAction {
 		init();
 		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
 				.getDocumentMetaInfo();
-		if (dmi.hasMoreOrphanedParens()) {
+		if (dmi.orphanedParens.hasNext()) {
 			select(dmi);
 		}
 		else {
@@ -328,7 +329,7 @@ abstract class OrphanParenAbstractAction extends AbstractVFormAction {
 	}
 
 	protected void select(DocumentMetaInfo dmi) {
-		final Match.PositionMatch match = dmi.getNextOrphanedParen();
+		final Match.PositionMatch match = dmi.orphanedParens.next();
 		select(match);
 	}
 
@@ -357,7 +358,7 @@ class OrphanParenStartAction extends OrphanParenAbstractAction {
 			workspaceAccessPluginExtension.showMessage(e.getMessage());
 			e.printStackTrace();
 		}
-		dmi.setOrphanedParens(orphans);
+		dmi.orphanedParens.set(orphans);
 	}
 
 	@Override

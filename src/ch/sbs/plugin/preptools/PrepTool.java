@@ -160,6 +160,8 @@ abstract class PrepTool {
 
 class VFormPrepTool extends PrepTool {
 
+	static final String LABEL = "VForms";
+
 	VFormPrepTool(PrepToolsPluginExtension prepToolsPluginExtension) {
 		super(prepToolsPluginExtension);
 	}
@@ -177,7 +179,7 @@ class VFormPrepTool extends PrepTool {
 
 	@Override
 	protected String getLabel() {
-		return "VForms";
+		return LABEL;
 	}
 
 	@Override
@@ -199,7 +201,7 @@ class VFormPrepTool extends PrepTool {
 		if (theDocumentMetaInfo == null) {
 			return;
 		}
-		allForms.setSelected(theDocumentMetaInfo.vFormPatternIsAll());
+		allForms.setSelected(theDocumentMetaInfo.vform.patternIsAll());
 
 		if (!theDocumentMetaInfo.isDtBook()) { // TODO: this belongs in
 												// superclass
@@ -222,7 +224,7 @@ class VFormPrepTool extends PrepTool {
 			 - vformFindAction:   enabled/disabled
 			 - vformAcceptAction: enabled/disabled
 		 */
-		if (!theDocumentMetaInfo.hasStartedCheckingVform()) {
+		if (!theDocumentMetaInfo.vform.hasStartedChecking()) {
 			if (isTextPage) {
 				trafficLight.go();
 				startAction.setEnabled(true);
@@ -236,7 +238,7 @@ class VFormPrepTool extends PrepTool {
 			findAction.setEnabled(false);
 			acceptAction.setEnabled(false);
 		}
-		else if (theDocumentMetaInfo.doneCheckingVform()) {
+		else if (theDocumentMetaInfo.vform.doneChecking()) {
 			trafficLight.done();
 			if (isTextPage) {
 				startAction.setEnabled(true);
@@ -266,12 +268,12 @@ class VFormPrepTool extends PrepTool {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
-					prepToolsPluginExtension.getDocumentMetaInfo()
-							.setVFormPatternToAll();
+					prepToolsPluginExtension.getDocumentMetaInfo().vform
+							.setPatternToAll();
 				}
 				else {
-					prepToolsPluginExtension.getDocumentMetaInfo()
-							.setVFormPatternTo3rdPP();
+					prepToolsPluginExtension.getDocumentMetaInfo().vform
+							.setPatternTo3rdPP();
 				}
 			}
 		});
@@ -296,6 +298,8 @@ class VFormPrepTool extends PrepTool {
 
 class ParensPrepTool extends PrepTool {
 
+	static final String LABEL = "Parens";
+
 	ParensPrepTool(PrepToolsPluginExtension prepToolsPluginExtension) {
 		super(prepToolsPluginExtension);
 	}
@@ -307,7 +311,7 @@ class ParensPrepTool extends PrepTool {
 
 	@Override
 	protected String getLabel() {
-		return "Parens";
+		return LABEL;
 	}
 
 	@Override
