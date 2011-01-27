@@ -36,6 +36,23 @@ public class VFormUtilTest {
 	}
 
 	@Test
+	public void testSkip() {
+		assertEquals(Match.NULL_MATCH, VFormUtil.find("Sieb", 0));
+		final Match m = VFormUtil.find("Sieben können " + VFormUtil.wrap("Sie")
+				+ " haben.", 0);
+		assertEquals(Match.NULL_MATCH, m);
+	}
+
+	@Test
+	public void testSkipLiteral() {
+		assertEquals(Match.NULL_MATCH, VFormUtil.find("Sieb", 0));
+		final Match m = VFormUtil.find(
+				"Sieben können " + VFormUtil.wrap("Sie", "brl:literal")
+						+ " haben.", 0);
+		assertEquals(Match.NULL_MATCH, m);
+	}
+
+	@Test
 	public void testMatch() {
 
 		// ____________________________1___________________2

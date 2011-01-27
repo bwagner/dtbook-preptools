@@ -8,6 +8,8 @@ import ch.sbs.utils.preptools.RegionSkipper;
 
 public class VFormUtil {
 	private static final String ELEMENT_NAME = "brl:v-form";
+	private static final RegionSkipper literalSkipper = RegionSkipper
+			.getLiteralSkipper();
 
 	private static final RegionSkipper skipAlreadyMarkedUp;
 	static {
@@ -107,9 +109,11 @@ public class VFormUtil {
 		final Matcher m = pattern.matcher(text);
 		boolean inSkipRegion = true;
 		skipAlreadyMarkedUp.findRegionsToSkip(text);
+		literalSkipper.findRegionsToSkip(text);
 		while (inSkipRegion && m.find(start)) {
 			start++;
-			inSkipRegion = skipAlreadyMarkedUp.inSkipRegion(m);
+			inSkipRegion = skipAlreadyMarkedUp.inSkipRegion(m)
+					|| literalSkipper.inSkipRegion(m);
 
 		}
 		if (inSkipRegion) {
