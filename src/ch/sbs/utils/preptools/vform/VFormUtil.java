@@ -111,24 +111,27 @@ public class VFormUtil {
 	 * Returns Match where the pattern occurs or NULL_MATCH
 	 * 
 	 * @param text
-	 * @param i
+	 *            Text to search
+	 * @param start
+	 *            index where to start
 	 * @param pattern
-	 * @return
+	 *            pattern to match
+	 * @return Match
 	 */
-	public static Match find(final String text, int i, final Pattern pattern) {
+	public static Match find(final String text, int start, final Pattern pattern) {
 		final Matcher m = pattern.matcher(text);
-		return m.find(i) ? new Match(m.start(), m.end()) : Match.NULL_MATCH;
+		return m.find(start) ? new Match(m.start(), m.end()) : Match.NULL_MATCH;
 	}
 
 	/**
 	 * Does the same as @see find using the default pattern.
 	 * 
 	 * @param text
-	 * @param i
+	 * @param start
 	 * @return
 	 */
-	public static Match find(final String text, int i) {
-		return find(text, i, vFormDefaultPattern);
+	public static Match find(final String text, int start) {
+		return find(text, start, vFormDefaultPattern);
 	}
 
 	/**
