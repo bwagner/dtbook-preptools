@@ -173,11 +173,11 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 							if (dmi.isProcessing() && !applicationClosing) {
 								// we can't veto closing!
 								if (showConfirmDialog(
-										"v-form: Start Over?",
+										"v-form: Continue?",
 										"Document "
 												+ FileUtils
 														.basename(editorLocation)
-												+ " was still being processed. Want to start over?")) {
+												+ " was still being processed. Want to continue?")) {
 									SwingUtilities.invokeLater(new Runnable() {
 										@Override
 										public void run() {
