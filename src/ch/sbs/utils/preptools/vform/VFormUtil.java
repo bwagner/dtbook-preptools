@@ -82,33 +82,6 @@ public class VFormUtil {
 	}
 
 	/**
-	 * Returns the given text with matching parts surrounded by
-	 * <brl:v-form></brl:v-form>
-	 * 
-	 * @param theText
-	 *            the text to work on
-	 * @param pattern
-	 *            the pattern to match
-	 * @return the given text with matching parts surrounded by
-	 *         <brl:v-form></brl:v-form>
-	 */
-	public static String replace(final String theText, final Pattern pattern) {
-		return pattern.matcher(theText).replaceAll(wrap("$0"));
-		// Group zero always stands for the entire expression.
-		// http://download.oracle.com/javase/1.5.0/docs/api/index.html?java/util/regex/Matcher.html
-	}
-
-	/**
-	 * Does the same as @see replace using the default pattern.
-	 * 
-	 * @param theText
-	 * @return
-	 */
-	public static String replace(final String theText) {
-		return replace(theText, vFormDefaultPattern);
-	}
-
-	/**
 	 * Returns Match where the pattern occurs or NULL_MATCH
 	 * 
 	 * @param text

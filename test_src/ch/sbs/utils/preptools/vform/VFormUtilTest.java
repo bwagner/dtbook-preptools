@@ -24,43 +24,11 @@ public class VFormUtilTest {
 	}
 
 	@Test
-	public void testReplaceKeepPart() {
-		assertEquals("Deintegration", VFormUtil.replace("Deintegration"));
-		assertEquals("Sieb", VFormUtil.replace("Sieb"));
-	}
-
-	@Test
 	public void testReplaceKeep() {
 		assertEquals(Match.NULL_MATCH, VFormUtil.find("Sieb", 0));
 		final Match m = VFormUtil.find("Sieben können Sie haben.", 0);
 		assertEquals(14, m.startOffset);
 		assertEquals(14 + "Sie".length(), m.endOffset);
-	}
-
-	@Test
-	public void testReplaceNothing() {
-		assertEquals("nix", VFormUtil.replace("nix"));
-	}
-
-	@Test
-	public void testDeinetwegen() {
-		assertEquals(wrap("Deinetwegen") + " ist es schief gegangen.",
-				VFormUtil.replace("Deinetwegen ist es schief gegangen."));
-	}
-
-	@Test
-	public void testReplace() {
-		assertEquals(wrap("Sie"), VFormUtil.replace("Sie"));
-		assertEquals(wrap("Ihre"), VFormUtil.replace("Ihre"));
-		assertEquals(wrap("Ihr"), VFormUtil.replace("Ihr"));
-		assertEquals(wrap("Ihren"), VFormUtil.replace("Ihren"));
-		assertEquals(wrap("Ihrem"), VFormUtil.replace("Ihrem"));
-		assertEquals(wrap("Ihres"), VFormUtil.replace("Ihres"));
-		assertEquals(wrap("Deine"), VFormUtil.replace("Deine"));
-		assertEquals(wrap("Dein"), VFormUtil.replace("Dein"));
-		assertEquals("Das können " + wrap("Sie") + " zu " + wrap("Ihren")
-				+ " Akten legen.",
-				VFormUtil.replace("Das können Sie zu Ihren Akten legen."));
 	}
 
 	@Test
@@ -144,33 +112,6 @@ public class VFormUtilTest {
 		assertEquals(Match.NULL_MATCH, match);
 
 	}
-
-	@Test
-	public void testEur() {
-
-		assertEquals("Das kostet 50 Eur.",
-				VFormUtil.replace("Das kostet 50 Eur."));
-		assertEquals("Was kostet " + wrap("Eure") + " Lösung?",
-				VFormUtil.replace("Was kostet Eure Lösung?"));
-
-	}
-
-	/*
-	 * 	EBNF für Satzende:
-	--------------------
-	
-	 Variations:
-	 1. Punkt                        Whitespace
-	 2. Punkt                        Whitespace QuoteSign
-	 3. Punkt QuoteSign              Whitespace
-	 4. Punkt QuoteSign              Whitespace QuoteSign 
-	 5. Punkt           ClosingBrace Whitespace
-	 6. Punkt           ClosingBrace Whitespace QuoteSign 
-	 7. Punkt           ClosingBrace            QuoteSign Whitespace
-	 8. Punkt QuoteSign ClosingBrace Whitespace
-	 9. Punkt QuoteSign              Whitespace QuoteSign 
-	10. Punkt QuoteSign ClosingBrace Whitespace QuoteSign 
-	 */
 
 	@Test
 	public void testSettingPatternAll() {
