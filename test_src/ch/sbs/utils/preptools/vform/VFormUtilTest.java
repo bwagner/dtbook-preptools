@@ -1,6 +1,5 @@
 package ch.sbs.utils.preptools.vform;
 
-import static ch.sbs.utils.preptools.vform.VFormUtil.wrap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -8,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import ch.sbs.utils.preptools.Match;
-import ch.sbs.utils.preptools.vform.VFormUtil;
 
 public class VFormUtilTest {
 
@@ -21,6 +19,12 @@ public class VFormUtilTest {
 	public void testReplaceMatches() {
 		assertTrue(VFormUtil.matches("Deine"));
 		assertFalse(VFormUtil.matches("Sieb"));
+	}
+
+	@Test
+	public void testNoMatchesMarkup() {
+		assertTrue(VFormUtil.matches("Deine"));
+		assertFalse(VFormUtil.matches(VFormUtil.wrap("Deine")));
 	}
 
 	@Test
@@ -119,8 +123,7 @@ public class VFormUtilTest {
 		// __________________01234567890123456789012345678901234
 		final String text = "Dann kann Anna es Deinem Kollegen geben.";
 
-		Match match = VFormUtil.find(text, 0,
-				VFormUtil.getAllPattern());
+		Match match = VFormUtil.find(text, 0, VFormUtil.getAllPattern());
 
 		assertEquals(18, match.startOffset);
 		assertEquals(24, match.endOffset);
@@ -133,8 +136,7 @@ public class VFormUtilTest {
 		// __________________01234567890123456789012345678901234
 		final String text = "Dann kann Anna es Deinem Kollegen geben.";
 
-		Match match = VFormUtil.find(text, 0,
-				VFormUtil.get3rdPPPattern());
+		Match match = VFormUtil.find(text, 0, VFormUtil.get3rdPPPattern());
 
 		assertEquals(match, Match.NULL_MATCH);
 
