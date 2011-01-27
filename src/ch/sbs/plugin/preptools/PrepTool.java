@@ -5,6 +5,10 @@ import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -17,8 +21,11 @@ import javax.swing.JLabel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.ActionMapUIResource;
+import javax.swing.text.Document;
 
 import ro.sync.exml.editor.EditorPageConstants;
+import ch.sbs.utils.preptools.Match;
+import ch.sbs.utils.preptools.vform.VFormUtil;
 
 abstract class PrepTool {
 
@@ -160,6 +167,107 @@ abstract class PrepTool {
 
 class VFormPrepTool extends PrepTool {
 
+	static class MetaInfo implements DocumentMetaInfo.MetaInfo {
+		private boolean hasStartedChecking;
+		private boolean isDoneChecking;
+		private Pattern currentPattern;
+
+		public MetaInfo() {
+			setPatternTo3rdPP();
+		}
+
+		/**
+		 * 
+		 * @return true if vform pattern is set to all.
+		 */
+		public boolean patternIsAll() {
+			return currentPattern == VFormUtil.getAllPattern();
+		}
+
+		/**
+		 * Sets vform pattern to all.
+		 */
+		public void setPatternToAll() {
+			currentPattern = VFormUtil.getAllPattern();
+		}
+
+		/**
+		 * Sets vform pattern to 3rdPersonPlural.
+		 */
+		public void setPatternTo3rdPP() {
+			currentPattern = VFormUtil.get3rdPPPattern();
+		}
+
+		/**
+		 * True when done checking vforms.
+		 */
+		public void done() {
+			setDoneChecking(true);
+		}
+
+		/**
+		 * 
+		 * @return if currently processing.
+		 */
+		@Override
+		public boolean isProcessing() {
+			return isProcessingVform();
+		}
+
+		/**
+		 * 
+		 * @return if currently processing.
+		 */
+		private boolean isProcessingVform() {
+			return hasStartedChecking() && !doneChecking();
+		}
+
+		/**
+		 * True if has started checking vform.
+		 * 
+		 * @param theHasStartedChecking
+		 */
+		void setHasStartedChecking(final boolean theHasStartedChecking) {
+			hasStartedChecking = theHasStartedChecking;
+		}
+
+		/**
+		 * True if has started checking vform.
+		 * 
+		 * @return True if has started checking vform.
+		 */
+		public boolean hasStartedChecking() {
+			return hasStartedChecking;
+		}
+
+		/**
+		 * True if has finished checking vform.
+		 * 
+		 * @param setDoneChecking
+		 */
+		public void setDoneChecking(final boolean setDoneChecking) {
+			isDoneChecking = setDoneChecking;
+		}
+
+		/**
+		 * True if has finished checking vform.
+		 * 
+		 * @return
+		 */
+		public boolean doneChecking() {
+			return isDoneChecking;
+		}
+
+		/**
+		 * 
+		 * @return current vform-pattern.
+		 */
+		public Pattern getCurrentPattern() {
+			return currentPattern;
+		}
+
+	}
+
 	static final String LABEL = "VForms";
 
 	VFormPrepTool(PrepToolsPluginExtension prepToolsPluginExtension) {
@@ -297,6 +405,54 @@ class VFormPrepTool extends PrepTool {
 }
 
 class ParensPrepTool extends PrepTool {
+
+	static class MetaInfo implements DocumentMetaInfo.MetaInfo {
+		private Iterator<Match.PositionMatch> orphanedParensIterator;
+		private final Document document;
+
+		MetaInfo(final Document theDocument) {
+			document = theDocument;
+		}
+
+		/**
+		 * Sets orphaned parens.
+		 * 
+		 * @param theOrphanedParens
+		 */
+		public void set(final List<Match> theOrphanedParens) {
+			final List<Match.PositionMatch> pml = new ArrayList<Match.PositionMatch>();
+			for (final Match match : theOrphanedParens) {
+				Match.PositionMatch mp = new Match.PositionMatch(document,
+						match);
+				pml.add(mp);
+			}
+			orphanedParensIterator = pml.iterator();
+		}
+
+		/**
+		 * Iterator-function.
+		 * 
+		 * @return true if iterator has more orphaned parens.
+		 */
+		public boolean hasNext() {
+			return orphanedParensIterator.hasNext();
+		}
+
+		/**
+		 * Iterator-function.
+		 * 
+		 * @return next orphaned paren of this iterator.
+		 */
+		public Match.PositionMatch next() {
+			return orphanedParensIterator.next();
+		}
+
+		@Override
+		public boolean isProcessing() {
+			return false;
+		}
+
+	}
 
 	static final String LABEL = "Parens";
 

@@ -1,12 +1,8 @@
 package ch.sbs.plugin.preptools;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -15,7 +11,6 @@ import javax.swing.text.Document;
 
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
 import ch.sbs.utils.preptools.Match;
-import ch.sbs.utils.preptools.vform.VFormUtil;
 
 /**
  * Keeps meta information about a document known to the plugin.
@@ -30,162 +25,8 @@ class DocumentMetaInfo {
 
 	Map<String, MetaInfo> toolSpecific = new HashMap<String, MetaInfo>();
 
-	// TODO: this class belongs in VFormPrepTool, but
-	// its instances should be kept here, since the
-	// information in VFormMetaInfo is per document, just
-	// like DocumentMetaInfo
-	static class VFormMetaInfo implements MetaInfo {
-		private boolean hasStartedChecking;
-		private boolean isDoneChecking;
-		private Pattern currentPattern;
-
-		public VFormMetaInfo() {
-			setPatternTo3rdPP();
-		}
-
-		/**
-		 * 
-		 * @return true if vform pattern is set to all.
-		 */
-		public boolean patternIsAll() {
-			return currentPattern == VFormUtil.getAllPattern();
-		}
-
-		/**
-		 * Sets vform pattern to all.
-		 */
-		public void setPatternToAll() {
-			currentPattern = VFormUtil.getAllPattern();
-		}
-
-		/**
-		 * Sets vform pattern to 3rdPersonPlural.
-		 */
-		public void setPatternTo3rdPP() {
-			currentPattern = VFormUtil.get3rdPPPattern();
-		}
-
-		/**
-		 * True when done checking vforms.
-		 */
-		public void done() {
-			setDoneChecking(true);
-		}
-
-		/**
-		 * 
-		 * @return if currently processing.
-		 */
-		@Override
-		public boolean isProcessing() {
-			return isProcessingVform();
-		}
-
-		/**
-		 * 
-		 * @return if currently processing.
-		 */
-		private boolean isProcessingVform() {
-			return hasStartedChecking() && !doneChecking();
-		}
-
-		/**
-		 * True if has started checking vform.
-		 * 
-		 * @param theHasStartedChecking
-		 */
-		void setHasStartedChecking(final boolean theHasStartedChecking) {
-			hasStartedChecking = theHasStartedChecking;
-		}
-
-		/**
-		 * True if has started checking vform.
-		 * 
-		 * @return True if has started checking vform.
-		 */
-		public boolean hasStartedChecking() {
-			return hasStartedChecking;
-		}
-
-		/**
-		 * True if has finished checking vform.
-		 * 
-		 * @param setDoneChecking
-		 */
-		public void setDoneChecking(final boolean setDoneChecking) {
-			isDoneChecking = setDoneChecking;
-		}
-
-		/**
-		 * True if has finished checking vform.
-		 * 
-		 * @return
-		 */
-		public boolean doneChecking() {
-			return isDoneChecking;
-		}
-
-		/**
-		 * 
-		 * @return current vform-pattern.
-		 */
-		public Pattern getCurrentPattern() {
-			return currentPattern;
-		}
-
-	}
-
-	// TODO: this class belongs in ParensPrepTool
-	static class OrphanedParensMetaInfo implements MetaInfo {
-		private Iterator<Match.PositionMatch> orphanedParensIterator;
-		private final Document document;
-
-		OrphanedParensMetaInfo(final Document theDocument) {
-			document = theDocument;
-		}
-
-		/**
-		 * Sets orphaned parens.
-		 * 
-		 * @param theOrphanedParens
-		 */
-		public void set(final List<Match> theOrphanedParens) {
-			final List<Match.PositionMatch> pml = new ArrayList<Match.PositionMatch>();
-			for (final Match match : theOrphanedParens) {
-				Match.PositionMatch mp = new Match.PositionMatch(document,
-						match);
-				pml.add(mp);
-			}
-			orphanedParensIterator = pml.iterator();
-		}
-
-		/**
-		 * Iterator-function.
-		 * 
-		 * @return true if iterator has more orphaned parens.
-		 */
-		public boolean hasNext() {
-			return orphanedParensIterator.hasNext();
-		}
-
-		/**
-		 * Iterator-function.
-		 * 
-		 * @return next orphaned paren of this iterator.
-		 */
-		public Match.PositionMatch next() {
-			return orphanedParensIterator.next();
-		}
-
-		@Override
-		public boolean isProcessing() {
-			return false;
-		}
-
-	}
-
-	public final VFormMetaInfo vform;
-	public final OrphanedParensMetaInfo orphanedParens;
+	public final VFormPrepTool.MetaInfo vform;
+	public final ParensPrepTool.MetaInfo orphanedParens;
 
 	// general
 	private boolean isDtBook;
@@ -201,8 +42,8 @@ class DocumentMetaInfo {
 	public DocumentMetaInfo(
 			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
 		setPageAndDocument(theWorkspaceAccessPluginExtension);
-		vform = new VFormMetaInfo();
-		orphanedParens = new OrphanedParensMetaInfo(document);
+		vform = new VFormPrepTool.MetaInfo();
+		orphanedParens = new ParensPrepTool.MetaInfo(document);
 		toolSpecific.put(VFormPrepTool.LABEL, vform);
 		toolSpecific.put(ParensPrepTool.LABEL, orphanedParens);
 
@@ -374,8 +215,12 @@ class DocumentMetaInfo {
 		return document;
 	}
 
-	public boolean isProcessing() {
+	public MetaInfo getCurrentToolSpecificMetaInfo() {
 		final String label = getCurrentPrepTool().getLabel();
-		return toolSpecific.get(label).isProcessing();
+		return toolSpecific.get(label);
+	}
+
+	public boolean isProcessing() {
+		return getCurrentToolSpecificMetaInfo().isProcessing();
 	}
 }
