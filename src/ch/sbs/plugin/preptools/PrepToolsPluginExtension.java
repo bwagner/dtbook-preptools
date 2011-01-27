@@ -63,8 +63,13 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	}
 
 	private void populatePrepTools() {
-		prepTools.add(new VFormPrepTool(this));
-		prepTools.add(new ParensPrepTool(this));
+		int i = 0;
+		prepTools.add(new VFormPrepTool(this, i++));
+		prepTools.add(new ParensPrepTool(this, i++));
+	}
+
+	void selectPrepToolItem(int i) {
+		menuPrepTools.getItem(i).setSelected(true);
 	}
 
 	private PrepTool getDefaultPrepTool() {
@@ -92,6 +97,8 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 	private MyCaretListener caretHandler;
 
+	private JMenu menuPrepTools;
+
 	/**
 	 * @see ro.sync.exml.plugin.workspace.WorkspaceAccessPluginExtension#applicationStarted(ro.sync.exml.workspace.api.standalone.StandalonePluginWorkspace)
 	 */
@@ -116,7 +123,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 				@Override
 				public void customizeMainMenu(final JMenuBar mainMenuBar) {
 					// PrepTools menu
-					final JMenu menuPrepTools = createPrepToolsMenu();
+					menuPrepTools = createPrepToolsMenu();
 					menuPrepTools.setMnemonic(KeyEvent.VK_R);
 					// Add the CMS menu before the Help menu
 					mainMenuBar.add(menuPrepTools,
@@ -298,7 +305,6 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 					});
 			item.setText(preptool.getLabel());
 			item.setMnemonic(preptool.getMnemonic());
-			item.setSelected(i++ == 0); // the first is selected
 			menuPrepTools.add(item);
 			group.add(item);
 		}

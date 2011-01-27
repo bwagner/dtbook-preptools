@@ -30,12 +30,16 @@ import ch.sbs.utils.preptools.vform.VFormUtil;
 abstract class PrepTool {
 
 	protected final PrepToolsPluginExtension prepToolsPluginExtension;
+	protected final int menuItemNr;
 
 	/**
 	 * @param thePrepToolsPluginExtension
+	 * @param theMenuItemNr
 	 */
-	PrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
+	PrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			int theMenuItemNr) {
 		prepToolsPluginExtension = thePrepToolsPluginExtension;
+		menuItemNr = theMenuItemNr;
 	}
 
 	public void activate() {
@@ -45,6 +49,7 @@ abstract class PrepTool {
 		if (documentMetaInfo != null) {
 			documentMetaInfo.setCurrentPrepTool(this);
 		}
+		prepToolsPluginExtension.selectPrepToolItem(menuItemNr);
 	}
 
 	private void makeToolbar() {
@@ -270,8 +275,8 @@ class VFormPrepTool extends PrepTool {
 
 	static final String LABEL = "VForms";
 
-	VFormPrepTool(PrepToolsPluginExtension prepToolsPluginExtension) {
-		super(prepToolsPluginExtension);
+	VFormPrepTool(PrepToolsPluginExtension prepToolsPluginExtension, int theMenuItemNr) {
+		super(prepToolsPluginExtension, theMenuItemNr);
 	}
 
 	private TrafficLight trafficLight;
@@ -456,8 +461,8 @@ class ParensPrepTool extends PrepTool {
 
 	static final String LABEL = "Parens";
 
-	ParensPrepTool(PrepToolsPluginExtension prepToolsPluginExtension) {
-		super(prepToolsPluginExtension);
+	ParensPrepTool(PrepToolsPluginExtension prepToolsPluginExtension, int theMenuItemNr) {
+		super(prepToolsPluginExtension, theMenuItemNr);
 	}
 
 	private final Action startAction = new OrphanParenStartAction(
