@@ -2,6 +2,7 @@ package ch.sbs.utils.preptools.parens;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -10,6 +11,24 @@ import org.junit.Test;
 import ch.sbs.utils.preptools.Match;
 
 public class ParensUtilTest {
+
+	// null list != empty list
+	@Test(expected = NullPointerException.class)
+	public void testNullList() {
+		List<String> list = null;
+		for (final String item : list) {
+
+		}
+	}
+
+	// null list != empty list
+	@Test
+	public void testEmtpyList() {
+		List<String> list = new ArrayList<String>();
+		for (final String item : list) {
+
+		}
+	}
 
 	@Test
 	public void testParens() {
