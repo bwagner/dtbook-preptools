@@ -26,26 +26,11 @@ public class ParensUtil {
 
 	static abstract class OrphanMatcher {
 
-		private static final RegionSkipper regionSkipper;
-
-		static {
-			// http://download.oracle.com/javase/tutorial/essential/regex/quant.html
-			final String OPENING_TAG = "<\\s*brl\\s*:\\s*literal";
-			final String OPTIONAL_ARG = "(?:\\s+brl\\s*:grade\\s*=\\s*\"\\d\")?";
-			final String CLOSING_ANGLE = ">";
-			final String NON_GREEDY_CONTENT = ".*?";
-			final String CLOSING_TAG = "<\\s*/\\s*brl\\s*:\\s*literal\\s*>";
-			final StringBuilder sb = new StringBuilder();
-			sb.append(OPENING_TAG);
-			sb.append(OPTIONAL_ARG);
-			sb.append(CLOSING_ANGLE);
-			sb.append(NON_GREEDY_CONTENT);
-			sb.append(CLOSING_TAG);
-			regionSkipper = new RegionSkipper(sb.toString());
-		}
+		private static final RegionSkipper literalSkipper = RegionSkipper
+				.getLiteralSkipper();
 
 		public List<Match> findOrphans(final String theText) {
-			regionSkipper.findRegionsToSkip(theText);
+			literalSkipper.findRegionsToSkip(theText);
 			final List<Match> orphans = new ArrayList<Match>();
 			final String[][] patternPairs = getPatternPairs();
 			for (final String[] patPair : patternPairs) {
@@ -65,7 +50,7 @@ public class ParensUtil {
 				Match previousMatch = null;
 				matcher.reset();
 				while (matcher.find()) {
-					if (regionSkipper.inSkipRegion(matcher)) {
+					if (literalSkipper.inSkipRegion(matcher)) {
 						continue;
 					}
 					final char matchChar = matcher.group().charAt(0);
