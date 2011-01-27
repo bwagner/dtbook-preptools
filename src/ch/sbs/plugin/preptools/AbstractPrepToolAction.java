@@ -17,7 +17,7 @@ import ch.sbs.utils.preptools.parens.ParensUtil;
 import ch.sbs.utils.preptools.vform.VFormUtil;
 
 @SuppressWarnings("serial")
-abstract class AbstractVFormAction extends AbstractAction {
+abstract class AbstractPrepToolAction extends AbstractAction {
 	/**
 	 * 
 	 */
@@ -26,7 +26,7 @@ abstract class AbstractVFormAction extends AbstractAction {
 	/**
 	 * @param theWorkspaceAccessPluginExtension
 	 */
-	AbstractVFormAction(
+	AbstractPrepToolAction(
 			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
 		workspaceAccessPluginExtension = theWorkspaceAccessPluginExtension;
 	}
@@ -76,7 +76,7 @@ abstract class AbstractVFormAction extends AbstractAction {
 }
 
 @SuppressWarnings("serial")
-class VFormStartAction extends AbstractVFormAction {
+class VFormStartAction extends AbstractPrepToolAction {
 	VFormStartAction(
 			final PrepToolsPluginExtension workspaceAccessPluginExtension) {
 		super(workspaceAccessPluginExtension);
@@ -136,7 +136,7 @@ class VFormStartAction extends AbstractVFormAction {
 }
 
 @SuppressWarnings("serial")
-abstract class ProceedAction extends AbstractVFormAction {
+abstract class ProceedAction extends AbstractPrepToolAction {
 
 	ProceedAction(
 			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
@@ -300,7 +300,7 @@ class VFormFindAction extends ProceedAction {
 }
 
 @SuppressWarnings("serial")
-abstract class OrphanParenAbstractAction extends AbstractVFormAction {
+abstract class OrphanParenAbstractAction extends AbstractPrepToolAction {
 
 	@Override
 	protected void doSomething() throws BadLocationException {
