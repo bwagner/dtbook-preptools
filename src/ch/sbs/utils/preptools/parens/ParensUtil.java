@@ -2,12 +2,12 @@ package ch.sbs.utils.preptools.parens;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ch.sbs.utils.preptools.Match;
+import ch.sbs.utils.preptools.RegionSkipper;
 
 public class ParensUtil {
 
@@ -26,7 +26,7 @@ public class ParensUtil {
 
 	static abstract class OrphanMatcher {
 
-		private static final Pattern skipPattern;
+		private static final RegionSkipper regionSkipper;
 
 		static {
 			// http://download.oracle.com/javase/tutorial/essential/regex/quant.html
@@ -41,37 +41,11 @@ public class ParensUtil {
 			sb.append(CLOSING_ANGLE);
 			sb.append(NON_GREEDY_CONTENT);
 			sb.append(CLOSING_TAG);
-			skipPattern = Pattern.compile(sb.toString());
-		}
-
-		private final List<Match> regionsToSkip;
-
-		private void findRegionsToSkip(final String theText) {
-			final Matcher matcher = skipPattern.matcher(theText);
-			while (matcher.find()) {
-				regionsToSkip.add(new Match(matcher.start(), matcher.end()));
-			}
-		}
-
-		// TODO: This could be optimized by a binary search.
-		// The regionsToSkip are sorted anyway.
-		private boolean inSkipRegion(final Matcher matcher) {
-			boolean inSkipRegion = false;
-			final Iterator<Match> it = regionsToSkip.iterator();
-			while (!inSkipRegion && it.hasNext()) {
-				final Match skipRegion = it.next();
-				inSkipRegion = skipRegion.startOffset <= matcher.start()
-						&& skipRegion.endOffset > matcher.start();
-			}
-			return inSkipRegion;
-		}
-
-		public OrphanMatcher() {
-			regionsToSkip = new ArrayList<Match>();
+			regionSkipper = new RegionSkipper(sb.toString());
 		}
 
 		public List<Match> findOrphans(final String theText) {
-			findRegionsToSkip(theText);
+			regionSkipper.findRegionsToSkip(theText);
 			final List<Match> orphans = new ArrayList<Match>();
 			final String[][] patternPairs = getPatternPairs();
 			for (final String[] patPair : patternPairs) {
@@ -91,7 +65,7 @@ public class ParensUtil {
 				Match previousMatch = null;
 				matcher.reset();
 				while (matcher.find()) {
-					if (inSkipRegion(matcher)) {
+					if (regionSkipper.inSkipRegion(matcher)) {
 						continue;
 					}
 					final char matchChar = matcher.group().charAt(0);
