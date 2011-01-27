@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import ch.sbs.utils.preptools.Match;
 
 public class VFormUtil {
+	static final String ELEMENT_NAME = "brl:v-form";
 
 	// Mail von Mischa Kuenzle 12.1.2011 15:09
 	// 3. Person PL (obligatorische Abfrage)
@@ -70,9 +71,9 @@ public class VFormUtil {
 															// see
 		// http://download.oracle.com/javase/1.5.0/docs/api/java/util/regex/Pattern.html#special
 		for (final String form : forms) {
-			sb.append("(?<!<brl:v-form>)"); // negative lookbehind
+			sb.append("(?<!<" + ELEMENT_NAME + ">)"); // negative lookbehind
 			sb.append(form);
-			sb.append("(?!</brl:v-form>)"); // negative lookahead
+			sb.append("(?!</" + ELEMENT_NAME + ">)"); // negative lookahead
 			sb.append("|");
 		}
 		sb.setLength(sb.length() - 1); // chop off last "|"
@@ -156,7 +157,7 @@ public class VFormUtil {
 	}
 
 	public static final String wrap(final String theString) {
-		return wrap(theString, "brl:v-form");
+		return wrap(theString, ELEMENT_NAME);
 	}
 
 	public static final String wrap(final String theString,
