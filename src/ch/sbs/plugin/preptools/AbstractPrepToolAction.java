@@ -39,7 +39,7 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 			} catch (final BadLocationException e) {
 				e.printStackTrace();
 			}
-
+			workspaceAccessPluginExtension.setCurrentState();
 		}
 	}
 
@@ -131,7 +131,6 @@ class VFormStartAction extends AbstractPrepToolAction {
 		dmi.vform.setHasStartedChecking(true);
 		dmi.vform.setDoneChecking(false);
 		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
-		workspaceAccessPluginExtension.setCurrentState(dmi);
 	}
 }
 
@@ -359,11 +358,17 @@ class OrphanParenStartAction extends OrphanParenAbstractAction {
 			e.printStackTrace();
 		}
 		dmi.orphanedParens.set(orphans);
+		workspaceAccessPluginExtension.getDocumentMetaInfo().orphanedParens
+				.setHasStartedChecking(true);
+		workspaceAccessPluginExtension.getDocumentMetaInfo().orphanedParens
+				.setDoneChecking(false);
 	}
 
 	@Override
 	protected void handleNoneFound() {
 		workspaceAccessPluginExtension.showDialog("No orphaned parens found.");
+		workspaceAccessPluginExtension.getDocumentMetaInfo().orphanedParens
+				.setDoneChecking(true);
 	}
 
 }
@@ -380,5 +385,7 @@ class OrphanParenFindNextAction extends OrphanParenAbstractAction {
 	protected void handleNoneFound() {
 		workspaceAccessPluginExtension
 				.showDialog("You're done with orphaned parens.");
+		workspaceAccessPluginExtension.getDocumentMetaInfo().orphanedParens
+				.setDoneChecking(true);
 	}
 }

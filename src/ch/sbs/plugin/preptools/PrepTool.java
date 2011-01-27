@@ -163,10 +163,17 @@ abstract class PrepTool {
 	 */
 	public abstract int getMnemonic();
 
+	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
+		if (theDocumentMetaInfo != null) {
+			doSetCurrentState(theDocumentMetaInfo);
+		}
+	}
+
 	/**
 	 * optional hook to updated current state of this tool
 	 */
-	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
+	protected void doSetCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
+
 	}
 }
 
@@ -275,7 +282,8 @@ class VFormPrepTool extends PrepTool {
 
 	static final String LABEL = "VForms";
 
-	VFormPrepTool(PrepToolsPluginExtension prepToolsPluginExtension, int theMenuItemNr) {
+	VFormPrepTool(PrepToolsPluginExtension prepToolsPluginExtension,
+			int theMenuItemNr) {
 		super(prepToolsPluginExtension, theMenuItemNr);
 	}
 
@@ -310,17 +318,15 @@ class VFormPrepTool extends PrepTool {
 	}
 
 	@Override
-	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
-		if (theDocumentMetaInfo == null) {
-			return;
-		}
+	public void doSetCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
 		allForms.setSelected(theDocumentMetaInfo.vform.patternIsAll());
 
-		if (!theDocumentMetaInfo.isDtBook()) { // TODO: this belongs in
-												// superclass
+		// TODO: this belongs in superclass
+		if (!theDocumentMetaInfo.isDtBook()) {
 			setAllActionsEnabled(false);
 			return;
 		}
+		// TODO: this belongs in superclass
 		final boolean isTextPage = theDocumentMetaInfo.getCurrentEditorPage()
 				.equals(EditorPageConstants.PAGE_TEXT);
 
@@ -412,6 +418,8 @@ class VFormPrepTool extends PrepTool {
 class ParensPrepTool extends PrepTool {
 
 	static class MetaInfo implements DocumentMetaInfo.MetaInfo {
+		private boolean hasStartedChecking;
+		private boolean isDoneChecking;
 		private Iterator<Match.PositionMatch> orphanedParensIterator;
 		private final Document document;
 
@@ -454,14 +462,31 @@ class ParensPrepTool extends PrepTool {
 
 		@Override
 		public boolean isProcessing() {
-			return false;
+			return hasStartedChecking && !isDoneChecking;
+		}
+
+		public void setHasStartedChecking(boolean theHasStartedChecking) {
+			hasStartedChecking = theHasStartedChecking;
+		}
+
+		public boolean hasStartedChecking() {
+			return hasStartedChecking;
+		}
+
+		public void setDoneChecking(boolean theIsDoneChecking) {
+			isDoneChecking = theIsDoneChecking;
+		}
+
+		public boolean isDoneChecking() {
+			return isDoneChecking;
 		}
 
 	}
 
 	static final String LABEL = "Parens";
 
-	ParensPrepTool(PrepToolsPluginExtension prepToolsPluginExtension, int theMenuItemNr) {
+	ParensPrepTool(PrepToolsPluginExtension prepToolsPluginExtension,
+			int theMenuItemNr) {
 		super(prepToolsPluginExtension, theMenuItemNr);
 	}
 
@@ -488,8 +513,10 @@ class ParensPrepTool extends PrepTool {
 	}
 
 	@Override
-	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
-		setAllActionsEnabled(true);
+	public void doSetCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
+		startAction.setEnabled(true);
+		findNextAction.setEnabled(theDocumentMetaInfo.orphanedParens
+				.isProcessing());
 	}
 
 	@Override

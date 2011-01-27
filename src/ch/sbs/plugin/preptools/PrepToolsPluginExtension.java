@@ -51,6 +51,10 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 				theDocumentMetaInfo);
 	}
 
+	public void setCurrentState() {
+		setCurrentState(getDocumentMetaInfo());
+	}
+
 	private void disableAllActions() {
 		setAllActions(false);
 	}
