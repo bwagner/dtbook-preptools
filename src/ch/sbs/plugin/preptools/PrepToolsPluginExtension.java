@@ -297,7 +297,6 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		final JMenu menuPrepTools = new JMenu("PrepTools");
 		final ButtonGroup group = new ButtonGroup();
 
-		int i = 0;
 		for (final PrepTool preptool : prepTools) {
 			final JMenuItem item = new JRadioButtonMenuItem(
 					new AbstractAction() {
