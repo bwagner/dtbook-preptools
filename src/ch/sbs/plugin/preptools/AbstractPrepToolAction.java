@@ -76,7 +76,47 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 }
 
 @SuppressWarnings("serial")
-class VFormStartAction extends AbstractPrepToolAction {
+abstract class AbstractVFormAction extends AbstractPrepToolAction {
+
+	AbstractVFormAction(
+			PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
+		super(theWorkspaceAccessPluginExtension);
+	}
+
+	/**
+	 * Utility method to search on in document starting at startAt.
+	 * 
+	 * @param aWSTextEditorPage
+	 * @param editorAccess
+	 * @param startAt
+	 * 
+	 * @throws BadLocationException
+	 */
+	protected void searchOn(final WSTextEditorPage aWSTextEditorPage,
+			final WSEditor editorAccess, final int startAt)
+			throws BadLocationException {
+		final Document document = aWSTextEditorPage.getDocument();
+		final String newText = document.getText(0, document.getLength());
+		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
+				.getDocumentMetaInfo(editorAccess.getEditorLocation());
+		final Pattern currentPattern = dmi.vform.getCurrentPattern();
+		final Match match = VFormUtil.find(newText, startAt, currentPattern);
+		if (match.equals(Match.NULL_MATCH)) {
+			workspaceAccessPluginExtension
+					.showDialog("You're done with v-forms!");
+			dmi.vform.done();
+			match.startOffset = 0;
+			match.endOffset = 0;
+		}
+		workspaceAccessPluginExtension.setCurrentState(dmi);
+		select(match);
+		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
+	}
+
+}
+
+@SuppressWarnings("serial")
+class VFormStartAction extends AbstractVFormAction {
 	VFormStartAction(
 			final PrepToolsPluginExtension workspaceAccessPluginExtension) {
 		super(workspaceAccessPluginExtension);
@@ -122,22 +162,17 @@ class VFormStartAction extends AbstractPrepToolAction {
 				return;
 			}
 		}
-		final Document document = aWSTextEditorPage.getDocument();
-		final Match match = VFormUtil.find(
-				document.getText(0, document.getLength()), 0,
-				dmi.vform.getCurrentPattern());
-		select(match);
 
 		dmi.vform.setHasStartedChecking(true);
 		dmi.vform.setDoneChecking(false);
-		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
+		searchOn(aWSTextEditorPage, editorAccess, 0);
 	}
 }
 
 @SuppressWarnings("serial")
-abstract class ProceedAction extends AbstractPrepToolAction {
+abstract class VFormProceedAction extends AbstractVFormAction {
 
-	ProceedAction(
+	VFormProceedAction(
 			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
 		super(theWorkspaceAccessPluginExtension);
 	}
@@ -196,36 +231,6 @@ abstract class ProceedAction extends AbstractPrepToolAction {
 	}
 
 	/**
-	 * Utility method to search on in document starting at startAt.
-	 * 
-	 * @param aWSTextEditorPage
-	 * @param editorAccess
-	 * @param startAt
-	 * 
-	 * @throws BadLocationException
-	 */
-	private void searchOn(final WSTextEditorPage aWSTextEditorPage,
-			final WSEditor editorAccess, final int startAt)
-			throws BadLocationException {
-		final Document document = aWSTextEditorPage.getDocument();
-		final String newText = document.getText(0, document.getLength());
-		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
-				.getDocumentMetaInfo(editorAccess.getEditorLocation());
-		final Pattern currentPattern = dmi.vform.getCurrentPattern();
-		final Match match = VFormUtil.find(newText, startAt, currentPattern);
-		if (match.equals(Match.NULL_MATCH)) {
-			workspaceAccessPluginExtension
-					.showDialog("You're done with v-forms!");
-			dmi.vform.done();
-			match.startOffset = 0;
-			match.endOffset = 0;
-		}
-		workspaceAccessPluginExtension.setCurrentState(dmi);
-		select(match);
-		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
-	}
-
-	/**
 	 * Utility method to handle user's manual cursor movement.
 	 * 
 	 * @param aWSTextEditorPage
@@ -252,7 +257,7 @@ abstract class ProceedAction extends AbstractPrepToolAction {
 }
 
 @SuppressWarnings("serial")
-class VFormAcceptAction extends ProceedAction {
+class VFormAcceptAction extends VFormProceedAction {
 	VFormAcceptAction(
 			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
 		super(theWorkspaceAccessPluginExtension);
@@ -282,7 +287,7 @@ class VFormAcceptAction extends ProceedAction {
 }
 
 @SuppressWarnings("serial")
-class VFormFindAction extends ProceedAction {
+class VFormFindAction extends VFormProceedAction {
 	VFormFindAction(
 			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
 		super(theWorkspaceAccessPluginExtension);
@@ -299,7 +304,7 @@ class VFormFindAction extends ProceedAction {
 }
 
 @SuppressWarnings("serial")
-abstract class OrphanParenAbstractAction extends AbstractPrepToolAction {
+abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 
 	@Override
 	protected void doSomething() throws BadLocationException {
@@ -322,7 +327,7 @@ abstract class OrphanParenAbstractAction extends AbstractPrepToolAction {
 
 	}
 
-	OrphanParenAbstractAction(
+	AbstractOrphanParenAction(
 			PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
 		super(theWorkspaceAccessPluginExtension);
 	}
@@ -335,7 +340,7 @@ abstract class OrphanParenAbstractAction extends AbstractPrepToolAction {
 }
 
 @SuppressWarnings("serial")
-class OrphanParenStartAction extends OrphanParenAbstractAction {
+class OrphanParenStartAction extends AbstractOrphanParenAction {
 
 	OrphanParenStartAction(
 			PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
@@ -374,7 +379,7 @@ class OrphanParenStartAction extends OrphanParenAbstractAction {
 }
 
 @SuppressWarnings("serial")
-class OrphanParenFindNextAction extends OrphanParenAbstractAction {
+class OrphanParenFindNextAction extends AbstractOrphanParenAction {
 
 	OrphanParenFindNextAction(
 			PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
