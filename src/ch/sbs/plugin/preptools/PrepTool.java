@@ -341,39 +341,30 @@ class VFormPrepTool extends PrepTool {
 			 - vformFindAction:   enabled/disabled
 			 - vformAcceptAction: enabled/disabled
 		 */
+		startAction.setEnabled(isTextPage);
 		if (!theDocumentMetaInfo.vform.hasStartedChecking()) {
+			allForms.setEnabled(isTextPage);
+			findAction.setEnabled(false);
+			acceptAction.setEnabled(false);
 			if (isTextPage) {
 				trafficLight.go();
-				startAction.setEnabled(true);
-				allForms.setEnabled(true);
 			}
 			else {
 				trafficLight.stop();
-				startAction.setEnabled(false);
-				allForms.setEnabled(false);
 			}
-			findAction.setEnabled(false);
-			acceptAction.setEnabled(false);
 		}
 		else if (theDocumentMetaInfo.vform.doneChecking()) {
 			trafficLight.done();
-			if (isTextPage) {
-				startAction.setEnabled(true);
-			}
-			else {
-				startAction.setEnabled(false);
-			}
 			findAction.setEnabled(false);
 			acceptAction.setEnabled(false);
 		}
 		else {
+			setAllActionsEnabled(isTextPage);
 			if (isTextPage) {
 				trafficLight.inProgress();
-				setAllActionsEnabled(true);
 			}
 			else {
 				trafficLight.stop();
-				setAllActionsEnabled(false);
 			}
 		}
 	}
