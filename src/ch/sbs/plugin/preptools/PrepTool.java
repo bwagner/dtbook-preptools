@@ -164,7 +164,7 @@ abstract class PrepTool {
 	public abstract int getMnemonic();
 
 	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
-		if (theDocumentMetaInfo != null) {
+		if (theDocumentMetaInfo != null && theDocumentMetaInfo.isDtBook()) {
 			doSetCurrentState(theDocumentMetaInfo);
 		}
 		else {
@@ -324,11 +324,6 @@ class VFormPrepTool extends PrepTool {
 	public void doSetCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
 		allForms.setSelected(theDocumentMetaInfo.vform.patternIsAll());
 
-		// TODO: this belongs in superclass
-		if (!theDocumentMetaInfo.isDtBook()) {
-			setAllActionsEnabled(false);
-			return;
-		}
 		// TODO: this belongs in superclass
 		final boolean isTextPage = theDocumentMetaInfo.getCurrentEditorPage()
 				.equals(EditorPageConstants.PAGE_TEXT);
