@@ -55,14 +55,15 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		setCurrentState(getDocumentMetaInfo());
 	}
 
-	private void disableAllActions() {
-		setAllActions(false);
+	private void disableAllActions(final DocumentMetaInfo theDocumentMetaInfo) {
+		setAllActions(theDocumentMetaInfo, false);
 	}
 
-	private void setAllActions(final boolean enabled) {
-		final DocumentMetaInfo documentMetaInfo = getDocumentMetaInfo();
-		if (documentMetaInfo != null) {
-			documentMetaInfo.getCurrentPrepTool().setAllActionsEnabled(enabled);
+	private void setAllActions(final DocumentMetaInfo theDocumentMetaInfo,
+			final boolean enabled) {
+		if (theDocumentMetaInfo != null) {
+			theDocumentMetaInfo.getCurrentPrepTool().setAllActionsEnabled(
+					enabled);
 		}
 	}
 
@@ -156,7 +157,6 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 														+ editorAccess
 																.getCurrentPageID()
 														+ ")"));
-								disableAllActions();
 								return;
 							}
 							// we don't do much else here since in every case
@@ -203,12 +203,10 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 								}
 								else {
 									removeDocumentMetaInfo(dmi);
-									disableAllActions();
 								}
 							}
 							else {
 								removeDocumentMetaInfo(dmi);
-								disableAllActions();
 							}
 						};
 
@@ -230,9 +228,6 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 								}
 								currentPrepTool.activate();
 								setCurrentState(dmi);
-							}
-							else {
-								disableAllActions();
 							}
 						};
 					}, StandalonePluginWorkspace.MAIN_EDITING_AREA);
@@ -259,7 +254,6 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 									@Override
 									public void run() {
 										getDefaultPrepTool().activate();
-										disableAllActions();
 									}
 								});
 							}
@@ -337,6 +331,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	}
 
 	private void removeDocumentMetaInfo(final DocumentMetaInfo dmi) {
+		disableAllActions(dmi);
 		dmi.finish();
 		documentMetaInfos.remove(dmi.getUrl());
 	}

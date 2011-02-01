@@ -167,6 +167,9 @@ abstract class PrepTool {
 		if (theDocumentMetaInfo != null) {
 			doSetCurrentState(theDocumentMetaInfo);
 		}
+		else {
+			setAllActionsEnabled(false);
+		}
 	}
 
 	/**
