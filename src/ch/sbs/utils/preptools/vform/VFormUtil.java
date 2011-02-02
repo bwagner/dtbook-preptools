@@ -1,28 +1,10 @@
 package ch.sbs.utils.preptools.vform;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ch.sbs.utils.preptools.Match;
-import ch.sbs.utils.preptools.RegionSkipper;
 
 public class VFormUtil {
-	private static final String ELEMENT_NAME = "brl:v-form";
-	private static final RegionSkipper literalSkipper = RegionSkipper
-			.getLiteralSkipper();
-
-	private static final RegionSkipper skipAlreadyMarkedUp;
-	static {
-		final StringBuilder sb = new StringBuilder();
-		final String OPENING_TAG = "<\\s*brl\\s*:\\s*v-form\\s*>";
-		final String NON_GREEDY_CONTENT = ".*?";
-		final String CLOSING_TAG = "<\\s*/\\s*brl\\s*:\\s*v-form\\s*>";
-		sb.append(OPENING_TAG);
-		sb.append(NON_GREEDY_CONTENT);
-		sb.append(CLOSING_TAG);
-		skipAlreadyMarkedUp = new RegionSkipper(sb.toString());
-	}
-
 	// Mail von Mischa Kuenzle 12.1.2011 15:09
 	// 3. Person PL (obligatorische Abfrage)
 	private static final String[] thirdPP = new String[] { "Ihnen", "Ihr",
@@ -81,7 +63,7 @@ public class VFormUtil {
 		return vFormPatternAll;
 	}
 
-	protected static Pattern makePattern(final String[] forms) {
+	private static Pattern makePattern(final String[] forms) {
 		final StringBuffer sb = new StringBuffer("(?:"); // non-capturing group,
 															// see
 		// http://download.oracle.com/javase/1.5.0/docs/api/java/util/regex/Pattern.html#special
@@ -106,20 +88,7 @@ public class VFormUtil {
 	 * @return Match
 	 */
 	public static Match find(final String text, int start, final Pattern pattern) {
-		final Matcher m = pattern.matcher(text);
-		boolean inSkipRegion = true;
-		skipAlreadyMarkedUp.findRegionsToSkip(text);
-		literalSkipper.findRegionsToSkip(text);
-		while (inSkipRegion && m.find(start)) {
-			start++;
-			inSkipRegion = skipAlreadyMarkedUp.inSkipRegion(m)
-					|| literalSkipper.inSkipRegion(m);
-
-		}
-		if (inSkipRegion) {
-			return Match.NULL_MATCH;
-		}
-		return new Match(m.start(), m.end());
+		return new MarkupUtil("v-form").find(text, start, pattern);
 	}
 
 	/**
@@ -152,21 +121,5 @@ public class VFormUtil {
 	 */
 	public static boolean matches(final String text) {
 		return matches(text, vFormDefaultPattern);
-	}
-
-	public static final String wrap(final String theString) {
-		return wrap(theString, ELEMENT_NAME);
-	}
-
-	public static final String wrap(final String theString,
-			final String theElement) {
-		final StringBuilder sb = new StringBuilder("<");
-		sb.append(theElement);
-		sb.append(">");
-		sb.append(theString);
-		sb.append("</");
-		sb.append(theElement);
-		sb.append(">");
-		return sb.toString();
 	}
 }
