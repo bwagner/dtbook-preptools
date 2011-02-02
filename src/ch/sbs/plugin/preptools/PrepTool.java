@@ -279,22 +279,40 @@ class VFormPrepTool extends PrepTool {
 
 		final boolean isTextPage = isTextPage(theDocumentMetaInfo);
 
+		final String table = ""
+				+ "hasStarted: 0 1 1 0 1 1                             "
+				+ "isDone:     0 0 1 0 0 1                             "
+				+ "isTextPage: 0 0 0 1 1 1                             "
+				+ "-----------------------                             "
+				+ "traffic:    0 0 3 1 2 3                             "
+				+ "start:      0 0 0 1 1 1                             "
+				+ "find:       0 0 0 0 1 0                             "
+				+ "accept:     0 0 0 0 1 0                             "
+				+ "allforms:   0 0 0 1 1 1                             ";
+
 		/*
 		 TODO: make this table driven or something
 			 We have:
-			 - isTextPage: true/false
-			                           possible states
-			 - hasStartedCheckingVform  0 1 1
-			 - doneCheckingVform        0 0 1
+			               possible states
+			 - hasStarted: 0 1 1 0 1 1
+			 - isDone:     0 0 1 0 0 1
+			 - isTextPage: 0 0 0 1 1 1
+			 ---------------------------
+			 - traffic:    0 0 3 1 2 3
+			 - start:      0 0 0 1 1 1 = isTextPage
+			 - find:       0 0 0 0 1 0 = isTextPage && hasStarted && !isDone
+			 - accept:     0 0 0 0 1 0 = isTextPage && hasStarted && !isDone
+			 - allforms:   0 0 0 1 1 1 = isTextPage
 			 UI elements
-			 - trafficLight:      go/inProgress/stop/done
-			 - vformStartAction:  enabled/disabled
-			 - vformFindAction:   enabled/disabled
-			 - vformAcceptAction: enabled/disabled
+			 - traffic:    stop:0/go:1/inProgress:2/done:3
+			 - start:      disabled:0/enabled:1
+			 - find:       disabled:0/enabled:1
+			 - accept:     disabled:0/enabled:1
+			 - allforms:   disabled:0/enabled:1
 		 */
 		startAction.setEnabled(isTextPage);
-		if (!theDocumentMetaInfo.hasStarted()) {
-			allForms.setEnabled(isTextPage);
+		allForms.setEnabled(isTextPage);
+		if (!theDocumentMetaInfo.hasStarted()) { // not started
 			findAction.setEnabled(false);
 			acceptAction.setEnabled(false);
 			if (isTextPage) {
@@ -304,12 +322,12 @@ class VFormPrepTool extends PrepTool {
 				trafficLight.stop();
 			}
 		}
-		else if (theDocumentMetaInfo.isDone()) {
+		else if (theDocumentMetaInfo.isDone()) { // done
 			trafficLight.done();
 			findAction.setEnabled(false);
 			acceptAction.setEnabled(false);
 		}
-		else {
+		else { // inProgress
 			setAllActionsEnabled(isTextPage);
 			if (isTextPage) {
 				trafficLight.inProgress();
