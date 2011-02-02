@@ -55,11 +55,11 @@ public class VFormUtil {
 		allForms = new String[forms3rdPersonPlural.length
 				+ forms2ndPerson.length];
 		int i = 0;
-		for (final String form : forms3rdPersonPlural) {
-			allForms[i++] = form;
-		}
-		for (final String form : forms2ndPerson) {
-			allForms[i++] = form;
+		for (final String[] forms : new String[][] { forms3rdPersonPlural,
+				forms2ndPerson }) {
+			for (final String form : forms) {
+				allForms[i++] = form;
+			}
 		}
 	}
 
