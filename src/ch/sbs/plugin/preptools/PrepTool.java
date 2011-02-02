@@ -6,6 +6,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -27,6 +28,14 @@ import ro.sync.exml.editor.EditorPageConstants;
 import ch.sbs.utils.preptools.Match;
 import ch.sbs.utils.preptools.vform.VFormUtil;
 
+/**
+ * PrepTool provides PrepTool-Specific:
+ * - menuItemNr
+ * - DocumentMetaInfo.MetaInfo (this is also document-specific)
+ * - toolbar
+ * - actions
+ * 
+ */
 abstract class PrepTool {
 
 	protected final PrepToolsPluginExtension prepToolsPluginExtension;
@@ -189,7 +198,131 @@ abstract class PrepTool {
 	}
 }
 
-class VFormPrepTool extends PrepTool {
+/**
+ * Common superclass for RegexPrepTool and VFormPrepTool
+ */
+abstract class MarkupPrepTool extends PrepTool {
+
+	private final Action startAction = new VFormStartAction(
+			prepToolsPluginExtension);
+	private final Action findAction = new VFormFindAction(
+			prepToolsPluginExtension);
+	private final Action acceptAction = new VFormAcceptAction(
+			prepToolsPluginExtension);
+
+	private TrafficLight trafficLight;
+
+	@Override
+	protected Action[] getAllActions() {
+		return new Action[] { startAction, acceptAction, findAction };
+	}
+
+	@Override
+	protected JComponent[] getComponents() {
+		return new JComponent[] {
+				makeButton(startAction, "Start", KeyEvent.VK_7),
+				makeButton(findAction, "Find", KeyEvent.VK_8),
+				makeButton(acceptAction, "Accept", KeyEvent.VK_9),
+				trafficLight = new TrafficLight(26) };
+	}
+
+	MarkupPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			int theMenuItemNr) {
+		super(thePrepToolsPluginExtension, theMenuItemNr);
+	}
+
+	@Override
+	protected void disableStuff() {
+		trafficLight.off();
+	}
+
+	@Override
+	public void doSetCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
+
+		final boolean isTextPage = isTextPage(theDocumentMetaInfo);
+
+		/*
+		 TODO: make this table driven or something
+			 We have:
+			               possible states
+			 - hasStarted: 0 1 1 0 1 1
+			 - isDone:     0 0 1 0 0 1
+			 - isTextPage: 0 0 0 1 1 1
+			 ---------------------------
+			 - traffic:    0 0 3 1 2 3
+			 - start:      0 0 0 1 1 1 = isTextPage
+			 - find:       0 0 0 0 1 0 = isTextPage && hasStarted && !isDone
+			 - accept:     0 0 0 0 1 0 = isTextPage && hasStarted && !isDone
+			 - allforms:   0 0 0 1 1 1 = isTextPage
+			 UI elements
+			 - traffic:    stop:0/go:1/inProgress:2/done:3
+			 - start:      disabled:0/enabled:1
+			 - find:       disabled:0/enabled:1
+			 - accept:     disabled:0/enabled:1
+			 - allforms:   disabled:0/enabled:1
+		 */
+		startAction.setEnabled(isTextPage);
+		if (!theDocumentMetaInfo.hasStarted()) { // not started
+			findAction.setEnabled(false);
+			acceptAction.setEnabled(false);
+			if (isTextPage) {
+				trafficLight.go();
+			}
+			else {
+				trafficLight.stop();
+			}
+		}
+		else if (theDocumentMetaInfo.isDone()) { // done
+			trafficLight.done();
+			findAction.setEnabled(false);
+			acceptAction.setEnabled(false);
+		}
+		else { // inProgress
+			setAllActionsEnabled(isTextPage);
+			if (isTextPage) {
+				trafficLight.inProgress();
+			}
+			else {
+				trafficLight.stop();
+			}
+		}
+	}
+}
+
+/**
+ * 
+ * RegexPrepTool is not supposed to be subclassed.
+ * It should be seen as a blackbox class that can be configured with
+ * a regex, a mnemonic, a pattern, and a label.
+ */
+class RegexPrepTool extends MarkupPrepTool {
+
+	final String LABEL;
+	final int MNEMOMIC;
+	final Pattern PATTERN;
+
+	RegexPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			int theMenuItemNr, int theMnemonic, final String theLabel,
+			final String theRegex) {
+		super(thePrepToolsPluginExtension, theMenuItemNr);
+		LABEL = theLabel;
+		MNEMOMIC = theMnemonic;
+		PATTERN = Pattern.compile(theRegex);
+	}
+
+	@Override
+	protected String getLabel() {
+		return LABEL;
+	}
+
+	@Override
+	public int getMnemonic() {
+		return MNEMOMIC;
+	}
+
+}
+
+class VFormPrepTool extends MarkupPrepTool {
 
 	@Override
 	public DocumentMetaInfo.MetaInfo makeMetaInfo(final Document document) {
@@ -242,16 +375,7 @@ class VFormPrepTool extends PrepTool {
 		super(prepToolsPluginExtension, theMenuItemNr);
 	}
 
-	private TrafficLight trafficLight;
-
 	private JCheckBox allForms;
-
-	private final Action startAction = new VFormStartAction(
-			prepToolsPluginExtension);
-	private final Action findAction = new VFormFindAction(
-			prepToolsPluginExtension);
-	private final Action acceptAction = new VFormAcceptAction(
-			prepToolsPluginExtension);
 
 	@Override
 	protected String getLabel() {
@@ -260,11 +384,11 @@ class VFormPrepTool extends PrepTool {
 
 	@Override
 	protected JComponent[] getComponents() {
-		return new JComponent[] {
-				makeButton(startAction, "Start", KeyEvent.VK_7),
-				makeButton(findAction, "Find", KeyEvent.VK_8),
-				makeButton(acceptAction, "Accept", KeyEvent.VK_9),
-				allForms = makeCheckbox(), trafficLight = new TrafficLight(26) };
+		final JComponent[] comps = super.getComponents();
+		final List<JComponent> list = new ArrayList<JComponent>(
+				Arrays.asList(comps));
+		list.add(list.size() - 1, allForms = makeCheckbox());
+		return list.toArray(new JComponent[0]);
 	}
 
 	@Override
@@ -274,57 +398,9 @@ class VFormPrepTool extends PrepTool {
 
 	@Override
 	public void doSetCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
-		final MetaInfo vform = getMetaInfo(theDocumentMetaInfo);
-		allForms.setSelected(vform.patternIsAll());
-
-		final boolean isTextPage = isTextPage(theDocumentMetaInfo);
-
-		/*
-		 TODO: make this table driven or something
-			 We have:
-			               possible states
-			 - hasStarted: 0 1 1 0 1 1
-			 - isDone:     0 0 1 0 0 1
-			 - isTextPage: 0 0 0 1 1 1
-			 ---------------------------
-			 - traffic:    0 0 3 1 2 3
-			 - start:      0 0 0 1 1 1 = isTextPage
-			 - find:       0 0 0 0 1 0 = isTextPage && hasStarted && !isDone
-			 - accept:     0 0 0 0 1 0 = isTextPage && hasStarted && !isDone
-			 - allforms:   0 0 0 1 1 1 = isTextPage
-			 UI elements
-			 - traffic:    stop:0/go:1/inProgress:2/done:3
-			 - start:      disabled:0/enabled:1
-			 - find:       disabled:0/enabled:1
-			 - accept:     disabled:0/enabled:1
-			 - allforms:   disabled:0/enabled:1
-		 */
-		startAction.setEnabled(isTextPage);
-		allForms.setEnabled(isTextPage);
-		if (!theDocumentMetaInfo.hasStarted()) { // not started
-			findAction.setEnabled(false);
-			acceptAction.setEnabled(false);
-			if (isTextPage) {
-				trafficLight.go();
-			}
-			else {
-				trafficLight.stop();
-			}
-		}
-		else if (theDocumentMetaInfo.isDone()) { // done
-			trafficLight.done();
-			findAction.setEnabled(false);
-			acceptAction.setEnabled(false);
-		}
-		else { // inProgress
-			setAllActionsEnabled(isTextPage);
-			if (isTextPage) {
-				trafficLight.inProgress();
-			}
-			else {
-				trafficLight.stop();
-			}
-		}
+		super.doSetCurrentState(theDocumentMetaInfo);
+		allForms.setSelected(getMetaInfo(theDocumentMetaInfo).patternIsAll());
+		allForms.setEnabled(isTextPage(theDocumentMetaInfo));
 	}
 
 	private MetaInfo getMetaInfo(final DocumentMetaInfo theDocumentMetaInfo) {
@@ -353,18 +429,8 @@ class VFormPrepTool extends PrepTool {
 	}
 
 	@Override
-	protected Action[] getAllActions() {
-		return new Action[] { startAction, acceptAction, findAction };
-	}
-
-	@Override
 	protected JComponent[] getAdditionalComponents() {
 		return new JComponent[] { allForms };
-	}
-
-	@Override
-	protected void disableStuff() {
-		trafficLight.off();
 	}
 }
 
