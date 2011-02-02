@@ -279,17 +279,6 @@ class VFormPrepTool extends PrepTool {
 
 		final boolean isTextPage = isTextPage(theDocumentMetaInfo);
 
-		final String table = ""
-				+ "hasStarted: 0 1 1 0 1 1                             "
-				+ "isDone:     0 0 1 0 0 1                             "
-				+ "isTextPage: 0 0 0 1 1 1                             "
-				+ "-----------------------                             "
-				+ "traffic:    0 0 3 1 2 3                             "
-				+ "start:      0 0 0 1 1 1                             "
-				+ "find:       0 0 0 0 1 0                             "
-				+ "accept:     0 0 0 0 1 0                             "
-				+ "allforms:   0 0 0 1 1 1                             ";
-
 		/*
 		 TODO: make this table driven or something
 			 We have:
