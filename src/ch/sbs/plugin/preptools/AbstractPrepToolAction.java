@@ -14,6 +14,7 @@ import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
 import ch.sbs.utils.preptools.FileUtils;
 import ch.sbs.utils.preptools.Match;
 import ch.sbs.utils.preptools.parens.ParensUtil;
+import ch.sbs.utils.preptools.vform.MarkupUtil;
 import ch.sbs.utils.preptools.vform.VFormUtil;
 
 @SuppressWarnings("serial")
@@ -104,8 +105,8 @@ abstract class AbstractVFormAction extends AbstractPrepToolAction {
 		final Pattern currentPattern = vformMetaInfo.getCurrentPattern();
 		final Match match = VFormUtil.find(newText, startAt, currentPattern);
 		if (match.equals(Match.NULL_MATCH)) {
-			workspaceAccessPluginExtension
-					.showDialog("You're done with v-forms!");
+			workspaceAccessPluginExtension.showDialog("You're done with "
+					+ getProcessName() + "!");
 			vformMetaInfo.done();
 			match.startOffset = 0;
 			match.endOffset = 0;
@@ -115,12 +116,28 @@ abstract class AbstractVFormAction extends AbstractPrepToolAction {
 		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
 	}
 
-	protected VFormPrepTool.MetaInfo getMetaInfo(final DocumentMetaInfo dmi) {
+	protected String getProcessName() {
+		return VFormPrepTool.LABEL;
+	}
+
+	/**
+	 * Utility (not hook!) method to get tool specific metainfo.
+	 * 
+	 * @param dmi
+	 * @return tool specific metainfo.
+	 */
+	protected final VFormPrepTool.MetaInfo getMetaInfo(
+			final DocumentMetaInfo dmi) {
 		return (VFormPrepTool.MetaInfo) dmi
 				.getToolSpecificMetaInfo(VFormPrepTool.LABEL);
 	}
 
-	protected VFormPrepTool.MetaInfo getMetaInfo() {
+	/**
+	 * Utility (not hook!) method to get tool specific metainfo.
+	 * 
+	 * @return tool specific metainfo.
+	 */
+	protected final VFormPrepTool.MetaInfo getMetaInfo() {
 		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
 				.getDocumentMetaInfo(workspaceAccessPluginExtension
 						.getWsEditor().getEditorLocation());
@@ -283,7 +300,7 @@ class VFormAcceptAction extends VFormProceedAction {
 
 	@Override
 	protected boolean veto(final String selText) {
-		return (selText == null || !VFormUtil.matches(selText,
+		return (selText == null || !MarkupUtil.matches(selText,
 				vformMetaInfo.getCurrentPattern()));
 	}
 
@@ -324,12 +341,24 @@ class VFormFindAction extends VFormProceedAction {
 @SuppressWarnings("serial")
 abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 
-	protected ParensPrepTool.MetaInfo getMetaInfo(final DocumentMetaInfo dmi) {
+	/**
+	 * Utility (not hook!) method to get tool specific metainfo.
+	 * 
+	 * @param dmi
+	 * @return tool specific metainfo.
+	 */
+	protected final ParensPrepTool.MetaInfo getMetaInfo(
+			final DocumentMetaInfo dmi) {
 		return (ParensPrepTool.MetaInfo) dmi
 				.getToolSpecificMetaInfo(ParensPrepTool.LABEL);
 	}
 
-	protected ParensPrepTool.MetaInfo getMetaInfo() {
+	/**
+	 * Utility (not hook!) method to get tool specific metainfo.
+	 * 
+	 * @return tool specific metainfo.
+	 */
+	protected final ParensPrepTool.MetaInfo getMetaInfo() {
 		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
 				.getDocumentMetaInfo(workspaceAccessPluginExtension
 						.getWsEditor().getEditorLocation());

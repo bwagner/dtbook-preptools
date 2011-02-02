@@ -50,6 +50,17 @@ public class MarkupUtil {
 	}
 
 	/**
+	 * Indicates whether pattern matches entire region
+	 * 
+	 * @param region
+	 * @param pattern
+	 * @return
+	 */
+	public static boolean matches(final String region, final Pattern pattern) {
+		return region != null && pattern.matcher(region).matches();
+	}
+
+	/**
 	 * Utility method to create a RegionSkipper for skipping already marked up
 	 * text. ATTENTION: elementName passed will be prepended with "brl:"!
 	 * 

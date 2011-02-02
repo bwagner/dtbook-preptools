@@ -103,23 +103,12 @@ public class VFormUtil {
 	}
 
 	/**
-	 * Indicates whether pattern matches entire region
-	 * 
-	 * @param region
-	 * @param pattern
-	 * @return
-	 */
-	public static boolean matches(final String region, final Pattern pattern) {
-		return region != null && pattern.matcher(region).matches();
-	}
-
-	/**
-	 * Does the same as matches for the default pattern
+	 * Does the same as matches for the default pattern.
 	 * 
 	 * @param text
 	 * @return
 	 */
 	public static boolean matches(final String text) {
-		return matches(text, vFormDefaultPattern);
+		return MarkupUtil.matches(text, vFormDefaultPattern);
 	}
 }
