@@ -51,8 +51,6 @@ abstract class PrepTool {
 				.getDocumentMetaInfo();
 		if (documentMetaInfo != null) {
 			documentMetaInfo.setCurrentPrepTool(this);
-			documentMetaInfo.setDone(false);
-			documentMetaInfo.setHasStarted(false);
 		}
 		prepToolsPluginExtension.selectPrepToolItem(menuItemNr);
 		makeToolbar();
