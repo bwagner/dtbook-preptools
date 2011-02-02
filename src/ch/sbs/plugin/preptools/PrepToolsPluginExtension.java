@@ -238,7 +238,6 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 									currentPrepTool = getDefaultPrepTool();
 								}
 								currentPrepTool.activate();
-								dmi.setCurrentState();
 							}
 						};
 					}, StandalonePluginWorkspace.MAIN_EDITING_AREA);
