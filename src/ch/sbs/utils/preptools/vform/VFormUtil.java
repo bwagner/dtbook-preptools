@@ -46,6 +46,9 @@ public class VFormUtil {
 	}
 
 	private static Pattern vFormDefaultPattern;
+
+	private static final MarkupUtil markupUtil = new MarkupUtil("v-form");
+
 	private static final Pattern vFormPatternAll;
 	private static final Pattern vFormPattern3rdPersonPlural;
 
@@ -88,7 +91,7 @@ public class VFormUtil {
 	 * @return Match
 	 */
 	public static Match find(final String text, int start, final Pattern pattern) {
-		return new MarkupUtil("v-form").find(text, start, pattern);
+		return markupUtil.find(text, start, pattern);
 	}
 
 	/**
