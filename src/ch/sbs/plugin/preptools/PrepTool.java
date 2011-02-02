@@ -42,14 +42,20 @@ abstract class PrepTool {
 		menuItemNr = theMenuItemNr;
 	}
 
+	public DocumentMetaInfo.MetaInfo makeMetaInfo(final Document document) {
+		return null;
+	}
+
 	public void activate() {
-		makeToolbar();
 		final DocumentMetaInfo documentMetaInfo = prepToolsPluginExtension
 				.getDocumentMetaInfo();
 		if (documentMetaInfo != null) {
 			documentMetaInfo.setCurrentPrepTool(this);
+			documentMetaInfo.setDone(false);
+			documentMetaInfo.setHasStarted(false);
 		}
 		prepToolsPluginExtension.selectPrepToolItem(menuItemNr);
+		makeToolbar();
 	}
 
 	private void makeToolbar() {
@@ -178,13 +184,21 @@ abstract class PrepTool {
 	protected void doSetCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
 
 	}
+
+	protected boolean isTextPage(final DocumentMetaInfo theDocumentMetaInfo) {
+		return theDocumentMetaInfo.getCurrentEditorPage().equals(
+				EditorPageConstants.PAGE_TEXT);
+	}
 }
 
 class VFormPrepTool extends PrepTool {
 
-	static class MetaInfo implements DocumentMetaInfo.MetaInfo {
-		private boolean hasStartedChecking;
-		private boolean isDoneChecking;
+	@Override
+	public DocumentMetaInfo.MetaInfo makeMetaInfo(final Document document) {
+		return new VFormPrepTool.MetaInfo();
+	}
+
+	static class MetaInfo extends DocumentMetaInfo.MetaInfo {
 		private Pattern currentPattern;
 
 		public MetaInfo() {
@@ -211,66 +225,6 @@ class VFormPrepTool extends PrepTool {
 		 */
 		public void setPatternTo3rdPP() {
 			currentPattern = VFormUtil.get3rdPPPattern();
-		}
-
-		/**
-		 * True when done checking vforms.
-		 */
-		public void done() {
-			setDoneChecking(true);
-		}
-
-		/**
-		 * 
-		 * @return if currently processing.
-		 */
-		@Override
-		public boolean isProcessing() {
-			return isProcessingVform();
-		}
-
-		/**
-		 * 
-		 * @return if currently processing.
-		 */
-		private boolean isProcessingVform() {
-			return hasStartedChecking() && !doneChecking();
-		}
-
-		/**
-		 * True if has started checking vform.
-		 * 
-		 * @param theHasStartedChecking
-		 */
-		void setHasStartedChecking(final boolean theHasStartedChecking) {
-			hasStartedChecking = theHasStartedChecking;
-		}
-
-		/**
-		 * True if has started checking vform.
-		 * 
-		 * @return True if has started checking vform.
-		 */
-		public boolean hasStartedChecking() {
-			return hasStartedChecking;
-		}
-
-		/**
-		 * True if has finished checking vform.
-		 * 
-		 * @param setDoneChecking
-		 */
-		public void setDoneChecking(final boolean setDoneChecking) {
-			isDoneChecking = setDoneChecking;
-		}
-
-		/**
-		 * True if has finished checking vform.
-		 * 
-		 * @return
-		 */
-		public boolean doneChecking() {
-			return isDoneChecking;
 		}
 
 		/**
@@ -322,11 +276,10 @@ class VFormPrepTool extends PrepTool {
 
 	@Override
 	public void doSetCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
-		allForms.setSelected(theDocumentMetaInfo.vform.patternIsAll());
+		final MetaInfo vform = getMetaInfo(theDocumentMetaInfo);
+		allForms.setSelected(vform.patternIsAll());
 
-		// TODO: this belongs in superclass
-		final boolean isTextPage = theDocumentMetaInfo.getCurrentEditorPage()
-				.equals(EditorPageConstants.PAGE_TEXT);
+		final boolean isTextPage = isTextPage(theDocumentMetaInfo);
 
 		/*
 		 TODO: make this table driven or something
@@ -342,7 +295,7 @@ class VFormPrepTool extends PrepTool {
 			 - vformAcceptAction: enabled/disabled
 		 */
 		startAction.setEnabled(isTextPage);
-		if (!theDocumentMetaInfo.vform.hasStartedChecking()) {
+		if (!theDocumentMetaInfo.hasStarted()) {
 			allForms.setEnabled(isTextPage);
 			findAction.setEnabled(false);
 			acceptAction.setEnabled(false);
@@ -353,7 +306,7 @@ class VFormPrepTool extends PrepTool {
 				trafficLight.stop();
 			}
 		}
-		else if (theDocumentMetaInfo.vform.doneChecking()) {
+		else if (theDocumentMetaInfo.isDone()) {
 			trafficLight.done();
 			findAction.setEnabled(false);
 			acceptAction.setEnabled(false);
@@ -369,6 +322,14 @@ class VFormPrepTool extends PrepTool {
 		}
 	}
 
+	private MetaInfo getMetaInfo(final DocumentMetaInfo theDocumentMetaInfo) {
+		return (MetaInfo) theDocumentMetaInfo.getToolSpecificMetaInfo(LABEL);
+	}
+
+	private MetaInfo getMetaInfo() {
+		return getMetaInfo(prepToolsPluginExtension.getDocumentMetaInfo());
+	}
+
 	private JCheckBox makeCheckbox() {
 		final JCheckBox checkBox = new JCheckBox("All");
 		checkBox.addItemListener(new ItemListener() {
@@ -376,12 +337,10 @@ class VFormPrepTool extends PrepTool {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
-					prepToolsPluginExtension.getDocumentMetaInfo().vform
-							.setPatternToAll();
+					getMetaInfo().setPatternToAll();
 				}
 				else {
-					prepToolsPluginExtension.getDocumentMetaInfo().vform
-							.setPatternTo3rdPP();
+					getMetaInfo().setPatternTo3rdPP();
 				}
 			}
 		});
@@ -406,9 +365,12 @@ class VFormPrepTool extends PrepTool {
 
 class ParensPrepTool extends PrepTool {
 
-	static class MetaInfo implements DocumentMetaInfo.MetaInfo {
-		private boolean hasStartedChecking;
-		private boolean isDoneChecking;
+	@Override
+	public DocumentMetaInfo.MetaInfo makeMetaInfo(final Document document) {
+		return new ParensPrepTool.MetaInfo(document);
+	}
+
+	static class MetaInfo extends DocumentMetaInfo.MetaInfo {
 		private Iterator<Match.PositionMatch> orphanedParensIterator;
 		private final Document document;
 
@@ -449,27 +411,6 @@ class ParensPrepTool extends PrepTool {
 			return orphanedParensIterator.next();
 		}
 
-		@Override
-		public boolean isProcessing() {
-			return hasStartedChecking && !isDoneChecking;
-		}
-
-		public void setHasStartedChecking(boolean theHasStartedChecking) {
-			hasStartedChecking = theHasStartedChecking;
-		}
-
-		public boolean hasStartedChecking() {
-			return hasStartedChecking;
-		}
-
-		public void setDoneChecking(boolean theIsDoneChecking) {
-			isDoneChecking = theIsDoneChecking;
-		}
-
-		public boolean isDoneChecking() {
-			return isDoneChecking;
-		}
-
 	}
 
 	static final String LABEL = "Parens";
@@ -504,8 +445,7 @@ class ParensPrepTool extends PrepTool {
 	@Override
 	public void doSetCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
 		startAction.setEnabled(true);
-		findNextAction.setEnabled(theDocumentMetaInfo.orphanedParens
-				.isProcessing());
+		findNextAction.setEnabled(theDocumentMetaInfo.isProcessing());
 	}
 
 	@Override

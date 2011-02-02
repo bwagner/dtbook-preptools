@@ -22,6 +22,7 @@ import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.text.Document;
 
 import ro.sync.exml.editor.EditorPageConstants;
 import ro.sync.exml.plugin.workspace.WorkspaceAccessPluginExtension;
@@ -35,6 +36,7 @@ import ro.sync.exml.workspace.api.standalone.ToolbarInfo;
 import ro.sync.exml.workspace.api.standalone.ViewComponentCustomizer;
 import ro.sync.exml.workspace.api.standalone.ViewInfo;
 import ro.sync.ui.Icons;
+import ch.sbs.plugin.preptools.DocumentMetaInfo.MetaInfo;
 import ch.sbs.utils.preptools.FileUtils;
 import ch.sbs.utils.preptools.Match.PositionMatch;
 import ch.sbs.utils.preptools.PropsUtils;
@@ -45,6 +47,22 @@ import ch.sbs.utils.preptools.PropsUtils;
 public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension {
 
 	private final List<PrepTool> prepTools = new ArrayList<PrepTool>();
+
+	/**
+	 * A method to support DocumentMetaInfo's independence of specific
+	 * preptools.
+	 * 
+	 * @param document
+	 * @return
+	 */
+	Map<String, MetaInfo> getToolSpecificMetaInfos(final Document document) {
+		final Map<String, MetaInfo> toolSpecific = new HashMap<String, MetaInfo>();
+		for (final PrepTool preptool : prepTools) {
+			toolSpecific.put(preptool.getLabel(),
+					preptool.makeMetaInfo(document));
+		}
+		return toolSpecific;
+	}
 
 	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
 		theDocumentMetaInfo.getCurrentPrepTool().setCurrentState(
@@ -67,6 +85,8 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		}
 	}
 
+	// TODO: preptools should load themselves.
+	// PrepToolsPluginExtension shouldn't know or care about specific tools.
 	private void populatePrepTools() {
 		int i = 0;
 		prepTools.add(new VFormPrepTool(this, i++));

@@ -1,7 +1,6 @@
 package ch.sbs.plugin.preptools;
 
 import java.net.URL;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.event.DocumentEvent;
@@ -19,14 +18,56 @@ import ch.sbs.utils.preptools.Match;
  */
 class DocumentMetaInfo {
 
-	interface MetaInfo {
-		boolean isProcessing();
+	static class MetaInfo {
+		private boolean hasStarted;
+		private boolean isDone;
+
+		/**
+		 * True when started processing but isn't done yet.
+		 */
+		public boolean isProcessing() {
+			return hasStarted && !isDone;
+		}
+
+		/**
+		 * True when started processing.
+		 */
+		public void setHasStarted(boolean theHasStarted) {
+			hasStarted = theHasStarted;
+		}
+
+		/**
+		 * True when started processing.
+		 */
+		public boolean hasStarted() {
+			return hasStarted;
+		}
+
+		public void setDone(boolean theIsDone) {
+			isDone = theIsDone;
+		}
+
+		/**
+		 * True when done processing.
+		 */
+		public void done() {
+			setDone(true);
+		}
+
+		/**
+		 * True when done processing.
+		 */
+		public boolean isDone() {
+			return isDone;
+		}
+
 	}
 
-	Map<String, MetaInfo> toolSpecific = new HashMap<String, MetaInfo>();
+	final Map<String, MetaInfo> toolSpecific;
 
-	public final VFormPrepTool.MetaInfo vform;
-	public final ParensPrepTool.MetaInfo orphanedParens;
+	public MetaInfo getToolSpecificMetaInfo(final String label) {
+		return toolSpecific.get(label);
+	}
 
 	// general
 	private boolean isDtBook;
@@ -42,11 +83,8 @@ class DocumentMetaInfo {
 	public DocumentMetaInfo(
 			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
 		setPageAndDocument(theWorkspaceAccessPluginExtension);
-		vform = new VFormPrepTool.MetaInfo();
-		orphanedParens = new ParensPrepTool.MetaInfo(document);
-		toolSpecific.put(VFormPrepTool.LABEL, vform);
-		toolSpecific.put(ParensPrepTool.LABEL, orphanedParens);
-
+		toolSpecific = theWorkspaceAccessPluginExtension
+				.getToolSpecificMetaInfos(document);
 		setCurrentEditorPage(theWorkspaceAccessPluginExtension.getPageId());
 		url = theWorkspaceAccessPluginExtension.getEditorLocation();
 	}
@@ -216,11 +254,42 @@ class DocumentMetaInfo {
 	}
 
 	public MetaInfo getCurrentToolSpecificMetaInfo() {
-		final String label = getCurrentPrepTool().getLabel();
-		return toolSpecific.get(label);
+		if (currentPrepTool == null) {
+			return null;
+		}
+		final String label = currentPrepTool.getLabel();
+		return getToolSpecificMetaInfo(label);
 	}
 
 	public boolean isProcessing() {
-		return getCurrentToolSpecificMetaInfo().isProcessing();
+		final MetaInfo currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
+		return currentToolSpecificMetaInfo != null
+				&& currentToolSpecificMetaInfo.isProcessing();
+	}
+
+	public boolean hasStarted() {
+		final MetaInfo currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
+		return currentToolSpecificMetaInfo != null
+				&& getCurrentToolSpecificMetaInfo().hasStarted();
+	}
+
+	public void setHasStarted(boolean theHasStarted) {
+		final MetaInfo currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
+		if (currentToolSpecificMetaInfo != null) {
+			getCurrentToolSpecificMetaInfo().setHasStarted(theHasStarted);
+		}
+	}
+
+	public boolean isDone() {
+		final MetaInfo currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
+		return currentToolSpecificMetaInfo != null
+				&& getCurrentToolSpecificMetaInfo().isDone();
+	}
+
+	public void setDone(boolean theIsDone) {
+		final MetaInfo currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
+		if (currentToolSpecificMetaInfo != null) {
+			getCurrentToolSpecificMetaInfo().setDone(theIsDone);
+		}
 	}
 }

@@ -99,18 +99,32 @@ abstract class AbstractVFormAction extends AbstractPrepToolAction {
 		final String newText = document.getText(0, document.getLength());
 		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
 				.getDocumentMetaInfo(editorAccess.getEditorLocation());
-		final Pattern currentPattern = dmi.vform.getCurrentPattern();
+		final VFormPrepTool.MetaInfo vformMetaInfo = getMetaInfo(dmi);
+		final Pattern currentPattern = vformMetaInfo.getCurrentPattern();
 		final Match match = VFormUtil.find(newText, startAt, currentPattern);
 		if (match.equals(Match.NULL_MATCH)) {
 			workspaceAccessPluginExtension
 					.showDialog("You're done with v-forms!");
-			dmi.vform.done();
+			vformMetaInfo.done();
 			match.startOffset = 0;
 			match.endOffset = 0;
 		}
 		workspaceAccessPluginExtension.setCurrentState(dmi);
 		select(match);
 		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
+	}
+
+	protected VFormPrepTool.MetaInfo getMetaInfo(final DocumentMetaInfo dmi) {
+		return (VFormPrepTool.MetaInfo) dmi
+				.getToolSpecificMetaInfo(VFormPrepTool.LABEL);
+	}
+
+	protected VFormPrepTool.MetaInfo getMetaInfo() {
+		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
+				.getDocumentMetaInfo(workspaceAccessPluginExtension
+						.getWsEditor().getEditorLocation());
+		return (VFormPrepTool.MetaInfo) dmi
+				.getToolSpecificMetaInfo(VFormPrepTool.LABEL);
 	}
 
 }
@@ -132,7 +146,8 @@ class VFormStartAction extends AbstractVFormAction {
 				.getDocumentMetaInfo();
 
 		final URL editorLocation = editorAccess.getEditorLocation();
-		if (dmi.vform.doneChecking()) {
+		final VFormPrepTool.MetaInfo vformMetaInfo = getMetaInfo(dmi);
+		if (vformMetaInfo.isDone()) {
 			if (workspaceAccessPluginExtension
 					.showConfirmDialog(
 							"v-form: Start Over?",
@@ -141,13 +156,13 @@ class VFormStartAction extends AbstractVFormAction {
 									+ " has already been vformed.\n Do you want to Start over?")
 
 			) {
-				dmi.vform.setDoneChecking(false);
+				vformMetaInfo.setDone(false);
 			}
 			else {
 				return;
 			}
 		}
-		else if (dmi.vform.hasStartedChecking()) {
+		else if (vformMetaInfo.hasStarted()) {
 			if (workspaceAccessPluginExtension
 					.showConfirmDialog(
 							"v-form: Start Over?",
@@ -156,15 +171,15 @@ class VFormStartAction extends AbstractVFormAction {
 									+ " is currently being vformed.\n Do you want to Start over?")
 
 			) {
-				dmi.vform.setDoneChecking(false);
+				vformMetaInfo.setDone(false);
 			}
 			else {
 				return;
 			}
 		}
 
-		dmi.vform.setHasStartedChecking(true);
-		dmi.vform.setDoneChecking(false);
+		vformMetaInfo.setHasStarted(true);
+		vformMetaInfo.setDone(false);
 		searchOn(aWSTextEditorPage, editorAccess, 0);
 	}
 }
@@ -178,6 +193,7 @@ abstract class VFormProceedAction extends AbstractVFormAction {
 	}
 
 	protected DocumentMetaInfo dmi;
+	protected VFormPrepTool.MetaInfo vformMetaInfo;
 
 	/**
 	 * 
@@ -217,6 +233,7 @@ abstract class VFormProceedAction extends AbstractVFormAction {
 				.getDocumentMetaInfo();
 
 		dmi = theDmi;
+		vformMetaInfo = getMetaInfo();
 		final String selText = aWSTextEditorPage.getSelectedText();
 
 		if (veto(selText))
@@ -266,7 +283,7 @@ class VFormAcceptAction extends VFormProceedAction {
 	@Override
 	protected boolean veto(final String selText) {
 		return (selText == null || !VFormUtil.matches(selText,
-				dmi.vform.getCurrentPattern()));
+				vformMetaInfo.getCurrentPattern()));
 	}
 
 	/* (non-Javadoc)
@@ -306,12 +323,26 @@ class VFormFindAction extends VFormProceedAction {
 @SuppressWarnings("serial")
 abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 
+	protected ParensPrepTool.MetaInfo getMetaInfo(final DocumentMetaInfo dmi) {
+		return (ParensPrepTool.MetaInfo) dmi
+				.getToolSpecificMetaInfo(ParensPrepTool.LABEL);
+	}
+
+	protected ParensPrepTool.MetaInfo getMetaInfo() {
+		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
+				.getDocumentMetaInfo(workspaceAccessPluginExtension
+						.getWsEditor().getEditorLocation());
+		return (ParensPrepTool.MetaInfo) dmi
+				.getToolSpecificMetaInfo(ParensPrepTool.LABEL);
+	}
+
 	@Override
 	protected void doSomething() throws BadLocationException {
 		init();
 		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
 				.getDocumentMetaInfo();
-		if (dmi.orphanedParens.hasNext()) {
+
+		if (getMetaInfo().hasNext()) {
 			select(dmi);
 		}
 		else {
@@ -332,9 +363,8 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 		super(theWorkspaceAccessPluginExtension);
 	}
 
-	protected void select(DocumentMetaInfo dmi) {
-		final Match.PositionMatch match = dmi.orphanedParens.next();
-		select(match);
+	protected void select(final DocumentMetaInfo dmi) {
+		select(getMetaInfo().next());
 	}
 
 }
@@ -351,8 +381,6 @@ class OrphanParenStartAction extends AbstractOrphanParenAction {
 	protected void init() {
 		final WSTextEditorPage aWSTextEditorPage = workspaceAccessPluginExtension
 				.getPage();
-		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
-				.getDocumentMetaInfo();
 		final Document document = aWSTextEditorPage.getDocument();
 		List<Match> orphans = null;
 		try {
@@ -362,18 +390,16 @@ class OrphanParenStartAction extends AbstractOrphanParenAction {
 			workspaceAccessPluginExtension.showMessage(e.getMessage());
 			e.printStackTrace();
 		}
-		dmi.orphanedParens.set(orphans);
-		workspaceAccessPluginExtension.getDocumentMetaInfo().orphanedParens
-				.setHasStartedChecking(true);
-		workspaceAccessPluginExtension.getDocumentMetaInfo().orphanedParens
-				.setDoneChecking(false);
+		final ParensPrepTool.MetaInfo parensMetaInfo = getMetaInfo();
+		parensMetaInfo.set(orphans);
+		parensMetaInfo.setHasStarted(true);
+		parensMetaInfo.setDone(false);
 	}
 
 	@Override
 	protected void handleNoneFound() {
 		workspaceAccessPluginExtension.showDialog("No orphaned parens found.");
-		workspaceAccessPluginExtension.getDocumentMetaInfo().orphanedParens
-				.setDoneChecking(true);
+		getMetaInfo().setDone(true);
 	}
 
 }
@@ -390,7 +416,6 @@ class OrphanParenFindNextAction extends AbstractOrphanParenAction {
 	protected void handleNoneFound() {
 		workspaceAccessPluginExtension
 				.showDialog("You're done with orphaned parens.");
-		workspaceAccessPluginExtension.getDocumentMetaInfo().orphanedParens
-				.setDoneChecking(true);
+		getMetaInfo().setDone(true);
 	}
 }
