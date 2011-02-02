@@ -253,6 +253,10 @@ class DocumentMetaInfo {
 		return document;
 	}
 
+	public void setCurrentState() {
+		currentPrepTool.setCurrentState(this);
+	}
+
 	public MetaInfo getCurrentToolSpecificMetaInfo() {
 		if (currentPrepTool == null) {
 			return null;

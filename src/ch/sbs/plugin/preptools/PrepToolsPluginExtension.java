@@ -64,15 +64,6 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		return toolSpecific;
 	}
 
-	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
-		theDocumentMetaInfo.getCurrentPrepTool().setCurrentState(
-				theDocumentMetaInfo);
-	}
-
-	public void setCurrentState() {
-		setCurrentState(getDocumentMetaInfo());
-	}
-
 	private void disableAllActions(final DocumentMetaInfo theDocumentMetaInfo) {
 		setAllActions(theDocumentMetaInfo, false);
 	}
@@ -208,7 +199,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 											pluginWorkspaceAccess
 													.open(editorLocation);
 											dmi.setPageAndDocument(PrepToolsPluginExtension.this);
-											setCurrentState(dmi);
+											dmi.setCurrentState();
 											final PositionMatch match = dmi
 													.getCurrentPositionMatch();
 											getPage()
@@ -234,7 +225,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 						public void editorPageChanged(URL editorLocation) {
 							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
 							dmi.setCurrentEditorPage(getPageId());
-							setCurrentState(dmi);
+							dmi.setCurrentState();
 						};
 
 						@Override
@@ -247,7 +238,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 									currentPrepTool = getDefaultPrepTool();
 								}
 								currentPrepTool.activate();
-								setCurrentState(dmi);
+								dmi.setCurrentState();
 							}
 						};
 					}, StandalonePluginWorkspace.MAIN_EDITING_AREA);

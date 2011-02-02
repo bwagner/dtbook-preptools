@@ -39,7 +39,8 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 			} catch (final BadLocationException e) {
 				e.printStackTrace();
 			}
-			workspaceAccessPluginExtension.setCurrentState();
+			workspaceAccessPluginExtension.getDocumentMetaInfo()
+					.setCurrentState();
 		}
 	}
 
@@ -109,7 +110,7 @@ abstract class AbstractVFormAction extends AbstractPrepToolAction {
 			match.startOffset = 0;
 			match.endOffset = 0;
 		}
-		workspaceAccessPluginExtension.setCurrentState(dmi);
+		dmi.setCurrentState();
 		select(match);
 		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
 	}
