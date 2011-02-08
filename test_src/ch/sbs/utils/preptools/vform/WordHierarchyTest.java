@@ -1,5 +1,6 @@
 package ch.sbs.utils.preptools.vform;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -13,7 +14,6 @@ import java.util.regex.Pattern;
 import org.junit.Test;
 
 import ch.sbs.utils.preptools.PermutationHelper;
-import ch.sbs.utils.preptools.vform.WordHierarchyBuilder;
 import ch.sbs.utils.preptools.vform.WordHierarchyBuilder.Word;
 
 public class WordHierarchyTest {
@@ -124,7 +124,7 @@ public class WordHierarchyTest {
 		final PermutationHelper x = new PermutationHelper(elements);
 		int i = 0;
 		for (final String[] result : x) {
-			assertEquals(expected[i], result);
+			assertArrayEquals(expected[i], result);
 			++i;
 		}
 	}
@@ -149,6 +149,7 @@ public class WordHierarchyTest {
 	 */
 	// @Test
 	public void testIt() throws IOException {
+		@SuppressWarnings("unused")
 		final String[] ihr = new String[] { "Ihnen", "Ihr", "Ihre", "Ihrem",
 				"Ihren", "Ihrer", "Ihrerseits", "Ihres", "Ihresgleichen",
 				"Ihrethalben", "Ihretwegen", "Ihretwillen", "Ihrige",
