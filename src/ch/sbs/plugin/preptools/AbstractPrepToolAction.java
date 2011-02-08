@@ -170,10 +170,10 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 		final URL editorLocation = editorAccess.getEditorLocation();
 		final DocumentMetaInfo.MetaInfo metaInfo = getMetaInfo();
 		if (metaInfo.isDone()) {
-			if (workspaceAccessPluginExtension.showConfirmDialog(getTag()
-					+ ": Start Over?",
-					"The document " + FileUtils.basename(editorLocation)
-							+ " has already been " + getTag()
+			if (workspaceAccessPluginExtension.showConfirmDialog(
+					getProcessName() + ": Start Over?", "The document "
+							+ FileUtils.basename(editorLocation)
+							+ " has already been " + getProcessName()
 							+ "ed.\n Do you want to start over?")
 
 			) {
@@ -184,10 +184,10 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 			}
 		}
 		else if (metaInfo.hasStarted()) {
-			if (workspaceAccessPluginExtension.showConfirmDialog(getTag()
-					+ ": Start Over?",
-					"The document " + FileUtils.basename(editorLocation)
-							+ " is currently being " + getTag()
+			if (workspaceAccessPluginExtension.showConfirmDialog(
+					getProcessName() + ": Start Over?", "The document "
+							+ FileUtils.basename(editorLocation)
+							+ " is currently being " + getProcessName()
 							+ "ed.\n Do you want to start over?")
 
 			) {
@@ -278,8 +278,9 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 		if (lastMatchStart != pm.startOffset.getOffset()
 				|| lastMatchEnd != pm.endOffset.getOffset()
 				|| dmi.manualEditOccurred()) {
-			if (workspaceAccessPluginExtension.showConfirmDialog(getTag()
-					+ ": Cursor", "Cursor position has changed!\n",
+			if (workspaceAccessPluginExtension.showConfirmDialog(
+					getProcessName() + ": Cursor",
+					"Cursor position has changed!\n",
 					"Take up where we left off last time", "continue anyway")) {
 				select(pm);
 			}
@@ -435,8 +436,8 @@ class RegexAcceptAction extends AbstractMarkupAcceptAction {
 
 	RegexAcceptAction(
 			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
-			final String thePattern, final String theTag,
-			final String theProcessName) {
+			final String thePattern, final String theProcessName,
+			final String theTag) {
 		super(theWorkspaceAccessPluginExtension, theTag);
 		helper = new RegexHelper(thePattern, theProcessName, theTag);
 	}
@@ -453,13 +454,13 @@ class RegexAcceptAction extends AbstractMarkupAcceptAction {
 }
 
 @SuppressWarnings("serial")
-class RegexFindAction extends AbstractMarkupAcceptAction {
+class RegexFindAction extends AbstractMarkupFindAction {
 	private final RegexHelper helper;
 
 	RegexFindAction(
 			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
-			final String thePattern, final String theTag,
-			final String theProcessName) {
+			final String thePattern, final String theProcessName,
+			final String theTag) {
 		super(theWorkspaceAccessPluginExtension, theTag);
 		helper = new RegexHelper(thePattern, theProcessName, theTag);
 	}

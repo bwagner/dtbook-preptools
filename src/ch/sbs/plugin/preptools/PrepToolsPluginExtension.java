@@ -82,6 +82,8 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		int i = 0;
 		prepTools.add(new VFormPrepTool(this, i++));
 		prepTools.add(new ParensPrepTool(this, i++));
+		prepTools.add(new RegexPrepTool(this, i++, 'o', "Ordinal", "\\d+\\.",
+				"num role=\"ordinal\""));
 	}
 
 	void selectPrepToolItem(int i) {

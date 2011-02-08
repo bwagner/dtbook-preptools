@@ -51,8 +51,16 @@ abstract class PrepTool {
 		menuItemNr = theMenuItemNr;
 	}
 
+	/**
+	 * 
+	 * Optional hook to make document-specific, tool-specific
+	 * DocumentMetaInfo.MetaInfo
+	 * 
+	 * @param document
+	 * @return DocumentMetaInfo.MetaInfo
+	 */
 	public DocumentMetaInfo.MetaInfo makeMetaInfo(final Document document) {
-		return null;
+		return new DocumentMetaInfo.MetaInfo();
 	}
 
 	public void activate() {
@@ -203,22 +211,33 @@ abstract class PrepTool {
  */
 abstract class MarkupPrepTool extends PrepTool {
 
-	private final Action startAction = new VFormStartAction(
-			prepToolsPluginExtension);
-	private final Action findAction = new VFormFindAction(
-			prepToolsPluginExtension);
-	private final Action acceptAction = new VFormAcceptAction(
-			prepToolsPluginExtension);
+	private Action startAction;
+
+	private Action findAction;
+
+	private Action acceptAction;
+
+	protected abstract Action makeStartAction();
+
+	protected abstract Action makeFindAction();
+
+	protected abstract Action makeAcceptAction();
 
 	private TrafficLight trafficLight;
 
 	@Override
 	protected Action[] getAllActions() {
+		if (startAction == null) {
+			startAction = makeStartAction();
+			findAction = makeFindAction();
+			acceptAction = makeAcceptAction();
+		}
 		return new Action[] { startAction, acceptAction, findAction };
 	}
 
 	@Override
 	protected JComponent[] getComponents() {
+		getAllActions();
 		return new JComponent[] {
 				makeButton(startAction, "Start", KeyEvent.VK_7),
 				makeButton(findAction, "Find", KeyEvent.VK_8),
@@ -298,16 +317,18 @@ abstract class MarkupPrepTool extends PrepTool {
 class RegexPrepTool extends MarkupPrepTool {
 
 	final String LABEL;
+	final String TAG;
 	final int MNEMOMIC;
-	final Pattern PATTERN;
+	final String PATTERN;
 
 	RegexPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			int theMenuItemNr, int theMnemonic, final String theLabel,
-			final String theRegex) {
+			final String theRegex, final String theTag) {
 		super(thePrepToolsPluginExtension, theMenuItemNr);
-		LABEL = theLabel;
 		MNEMOMIC = theMnemonic;
-		PATTERN = Pattern.compile(theRegex);
+		LABEL = theLabel;
+		PATTERN = theRegex;
+		TAG = theTag;
 	}
 
 	@Override
@@ -318,6 +339,24 @@ class RegexPrepTool extends MarkupPrepTool {
 	@Override
 	public int getMnemonic() {
 		return MNEMOMIC;
+	}
+
+	@Override
+	protected Action makeStartAction() {
+		return new RegexStartAction(prepToolsPluginExtension, PATTERN, LABEL,
+				TAG);
+	}
+
+	@Override
+	protected Action makeFindAction() {
+		return new RegexFindAction(prepToolsPluginExtension, PATTERN, LABEL,
+				TAG);
+	}
+
+	@Override
+	protected Action makeAcceptAction() {
+		return new RegexAcceptAction(prepToolsPluginExtension, PATTERN, LABEL,
+				TAG);
 	}
 
 }
@@ -370,7 +409,7 @@ class VFormPrepTool extends MarkupPrepTool {
 
 	static final String LABEL = "VForms";
 
-	VFormPrepTool(PrepToolsPluginExtension prepToolsPluginExtension,
+	VFormPrepTool(final PrepToolsPluginExtension prepToolsPluginExtension,
 			int theMenuItemNr) {
 		super(prepToolsPluginExtension, theMenuItemNr);
 	}
@@ -385,6 +424,9 @@ class VFormPrepTool extends MarkupPrepTool {
 	@Override
 	protected JComponent[] getComponents() {
 		final JComponent[] comps = super.getComponents();
+		// intermediary list required, because the list
+		// created by Arrays.asList does not support the
+		// operation add(index, element) (throws RuntimeException)
 		final List<JComponent> list = new ArrayList<JComponent>(
 				Arrays.asList(comps));
 		list.add(list.size() - 1, allForms = makeCheckbox());
@@ -431,6 +473,21 @@ class VFormPrepTool extends MarkupPrepTool {
 	@Override
 	protected JComponent[] getAdditionalComponents() {
 		return new JComponent[] { allForms };
+	}
+
+	@Override
+	protected Action makeStartAction() {
+		return new VFormStartAction(prepToolsPluginExtension);
+	}
+
+	@Override
+	protected Action makeFindAction() {
+		return new VFormFindAction(prepToolsPluginExtension);
+	}
+
+	@Override
+	protected Action makeAcceptAction() {
+		return new VFormAcceptAction(prepToolsPluginExtension);
 	}
 }
 
@@ -486,7 +543,7 @@ class ParensPrepTool extends PrepTool {
 
 	static final String LABEL = "Parens";
 
-	ParensPrepTool(PrepToolsPluginExtension prepToolsPluginExtension,
+	ParensPrepTool(final PrepToolsPluginExtension prepToolsPluginExtension,
 			int theMenuItemNr) {
 		super(prepToolsPluginExtension, theMenuItemNr);
 	}
