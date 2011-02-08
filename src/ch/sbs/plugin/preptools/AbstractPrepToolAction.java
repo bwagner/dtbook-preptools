@@ -15,7 +15,6 @@ import ch.sbs.utils.preptools.FileUtils;
 import ch.sbs.utils.preptools.Match;
 import ch.sbs.utils.preptools.parens.ParensUtil;
 import ch.sbs.utils.preptools.vform.MarkupUtil;
-import ch.sbs.utils.preptools.vform.VFormUtil;
 
 @SuppressWarnings("serial")
 abstract class AbstractPrepToolAction extends AbstractAction {
@@ -58,7 +57,7 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	 * 
 	 * @return The end position of the current selection.
 	 */
-	protected int getSelectionEnd() {
+	protected final int getSelectionEnd() {
 		final WSEditor editorAccess = workspaceAccessPluginExtension
 				.getWsEditor();
 		final WSTextEditorPage aWSTextEditorPage = PrepToolsPluginExtension
@@ -66,23 +65,46 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 		return aWSTextEditorPage.getSelectionEnd();
 	}
 
-	protected void select(final Match match) {
+	/**
+	 * 
+	 * Utility method to select text.
+	 * 
+	 * @param match
+	 */
+	protected final void select(final Match match) {
 		workspaceAccessPluginExtension.getPage().select(match.startOffset,
 				match.endOffset);
 	}
 
-	protected void select(final Match.PositionMatch pm) {
+	/**
+	 * 
+	 * Utility method to select text.
+	 * 
+	 * @param pm
+	 */
+	protected final void select(final Match.PositionMatch pm) {
 		workspaceAccessPluginExtension.getPage().select(
 				pm.startOffset.getOffset(), pm.endOffset.getOffset());
 	}
 }
 
 @SuppressWarnings("serial")
-abstract class AbstractVFormAction extends AbstractPrepToolAction {
+abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 
-	AbstractVFormAction(
-			PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
+	private final MarkupUtil markupUtil;
+
+	private final String MYTAG;
+
+	AbstractMarkupAction(
+			PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
+			final String tag) {
 		super(theWorkspaceAccessPluginExtension);
+		MYTAG = tag;
+		markupUtil = new MarkupUtil(tag);
+	}
+
+	protected String getTag() {
+		return MYTAG;
 	}
 
 	/**
@@ -101,13 +123,11 @@ abstract class AbstractVFormAction extends AbstractPrepToolAction {
 		final String newText = document.getText(0, document.getLength());
 		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
 				.getDocumentMetaInfo(editorAccess.getEditorLocation());
-		final VFormPrepTool.MetaInfo vformMetaInfo = getMetaInfo(dmi);
-		final Pattern currentPattern = vformMetaInfo.getCurrentPattern();
-		final Match match = VFormUtil.find(newText, startAt, currentPattern);
+		final Match match = find(startAt, newText, getPattern());
 		if (match.equals(Match.NULL_MATCH)) {
 			workspaceAccessPluginExtension.showDialog("You're done with "
 					+ getProcessName() + "!");
-			vformMetaInfo.done();
+			dmi.getCurrentToolSpecificMetaInfo().done();
 			match.startOffset = 0;
 			match.endOffset = 0;
 		}
@@ -116,42 +136,29 @@ abstract class AbstractVFormAction extends AbstractPrepToolAction {
 		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
 	}
 
-	protected String getProcessName() {
-		return VFormPrepTool.LABEL;
+	private Match find(final int startAt, final String newText,
+			final Pattern pattern) {
+		return markupUtil.find(newText, startAt, pattern);
 	}
 
-	/**
-	 * Utility (not hook!) method to get tool specific metainfo.
-	 * 
-	 * @param dmi
-	 * @return tool specific metainfo.
-	 */
-	protected final VFormPrepTool.MetaInfo getMetaInfo(
-			final DocumentMetaInfo dmi) {
-		return (VFormPrepTool.MetaInfo) dmi
-				.getToolSpecificMetaInfo(VFormPrepTool.LABEL);
-	}
+	abstract protected Pattern getPattern();
 
-	/**
-	 * Utility (not hook!) method to get tool specific metainfo.
-	 * 
-	 * @return tool specific metainfo.
-	 */
-	protected final VFormPrepTool.MetaInfo getMetaInfo() {
-		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
-				.getDocumentMetaInfo(workspaceAccessPluginExtension
-						.getWsEditor().getEditorLocation());
-		return (VFormPrepTool.MetaInfo) dmi
-				.getToolSpecificMetaInfo(VFormPrepTool.LABEL);
+	abstract protected String getProcessName();
+
+	protected DocumentMetaInfo.MetaInfo getMetaInfo() {
+		return workspaceAccessPluginExtension.getDocumentMetaInfo()
+				.getCurrentToolSpecificMetaInfo();
 	}
 
 }
 
 @SuppressWarnings("serial")
-class VFormStartAction extends AbstractVFormAction {
-	VFormStartAction(
-			final PrepToolsPluginExtension workspaceAccessPluginExtension) {
-		super(workspaceAccessPluginExtension);
+abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
+
+	AbstractMarkupStartAction(
+			PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
+			String tag) {
+		super(theWorkspaceAccessPluginExtension, tag);
 	}
 
 	@Override
@@ -160,58 +167,52 @@ class VFormStartAction extends AbstractVFormAction {
 				.getWsEditor();
 		final WSTextEditorPage aWSTextEditorPage = workspaceAccessPluginExtension
 				.getPage();
-		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
-				.getDocumentMetaInfo();
-
 		final URL editorLocation = editorAccess.getEditorLocation();
-		final VFormPrepTool.MetaInfo vformMetaInfo = getMetaInfo(dmi);
-		if (vformMetaInfo.isDone()) {
-			if (workspaceAccessPluginExtension
-					.showConfirmDialog(
-							"v-form: Start Over?",
-							"The document "
-									+ FileUtils.basename(editorLocation)
-									+ " has already been vformed.\n Do you want to Start over?")
+		final DocumentMetaInfo.MetaInfo metaInfo = getMetaInfo();
+		if (metaInfo.isDone()) {
+			if (workspaceAccessPluginExtension.showConfirmDialog(getTag()
+					+ ": Start Over?",
+					"The document " + FileUtils.basename(editorLocation)
+							+ " has already been " + getTag()
+							+ "ed.\n Do you want to start over?")
 
 			) {
-				vformMetaInfo.setDone(false);
+				metaInfo.setDone(false);
 			}
 			else {
 				return;
 			}
 		}
-		else if (vformMetaInfo.hasStarted()) {
-			if (workspaceAccessPluginExtension
-					.showConfirmDialog(
-							"v-form: Start Over?",
-							"The document "
-									+ FileUtils.basename(editorLocation)
-									+ " is currently being vformed.\n Do you want to Start over?")
+		else if (metaInfo.hasStarted()) {
+			if (workspaceAccessPluginExtension.showConfirmDialog(getTag()
+					+ ": Start Over?",
+					"The document " + FileUtils.basename(editorLocation)
+							+ " is currently being " + getTag()
+							+ "ed.\n Do you want to start over?")
 
 			) {
-				vformMetaInfo.setDone(false);
+				metaInfo.setDone(false);
 			}
 			else {
 				return;
 			}
 		}
 
-		vformMetaInfo.setHasStarted(true);
-		vformMetaInfo.setDone(false);
+		metaInfo.setHasStarted(true);
+		metaInfo.setDone(false);
 		searchOn(aWSTextEditorPage, editorAccess, 0);
 	}
+
 }
 
 @SuppressWarnings("serial")
-abstract class VFormProceedAction extends AbstractVFormAction {
+abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 
-	VFormProceedAction(
-			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
-		super(theWorkspaceAccessPluginExtension);
+	AbstractMarkupProceedAction(
+			PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
+			String tag) {
+		super(theWorkspaceAccessPluginExtension, tag);
 	}
-
-	protected DocumentMetaInfo dmi;
-	protected VFormPrepTool.MetaInfo vformMetaInfo;
 
 	/**
 	 * 
@@ -243,26 +244,21 @@ abstract class VFormProceedAction extends AbstractVFormAction {
 	 */
 	@Override
 	protected void doSomething() throws BadLocationException {
-		final WSEditor editorAccess = workspaceAccessPluginExtension
-				.getWsEditor();
 		final WSTextEditorPage aWSTextEditorPage = workspaceAccessPluginExtension
 				.getPage();
-		final DocumentMetaInfo theDmi = workspaceAccessPluginExtension
-				.getDocumentMetaInfo();
 
-		dmi = theDmi;
-		vformMetaInfo = getMetaInfo();
 		final String selText = aWSTextEditorPage.getSelectedText();
 
 		if (veto(selText))
 			return;
 
-		handleManualCursorMovement(aWSTextEditorPage, dmi);
+		handleManualCursorMovement();
 
-		final Document document = aWSTextEditorPage.getDocument();
-		final int continueAt = handleText(document, selText);
+		final int continueAt = handleText(aWSTextEditorPage.getDocument(),
+				selText);
 
-		searchOn(aWSTextEditorPage, editorAccess, continueAt);
+		searchOn(aWSTextEditorPage,
+				workspaceAccessPluginExtension.getWsEditor(), continueAt);
 	}
 
 	/**
@@ -271,16 +267,19 @@ abstract class VFormProceedAction extends AbstractVFormAction {
 	 * @param aWSTextEditorPage
 	 * @param dmi
 	 */
-	private void handleManualCursorMovement(
-			final WSTextEditorPage aWSTextEditorPage, final DocumentMetaInfo dmi) {
+	private void handleManualCursorMovement() {
+		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
+				.getDocumentMetaInfo();
+		final WSTextEditorPage aWSTextEditorPage = workspaceAccessPluginExtension
+				.getPage();
 		lastMatchStart = aWSTextEditorPage.getSelectionStart();
 		lastMatchEnd = aWSTextEditorPage.getSelectionEnd();
 		final Match.PositionMatch pm = dmi.getCurrentPositionMatch();
 		if (lastMatchStart != pm.startOffset.getOffset()
 				|| lastMatchEnd != pm.endOffset.getOffset()
 				|| dmi.manualEditOccurred()) {
-			if (workspaceAccessPluginExtension.showConfirmDialog(
-					"v-form: Cursor", "Cursor position has changed!\n",
+			if (workspaceAccessPluginExtension.showConfirmDialog(getTag()
+					+ ": Cursor", "Cursor position has changed!\n",
 					"Take up where we left off last time", "continue anyway")) {
 				select(pm);
 			}
@@ -289,19 +288,21 @@ abstract class VFormProceedAction extends AbstractVFormAction {
 
 	protected int lastMatchStart;
 	protected int lastMatchEnd;
+
 }
 
 @SuppressWarnings("serial")
-class VFormAcceptAction extends VFormProceedAction {
-	VFormAcceptAction(
-			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
-		super(theWorkspaceAccessPluginExtension);
+abstract class AbstractMarkupAcceptAction extends AbstractMarkupProceedAction {
+
+	AbstractMarkupAcceptAction(
+			PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
+			String tag) {
+		super(theWorkspaceAccessPluginExtension, tag);
 	}
 
 	@Override
 	protected boolean veto(final String selText) {
-		return (selText == null || !MarkupUtil.matches(selText,
-				vformMetaInfo.getCurrentPattern()));
+		return (selText == null || !MarkupUtil.matches(selText, getPattern()));
 	}
 
 	/* (non-Javadoc)
@@ -310,7 +311,7 @@ class VFormAcceptAction extends VFormProceedAction {
 	@Override
 	protected int handleText(final Document document, final String selText)
 			throws BadLocationException {
-		final String ELEMENT_NAME = "brl:v-form";
+		final String ELEMENT_NAME = "brl:" + getTag();
 		// starting with the end, so the start position doesn't shift
 		document.insertString(lastMatchEnd, "</" + ELEMENT_NAME + ">", null);
 		document.insertString(lastMatchStart, "<" + ELEMENT_NAME + ">", null);
@@ -319,13 +320,16 @@ class VFormAcceptAction extends VFormProceedAction {
 				+ "<></>".length() + selText.length();
 		return continueAt;
 	}
+
 }
 
 @SuppressWarnings("serial")
-class VFormFindAction extends VFormProceedAction {
-	VFormFindAction(
-			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
-		super(theWorkspaceAccessPluginExtension);
+abstract class AbstractMarkupFindAction extends AbstractMarkupProceedAction {
+
+	AbstractMarkupFindAction(
+			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
+			String tag) {
+		super(theWorkspaceAccessPluginExtension, tag);
 	}
 
 	/* (non-Javadoc)
@@ -335,6 +339,202 @@ class VFormFindAction extends VFormProceedAction {
 	protected int handleText(final Document document, final String selText)
 			throws BadLocationException {
 		return getSelectionEnd();
+	}
+
+}
+
+/**
+ * Helper class to factor out common code in VFormActions.
+ */
+class VFormActionHelper {
+
+	protected static final String TAG = "v-form";
+
+	private final PrepToolsPluginExtension workspaceAccessPluginExtension;
+
+	VFormActionHelper(
+			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
+		workspaceAccessPluginExtension = theWorkspaceAccessPluginExtension;
+	}
+
+	public Pattern getPattern() {
+		return getMetaInfo().getCurrentPattern();
+	}
+
+	public String getProcessName() {
+		return VFormPrepTool.LABEL;
+	}
+
+	/**
+	 * Utility method to get tool specific metainfo.
+	 * Covariant return type. (VFormPrepTool.MetaInfo is a subclass of
+	 * DocumentMetaInfo.MetaInfo)
+	 * 
+	 * @return tool specific metainfo.
+	 */
+	protected final VFormPrepTool.MetaInfo getMetaInfo() {
+		return (VFormPrepTool.MetaInfo) workspaceAccessPluginExtension
+				.getDocumentMetaInfo().getToolSpecificMetaInfo(
+						VFormPrepTool.LABEL);
+	}
+}
+
+class RegexHelper {
+
+	private final Pattern pattern;
+	private final String processName;
+	private final String tag;
+
+	RegexHelper(final String thePattern, final String theProcessName,
+			final String theTag) {
+		pattern = Pattern.compile(thePattern);
+		processName = theProcessName;
+		tag = theTag;
+	}
+
+	public Pattern getPattern() {
+		return pattern;
+	}
+
+	public String getProcessName() {
+		return processName;
+	}
+
+	public String getTag() {
+		return tag;
+	}
+
+}
+
+@SuppressWarnings("serial")
+class RegexStartAction extends AbstractMarkupStartAction {
+	private final RegexHelper helper;
+
+	RegexStartAction(
+			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
+			final String thePattern, final String theProcessName,
+			final String theTag) {
+		super(theWorkspaceAccessPluginExtension, theTag);
+		helper = new RegexHelper(thePattern, theProcessName, theTag);
+	}
+
+	@Override
+	protected Pattern getPattern() {
+		return helper.getPattern();
+	}
+
+	@Override
+	protected String getProcessName() {
+		return helper.getProcessName();
+	}
+}
+
+@SuppressWarnings("serial")
+class RegexAcceptAction extends AbstractMarkupAcceptAction {
+	private final RegexHelper helper;
+
+	RegexAcceptAction(
+			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
+			final String thePattern, final String theTag,
+			final String theProcessName) {
+		super(theWorkspaceAccessPluginExtension, theTag);
+		helper = new RegexHelper(thePattern, theProcessName, theTag);
+	}
+
+	@Override
+	protected Pattern getPattern() {
+		return helper.getPattern();
+	}
+
+	@Override
+	protected String getProcessName() {
+		return helper.getProcessName();
+	}
+}
+
+@SuppressWarnings("serial")
+class RegexFindAction extends AbstractMarkupAcceptAction {
+	private final RegexHelper helper;
+
+	RegexFindAction(
+			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
+			final String thePattern, final String theTag,
+			final String theProcessName) {
+		super(theWorkspaceAccessPluginExtension, theTag);
+		helper = new RegexHelper(thePattern, theProcessName, theTag);
+	}
+
+	@Override
+	protected Pattern getPattern() {
+		return helper.getPattern();
+	}
+
+	@Override
+	protected String getProcessName() {
+		return helper.getProcessName();
+	}
+}
+
+@SuppressWarnings("serial")
+class VFormStartAction extends AbstractMarkupStartAction {
+	private final VFormActionHelper helper;
+
+	VFormStartAction(
+			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
+		super(theWorkspaceAccessPluginExtension, VFormActionHelper.TAG);
+		helper = new VFormActionHelper(theWorkspaceAccessPluginExtension);
+	}
+
+	@Override
+	protected Pattern getPattern() {
+		return helper.getPattern();
+	}
+
+	@Override
+	protected String getProcessName() {
+		return helper.getProcessName();
+	}
+}
+
+@SuppressWarnings("serial")
+class VFormAcceptAction extends AbstractMarkupAcceptAction {
+	private final VFormActionHelper helper;
+
+	VFormAcceptAction(
+			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
+		super(theWorkspaceAccessPluginExtension, VFormActionHelper.TAG);
+		helper = new VFormActionHelper(theWorkspaceAccessPluginExtension);
+	}
+
+	@Override
+	protected Pattern getPattern() {
+		return helper.getPattern();
+	}
+
+	@Override
+	protected String getProcessName() {
+		return helper.getProcessName();
+	}
+}
+
+@SuppressWarnings("serial")
+class VFormFindAction extends AbstractMarkupFindAction {
+	private final VFormActionHelper helper;
+
+	VFormFindAction(
+			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
+		super(theWorkspaceAccessPluginExtension, VFormActionHelper.TAG);
+		helper = new VFormActionHelper(theWorkspaceAccessPluginExtension);
+	}
+
+	@Override
+	protected Pattern getPattern() {
+		return helper.getPattern();
+	}
+
+	@Override
+	protected String getProcessName() {
+		return helper.getProcessName();
 	}
 }
 
