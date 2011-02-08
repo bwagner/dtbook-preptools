@@ -13,10 +13,12 @@ import ch.sbs.utils.preptools.Match;
 public class ParensUtilTest {
 
 	// null list != empty list
+	@SuppressWarnings("null")
 	@Test(expected = NullPointerException.class)
 	public void testNullList() {
 		List<String> list = null;
-		for (final String item : list) {
+		for (@SuppressWarnings("unused")
+		final String item : list) {
 
 		}
 	}
@@ -25,7 +27,8 @@ public class ParensUtilTest {
 	@Test
 	public void testEmtpyList() {
 		List<String> list = new ArrayList<String>();
-		for (final String item : list) {
+		for (@SuppressWarnings({ "unused" })
+		final String item : list) {
 
 		}
 	}
