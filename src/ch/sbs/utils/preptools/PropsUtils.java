@@ -12,7 +12,7 @@ public class PropsUtils {
 	private PropsUtils() {
 	}
 
-	public static Properties loadFromStartupDir(final Class clazz,
+	public static Properties loadFromStartupDir(final Class<?> clazz,
 			final String filename) {
 		final Properties props = new Properties();
 		final String path = clazz.getProtectionDomain().getCodeSource()
@@ -75,7 +75,7 @@ public class PropsUtils {
 		return props;
 	}
 
-	public static Properties loadForClass(final Class clazz,
+	public static Properties loadForClass(final Class<?> clazz,
 			final String filename) {
 		final Properties props = new Properties();
 		final InputStream in = clazz.getClassLoader().getResourceAsStream(
