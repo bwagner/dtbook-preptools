@@ -80,22 +80,42 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		prepTools = PrepToolLoader.loadPrepTools(this);
 	}
 
-	private static void setItalic(final JMenuItem menuItem) {
-		menuItem.setFont(menuItem.getFont().deriveFont(Font.ITALIC));
+	private static void setBold(final JMenuItem item) {
+		item.setFont(item.getFont().deriveFont(Font.BOLD));
+	}
+
+	private static void setPlain(final JMenuItem item) {
+		item.setFont(item.getFont().deriveFont(Font.PLAIN));
+	}
+
+	void setPrepToolItemDone(final JMenuItem item) {
+		setPlain(item);
 	}
 
 	void setPrepToolItemDone(int i) {
-		setItalic(menuPrepTools.getItem(i));
+		final JMenuItem item = menuPrepTools.getItem(i);
+		setPrepToolItemDone(item);
+	}
+
+	void setPrepToolItemNormal(final JMenuItem item) {
+		setBold(item);
+	}
+
+	void setPrepToolItemNormal(int i) {
+		setPrepToolItemNormal(menuPrepTools.getItem(i));
 	}
 
 	void updatePrepToolItems() {
 		int i = 0;
 		for (final PrepTool preptool : prepTools) {
-			final JMenuItem menuItem = menuPrepTools.getItem(i++);
-			final Font font = menuItem.getFont();
-			menuItem.setFont(getDocumentMetaInfo().getToolSpecificMetaInfo(
-					preptool.getLabel()).isDone() ? font
-					.deriveFont(Font.ITALIC) : font.deriveFont(Font.PLAIN));
+			if (getDocumentMetaInfo().getToolSpecificMetaInfo(
+					preptool.getLabel()).isDone()) {
+				setPrepToolItemDone(i);
+			}
+			else {
+				setPrepToolItemNormal(i);
+			}
+			i++;
 		}
 	}
 
