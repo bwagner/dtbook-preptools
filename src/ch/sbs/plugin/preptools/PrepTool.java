@@ -186,12 +186,14 @@ abstract class PrepTool {
 
 	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
 		if (theDocumentMetaInfo != null && theDocumentMetaInfo.isDtBook()) {
+			prepToolsPluginExtension.enableMenuPrepTools();
 			doSetCurrentState(theDocumentMetaInfo);
 			if (theDocumentMetaInfo.isDone()) {
 				prepToolsPluginExtension.setPrepToolItemDone(menuItemNr);
 			}
 		}
 		else {
+			prepToolsPluginExtension.disableMenuPrepTools();
 			setAllActionsEnabled(false);
 		}
 	}

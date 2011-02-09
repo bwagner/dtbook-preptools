@@ -92,6 +92,14 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		setPlain(item);
 	}
 
+	void disableMenuPrepTools() {
+		menuPrepTools.setEnabled(false);
+	}
+
+	void enableMenuPrepTools() {
+		menuPrepTools.setEnabled(true);
+	}
+
 	void setPrepToolItemDone(int i) {
 		final JMenuItem item = menuPrepTools.getItem(i);
 		setPrepToolItemDone(item);
