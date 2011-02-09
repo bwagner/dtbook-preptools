@@ -3,7 +3,6 @@ package ch.sbs.plugin.preptools;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +45,7 @@ import ch.sbs.utils.preptools.PropsUtils;
  */
 public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension {
 
-	private final List<PrepTool> prepTools = new ArrayList<PrepTool>();
+	private List<PrepTool> prepTools;
 
 	/**
 	 * A method to support DocumentMetaInfo's independence of specific
@@ -76,14 +75,8 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		}
 	}
 
-	// TODO: preptools should load themselves.
-	// PrepToolsPluginExtension shouldn't know or care about specific tools.
 	private void populatePrepTools() {
-		int i = 0;
-		prepTools.add(new VFormPrepTool(this, i++));
-		prepTools.add(new ParensPrepTool(this, i++));
-		prepTools.add(new RegexPrepTool(this, i++, 'o', "Ordinal", "\\d+\\.",
-				"num role=\"ordinal\""));
+		prepTools = PrepToolLoader.loadPrepTools(this);
 	}
 
 	void selectPrepToolItem(int i) {
