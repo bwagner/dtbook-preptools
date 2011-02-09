@@ -103,7 +103,8 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 
 	private final String MYTAG;
 
-	AbstractMarkupAction(PrepToolsPluginExtension thePrepToolsPluginExtension,
+	AbstractMarkupAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String tag) {
 		super(thePrepToolsPluginExtension);
 		MYTAG = tag;
@@ -163,7 +164,8 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 
 	AbstractMarkupStartAction(
-			PrepToolsPluginExtension thePrepToolsPluginExtension, String tag) {
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String tag) {
 		super(thePrepToolsPluginExtension, tag);
 	}
 
@@ -214,7 +216,8 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 
 	AbstractMarkupProceedAction(
-			PrepToolsPluginExtension thePrepToolsPluginExtension, String tag) {
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String tag) {
 		super(thePrepToolsPluginExtension, tag);
 	}
 
@@ -299,7 +302,8 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 abstract class AbstractMarkupAcceptAction extends AbstractMarkupProceedAction {
 
 	AbstractMarkupAcceptAction(
-			PrepToolsPluginExtension thePrepToolsPluginExtension, String tag) {
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String tag) {
 		super(thePrepToolsPluginExtension, tag);
 	}
 
@@ -316,7 +320,8 @@ abstract class AbstractMarkupAcceptAction extends AbstractMarkupProceedAction {
 			throws BadLocationException {
 		final String OPENING_TAG = getTag();
 		final String FULL_OPENING_TAG = "<" + OPENING_TAG + ">";
-		final String FULL_CLOSING_TAG = "</" + MarkupUtil.getClosingTag(OPENING_TAG) + ">";
+		final String FULL_CLOSING_TAG = "</"
+				+ MarkupUtil.getClosingTag(OPENING_TAG) + ">";
 		// starting with the end, so the start position doesn't shift
 		document.insertString(lastMatchEnd, FULL_CLOSING_TAG, null);
 		document.insertString(lastMatchStart, FULL_OPENING_TAG, null);
@@ -333,7 +338,7 @@ abstract class AbstractMarkupFindAction extends AbstractMarkupProceedAction {
 
 	AbstractMarkupFindAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			String tag) {
+			final String tag) {
 		super(thePrepToolsPluginExtension, tag);
 	}
 
@@ -600,7 +605,8 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 @SuppressWarnings("serial")
 class OrphanParenStartAction extends AbstractOrphanParenAction {
 
-	OrphanParenStartAction(PrepToolsPluginExtension thePrepToolsPluginExtension) {
+	OrphanParenStartAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
 		super(thePrepToolsPluginExtension);
 	}
 
@@ -635,7 +641,7 @@ class OrphanParenStartAction extends AbstractOrphanParenAction {
 class OrphanParenFindNextAction extends AbstractOrphanParenAction {
 
 	OrphanParenFindNextAction(
-			PrepToolsPluginExtension thePrepToolsPluginExtension) {
+			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
 		super(thePrepToolsPluginExtension);
 	}
 
