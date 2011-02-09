@@ -314,7 +314,7 @@ abstract class AbstractMarkupAcceptAction extends AbstractMarkupProceedAction {
 	@Override
 	protected int handleText(final Document document, final String selText)
 			throws BadLocationException {
-		final String ELEMENT_NAME = "brl:" + getTag();
+		final String ELEMENT_NAME = getTag();
 		// starting with the end, so the start position doesn't shift
 		document.insertString(lastMatchEnd, "</" + ELEMENT_NAME + ">", null);
 		document.insertString(lastMatchStart, "<" + ELEMENT_NAME + ">", null);
