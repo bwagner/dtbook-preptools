@@ -88,6 +88,17 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		setItalic(menuPrepTools.getItem(i));
 	}
 
+	void updatePrepToolItems() {
+		int i = 0;
+		for (final PrepTool preptool : prepTools) {
+			final JMenuItem menuItem = menuPrepTools.getItem(i++);
+			final Font font = menuItem.getFont();
+			menuItem.setFont(getDocumentMetaInfo().getToolSpecificMetaInfo(
+					preptool.getLabel()).isDone() ? font
+					.deriveFont(Font.ITALIC) : font.deriveFont(Font.PLAIN));
+		}
+	}
+
 	void selectPrepToolItem(int i) {
 		menuPrepTools.getItem(i).setSelected(true);
 	}
@@ -241,6 +252,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 								if (currentPrepTool == null) {
 									currentPrepTool = getDefaultPrepTool();
 								}
+								updatePrepToolItems();
 								currentPrepTool.activate();
 							}
 						};
