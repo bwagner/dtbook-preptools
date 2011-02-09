@@ -2,6 +2,7 @@ package ch.sbs.utils.preptools.vform;
 
 import java.util.regex.Pattern;
 
+import ch.sbs.plugin.preptools.Constants;
 import ch.sbs.utils.preptools.Match;
 
 public class VFormUtil {
@@ -47,7 +48,8 @@ public class VFormUtil {
 
 	private static Pattern vFormDefaultPattern;
 
-	private static final MarkupUtil markupUtil = new MarkupUtil("v-form");
+	private static final MarkupUtil markupUtil = new MarkupUtil(
+			Constants.VFORM_TAG);
 
 	private static final Pattern vFormPatternAll;
 	private static final Pattern vFormPattern3rdPersonPlural;

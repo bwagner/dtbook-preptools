@@ -351,8 +351,6 @@ abstract class AbstractMarkupFindAction extends AbstractMarkupProceedAction {
  */
 class VFormActionHelper {
 
-	protected static final String TAG = "v-form";
-
 	private final PrepToolsPluginExtension prepToolsPluginExtension;
 
 	VFormActionHelper(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
@@ -481,7 +479,7 @@ class VFormStartAction extends AbstractMarkupStartAction {
 	private final VFormActionHelper helper;
 
 	VFormStartAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension, VFormActionHelper.TAG);
+		super(thePrepToolsPluginExtension, Constants.VFORM_TAG);
 		helper = new VFormActionHelper(thePrepToolsPluginExtension);
 	}
 
@@ -501,7 +499,7 @@ class VFormAcceptAction extends AbstractMarkupAcceptAction {
 	private final VFormActionHelper helper;
 
 	VFormAcceptAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension, VFormActionHelper.TAG);
+		super(thePrepToolsPluginExtension, Constants.VFORM_TAG);
 		helper = new VFormActionHelper(thePrepToolsPluginExtension);
 	}
 
@@ -521,7 +519,7 @@ class VFormFindAction extends AbstractMarkupFindAction {
 	private final VFormActionHelper helper;
 
 	VFormFindAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension, VFormActionHelper.TAG);
+		super(thePrepToolsPluginExtension, Constants.VFORM_TAG);
 		helper = new VFormActionHelper(thePrepToolsPluginExtension);
 	}
 

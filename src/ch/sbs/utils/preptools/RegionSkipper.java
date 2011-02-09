@@ -46,11 +46,11 @@ public class RegionSkipper {
 
 	private static final RegionSkipper literalSkipper;
 	static {
-		final String OPENING_TAG = "<\\s*brl\\s*:\\s*literal";
-		final String OPTIONAL_ARG = "(?:\\s+brl\\s*:grade\\s*=\\s*\"\\d\")?";
-		final String CLOSING_ANGLE = ">";
+		final String OPENING_TAG = "<brl:literal";
+		final String OPTIONAL_ARG = "(?:\\s+brl:grade\\s*=\\s*\"\\d\")?";
+		final String CLOSING_ANGLE = "\\s*>";
 		final String NON_GREEDY_CONTENT = ".*?";
-		final String CLOSING_TAG = "<\\s*/\\s*brl\\s*:\\s*literal\\s*>";
+		final String CLOSING_TAG = "</brl:literal\\s*>";
 		final StringBuilder sb = new StringBuilder();
 		sb.append(OPENING_TAG);
 		sb.append(OPTIONAL_ARG);

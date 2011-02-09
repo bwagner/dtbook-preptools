@@ -16,28 +16,24 @@ public class PrepToolLoader {
 		prepTools.add(new VFormPrepTool(thePrepToolsPluginExtension, i++));
 		prepTools.add(new ParensPrepTool(thePrepToolsPluginExtension, i++));
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'o',
-				"Ordinal", "\\d+\\.", "num role=\"ordinal\""));
+				"Ordinal", "\\d+\\.", "brl:num role=\"ordinal\""));
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'r',
-				"Roman", "[IVXCMLD]+\\.", "num role=\"roman\""));
+				"Roman", "[IVXCMLD]+\\.", "brl:num role=\"roman\""));
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'u',
 				"Measure", "\\d*['.,]*\\d+\\s?[A-Z]{1,2}\\b",
-				"num role=\"measure\""));
+				"brl:num role=\"measure\""));
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'a',
-		// FIXME: not in brl:!
 				"AbbrevPeriod", "[A-ZÄÖÜ]\\.\\s?[A-ZÄÖÜ]\\.", "abbr"));
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 't',
-		// FIXME: not in brl:!
 		// FIXME: the replacement is more complicated:
 		// <abbr>$1</abbr>$2
 				"AbbrevCapital", "(\\b[A-ZÄÖÜ]+)(\\d*\\b)", "abbr"));
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'y',
-		// FIXME: not in brl:!
 				"Acronym", "\\b\\w*[a-z]+[A-Z]+\\w*\\b", "abbr"));
 		prepTools.add(new RegexPrepTool(
 				thePrepToolsPluginExtension,
 				i++,
 				'c',
-				// FIXME: not in brl:!
 				// FIXME: additional functionality required:
 				// some measurement to let the user decide whether he wants to
 				// use

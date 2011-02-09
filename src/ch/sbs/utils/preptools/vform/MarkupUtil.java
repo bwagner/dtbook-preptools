@@ -70,10 +70,9 @@ public class MarkupUtil {
 	 */
 	public static RegionSkipper makeMarkupRegionSkipper(final String elementName) {
 		final StringBuilder sb = new StringBuilder();
-		final String OPENING_TAG = "<\\s*brl\\s*:\\s*" + elementName + "\\s*>";
+		final String OPENING_TAG = "<" + elementName + "\\s*>";
 		final String NON_GREEDY_CONTENT = ".*?";
-		final String CLOSING_TAG = "<\\s*/\\s*brl\\s*:\\s*" + elementName
-				+ "\\s*>";
+		final String CLOSING_TAG = "</" + elementName + "\\s*>";
 		sb.append(OPENING_TAG);
 		sb.append(NON_GREEDY_CONTENT);
 		sb.append(CLOSING_TAG);
