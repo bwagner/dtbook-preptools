@@ -8,7 +8,7 @@ public class PrepToolLoader {
 	public static final String ORDINAL_REGEX = "\\d+\\.";
 
 	// ignore case
-	public static final String ROMAN_REGEX = "(?i:[IVXCMLD]+\\.)";
+	public static final String ROMAN_REGEX = "\\b(?i:[IVXCMLD]+\\.)";
 
 	// ignore case
 	public static final String MEASURE_REGEX = "(?i:\\d*['.,]*\\d+\\s?[A-Z]{1,2}\\b)";
@@ -31,18 +31,15 @@ public class PrepToolLoader {
 		prepTools.add(new VFormPrepTool(thePrepToolsPluginExtension, i++));
 		prepTools.add(new ParensPrepTool(thePrepToolsPluginExtension, i++));
 
-		// FIXME: it's gonna add the attribute to the closing tag too!
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'o',
 				"Ordinal", ORDINAL_REGEX, "brl:num role=\"ordinal\""));
 
-		// FIXME: it's gonna add the attribute to the closing tag too!
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'r',
 				"Roman", ROMAN_REGEX, "brl:num role=\"roman\""));
 
-		// FIXME: it's gonna add the attribute to the closing tag too!
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'u',
 				"Measure", MEASURE_REGEX, "brl:num role=\"measure\""));
-		
+
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'a',
 				"AbbrevPeriod", ABBREV_PERIOD_REGEX, "abbr"));
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 't',
