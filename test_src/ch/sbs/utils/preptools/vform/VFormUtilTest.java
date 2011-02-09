@@ -30,9 +30,11 @@ public class VFormUtilTest {
 	@Test
 	public void testReplaceKeep() {
 		assertEquals(Match.NULL_MATCH, VFormUtil.find("Sieb", 0));
-		final Match m = VFormUtil.find("Sieben können Sie haben.", 0);
-		assertEquals(14, m.startOffset);
-		assertEquals(14 + "Sie".length(), m.endOffset);
+		final String text = "Sieben können Sie haben.";
+		final Match match = VFormUtil.find(text, 0);
+		final String vform = "Sie";
+		assertEquals(text.lastIndexOf(vform), match.startOffset);
+		assertEquals(text.lastIndexOf(vform) + vform.length(), match.endOffset);
 	}
 
 	@Test
@@ -56,19 +58,19 @@ public class VFormUtilTest {
 	@Test
 	public void testMatch() {
 
-		// ____________________________1___________________2
-		// __________________01234567890123456789012345678901234
 		final String text = "Das können Sie zu Ihren Akten legen.";
 
 		Match match = VFormUtil.find(text, 0);
 
-		assertEquals(11, match.startOffset);
-		assertEquals(14, match.endOffset);
+		final String vform = "Sie";
+		assertEquals(text.indexOf(vform), match.startOffset);
+		assertEquals(text.indexOf(vform) + vform.length(), match.endOffset);
 
 		match = VFormUtil.find(text, match.endOffset);
 
-		assertEquals(18, match.startOffset);
-		assertEquals(23, match.endOffset);
+		final String vform2 = "Ihren";
+		assertEquals(text.indexOf(vform2), match.startOffset);
+		assertEquals(text.indexOf(vform2) + vform2.length(), match.endOffset);
 
 		match = VFormUtil.find(text, match.endOffset);
 
@@ -79,19 +81,19 @@ public class VFormUtilTest {
 	@Test
 	public void testMatchBoundary() {
 
-		// ____________1___________________2
-		// ____________01234567890123456789012345678901234
 		final String text = "Dann können Sie's Ihrem Kollegen geben.";
 
 		Match match = VFormUtil.find(text, 0);
 
-		assertEquals(12, match.startOffset);
-		assertEquals(15, match.endOffset);
+		final String vform = "Sie";
+		assertEquals(text.indexOf(vform), match.startOffset);
+		assertEquals(text.indexOf(vform) + vform.length(), match.endOffset);
 
 		match = VFormUtil.find(text, match.endOffset);
 
-		assertEquals(18, match.startOffset);
-		assertEquals(23, match.endOffset);
+		final String vform2 = "Ihrem";
+		assertEquals(text.indexOf(vform2), match.startOffset);
+		assertEquals(text.indexOf(vform2) + vform2.length(), match.endOffset);
 
 		match = VFormUtil.find(text, match.endOffset);
 
@@ -104,7 +106,7 @@ public class VFormUtilTest {
 
 		final String text = "Dann kann Anna es ihrem Kollegen geben.";
 
-		Match match = VFormUtil.find(text, 0);
+		final Match match = VFormUtil.find(text, 0);
 
 		assertEquals(Match.NULL_MATCH, match);
 
@@ -113,50 +115,46 @@ public class VFormUtilTest {
 	@Test
 	public void testMatch1() {
 
-		// ____________________________1_________2_________3
-		// __________________01234567890123456789012345678901234
 		final String text = "Dann kann Anna es Ihrem Kollegen geben.";
 
-		Match match = VFormUtil.find(text, 0);
+		final Match match = VFormUtil.find(text, 0);
 
-		assertEquals(18, match.startOffset);
-		assertEquals(23, match.endOffset);
+		final String vform = "Ihrem";
+		assertEquals(text.indexOf(vform), match.startOffset);
+		assertEquals(text.indexOf(vform) + vform.length(), match.endOffset);
 
 	}
 
 	@Test
 	public void testNoMatch1() {
 
-		final String text = "Dann kann Anna es <brl:v-form>Ihrem</brl:v-form> Kollegen geben.";
-
-		Match match = VFormUtil.find(text, 0);
-
-		assertEquals(Match.NULL_MATCH, match);
+		assertEquals(
+				Match.NULL_MATCH,
+				VFormUtil.find(
+						"Dann kann Anna es "
+								+ MarkupUtil.wrap("Ihrem", "brl:v-form")
+								+ " Kollegen geben.", 0));
 
 	}
 
 	@Test
 	public void testSettingPatternAll() {
-		// ____________________________1_________2_________3
-		// __________________01234567890123456789012345678901234
+
 		final String text = "Dann kann Anna es Deinem Kollegen geben.";
 
-		Match match = VFormUtil.find(text, 0, VFormUtil.getAllPattern());
+		final Match match = VFormUtil.find(text, 0, VFormUtil.getAllPattern());
 
-		assertEquals(18, match.startOffset);
-		assertEquals(24, match.endOffset);
+		final String vform = "Deinem";
+		assertEquals(text.indexOf(vform), match.startOffset);
+		assertEquals(text.indexOf(vform) + vform.length(), match.endOffset);
 
 	}
 
 	@Test
 	public void testSettingPattern3rdPP() {
-		// ____________________________1_________2_________3
-		// __________________01234567890123456789012345678901234
-		final String text = "Dann kann Anna es Deinem Kollegen geben.";
 
-		Match match = VFormUtil.find(text, 0, VFormUtil.get3rdPPPattern());
-
-		assertEquals(match, Match.NULL_MATCH);
+		assertEquals(VFormUtil.find("Dann kann Anna es Deinem Kollegen geben.",
+				0, VFormUtil.get3rdPPPattern()), Match.NULL_MATCH);
 
 	}
 }
