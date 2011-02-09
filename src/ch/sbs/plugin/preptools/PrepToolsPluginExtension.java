@@ -1,5 +1,6 @@
 package ch.sbs.plugin.preptools;
 
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.net.URL;
@@ -77,6 +78,14 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 	private void populatePrepTools() {
 		prepTools = PrepToolLoader.loadPrepTools(this);
+	}
+
+	private static void setItalic(final JMenuItem menuItem) {
+		menuItem.setFont(menuItem.getFont().deriveFont(Font.ITALIC));
+	}
+
+	void setPrepToolItemDone(int i) {
+		setItalic(menuPrepTools.getItem(i));
 	}
 
 	void selectPrepToolItem(int i) {

@@ -39,7 +39,7 @@ import ch.sbs.utils.preptools.vform.VFormUtil;
 abstract class PrepTool {
 
 	protected final PrepToolsPluginExtension prepToolsPluginExtension;
-	protected final int menuItemNr;
+	private final int menuItemNr;
 
 	/**
 	 * @param thePrepToolsPluginExtension
@@ -187,6 +187,9 @@ abstract class PrepTool {
 	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
 		if (theDocumentMetaInfo != null && theDocumentMetaInfo.isDtBook()) {
 			doSetCurrentState(theDocumentMetaInfo);
+			if (theDocumentMetaInfo.isDone()) {
+				prepToolsPluginExtension.setPrepToolItemDone(menuItemNr);
+			}
 		}
 		else {
 			setAllActionsEnabled(false);
