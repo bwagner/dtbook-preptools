@@ -5,8 +5,23 @@ import java.util.List;
 
 public class PrepToolLoader {
 
-	// TODO:
-	// find a good way to test these regexes
+	public static final String ORDINAL_REGEX = "\\d+\\.";
+
+	// ignore case
+	public static final String ROMAN_REGEX = "(?i:[IVXCMLD]+\\.)";
+
+	// ignore case
+	public static final String MEASURE_REGEX = "(?i:\\d*['.,]*\\d+\\s?[A-Z]{1,2}\\b)";
+
+	// ignore case
+	public static final String ABBREV_PERIOD_REGEX = "(?i:[A-ZÄÖÜ]\\.\\s?[A-ZÄÖÜ]\\.)";
+
+	// case sensitive
+	public static final String ABBREV_CAPITAL_REGEX = "(\\b[A-ZÄÖÜ]+)(\\d*\\b)";
+
+	// case sensitive
+	public static final String ABBREV_ACRONYM_REGEX = "\\b\\w*[a-z]+[A-Z]+\\w*\\b";
+
 	// TODO: preptools should load themselves.
 	// PrepToolLoader shouldn't know or care about specific tools.
 	public static List<PrepTool> loadPrepTools(
@@ -15,32 +30,27 @@ public class PrepToolLoader {
 		int i = 0;
 		prepTools.add(new VFormPrepTool(thePrepToolsPluginExtension, i++));
 		prepTools.add(new ParensPrepTool(thePrepToolsPluginExtension, i++));
+
+		// FIXME: it's gonna add the attribute to the closing tag too!
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'o',
-				"Ordinal", "\\d+\\.", "brl:num role=\"ordinal\""));
+				"Ordinal", ORDINAL_REGEX, "brl:num role=\"ordinal\""));
+
+		// FIXME: it's gonna add the attribute to the closing tag too!
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'r',
-				"Roman", "[IVXCMLD]+\\.", "brl:num role=\"roman\""));
+				"Roman", ROMAN_REGEX, "brl:num role=\"roman\""));
+
+		// FIXME: it's gonna add the attribute to the closing tag too!
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'u',
-				"Measure", "\\d*['.,]*\\d+\\s?[A-Z]{1,2}\\b",
-				"brl:num role=\"measure\""));
+				"Measure", MEASURE_REGEX, "brl:num role=\"measure\""));
+		
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'a',
-				"AbbrevPeriod", "[A-ZÄÖÜ]\\.\\s?[A-ZÄÖÜ]\\.", "abbr"));
+				"AbbrevPeriod", ABBREV_PERIOD_REGEX, "abbr"));
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 't',
 		// FIXME: the replacement is more complicated:
 		// <abbr>$1</abbr>$2
-				"AbbrevCapital", "(\\b[A-ZÄÖÜ]+)(\\d*\\b)", "abbr"));
+				"AbbrevCapital", ABBREV_CAPITAL_REGEX, "abbr"));
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'y',
-				"Acronym", "\\b\\w*[a-z]+[A-Z]+\\w*\\b", "abbr"));
-		prepTools.add(new RegexPrepTool(
-				thePrepToolsPluginExtension,
-				i++,
-				'c',
-				// FIXME: additional functionality required:
-				// some measurement to let the user decide whether he wants to
-				// use
-				// accents=reduced or accent=extended or something...
-				// Ask cegli or mischa
-				"Accent", "\\b\\S*[çñœåæøëïáéíóúàèìòùâêîôû]\\S*\\b",
-				"span brl:accents=\"reduced\""));
+				"Acronym", ABBREV_ACRONYM_REGEX, "abbr"));
 		return prepTools;
 	}
 }
