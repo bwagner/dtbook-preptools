@@ -29,7 +29,16 @@ public class ParensUtil {
 		private static final RegionSkipper literalSkipper = RegionSkipper
 				.getLiteralSkipper();
 
-		public List<Match> findOrphans(final String theText) {
+		/**
+		 * Finds list of potentially orphaned parens.
+		 * 
+		 * @param theText
+		 *            The text to search
+		 * @param offset
+		 *            from where to start searching in the given text.
+		 * @return list of potentially orphaned parens. It can be empty.
+		 */
+		public List<Match> findOrphans(final String theText, int offset) {
 			literalSkipper.findRegionsToSkip(theText);
 			final List<Match> orphans = new ArrayList<Match>();
 			final String[][] patternPairs = getPatternPairs();
@@ -50,7 +59,8 @@ public class ParensUtil {
 				Match previousMatch = null;
 				matcher.reset();
 				while (matcher.find()) {
-					if (literalSkipper.inSkipRegion(matcher)) {
+					if (literalSkipper.inSkipRegion(matcher)
+							|| matcher.start() < offset) {
 						continue;
 					}
 					final char matchChar = matcher.group().charAt(0);
@@ -158,16 +168,33 @@ public class ParensUtil {
 		}
 	}
 
-	static List<Match> findOrphansQuotes(final String theText) {
-		final List<Match> findOrphans = new QuoteOrphanMatcher()
-				.findOrphans(theText);
+	static List<Match> findOrphansQuotes(final String theText, int offset) {
+		final List<Match> findOrphans = new QuoteOrphanMatcher().findOrphans(
+				theText, offset);
 		return findOrphans;
 	}
 
-	static List<Match> findOrphansParens(final String theText) {
-		final List<Match> findOrphans = new ParensOrphanMatcher()
-				.findOrphans(theText);
+	static List<Match> findOrphansParens(final String theText, int offset) {
+		final List<Match> findOrphans = new ParensOrphanMatcher().findOrphans(
+				theText, offset);
 		return findOrphans;
+	}
+
+	/**
+	 * Finds list of potentially orphaned parens.
+	 * 
+	 * @param theText
+	 *            The text to search
+	 * @param offset
+	 *            from where to start searching in the given text.
+	 * @return list of potentially orphaned parens. It can be empty.
+	 */
+	public static List<Match> findOrphans(final String theText, int offset) {
+		final List<Match> orphans = new QuoteOrphanMatcher().findOrphans(
+				theText, offset);
+		orphans.addAll(new ParensOrphanMatcher().findOrphans(theText, offset));
+		Collections.sort(orphans);
+		return orphans;
 	}
 
 	/**
@@ -178,10 +205,6 @@ public class ParensUtil {
 	 * @return list of potentially orphaned parens. It can be empty.
 	 */
 	public static List<Match> findOrphans(final String theText) {
-		final List<Match> orphans = new QuoteOrphanMatcher()
-				.findOrphans(theText);
-		orphans.addAll(new ParensOrphanMatcher().findOrphans(theText));
-		Collections.sort(orphans);
-		return orphans;
+		return findOrphans(theText, 0);
 	}
 }

@@ -21,26 +21,25 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	/**
 	 * 
 	 */
-	protected final PrepToolsPluginExtension workspaceAccessPluginExtension;
+	protected final PrepToolsPluginExtension prepToolsPluginExtension;
 
 	/**
-	 * @param theWorkspaceAccessPluginExtension
+	 * @param thePrepToolsPluginExtension
 	 */
 	AbstractPrepToolAction(
-			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
-		workspaceAccessPluginExtension = theWorkspaceAccessPluginExtension;
+			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
+		prepToolsPluginExtension = thePrepToolsPluginExtension;
 	}
 
 	@Override
 	public void actionPerformed(final ActionEvent arg0) {
-		if ((workspaceAccessPluginExtension.getPage()) != null) {
+		if ((prepToolsPluginExtension.getPage()) != null) {
 			try {
 				doSomething();
 			} catch (final BadLocationException e) {
 				e.printStackTrace();
 			}
-			workspaceAccessPluginExtension.getDocumentMetaInfo()
-					.setCurrentState();
+			prepToolsPluginExtension.getDocumentMetaInfo().setCurrentState();
 		}
 	}
 
@@ -58,8 +57,7 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	 * @return The end position of the current selection.
 	 */
 	protected final int getSelectionEnd() {
-		final WSEditor editorAccess = workspaceAccessPluginExtension
-				.getWsEditor();
+		final WSEditor editorAccess = prepToolsPluginExtension.getWsEditor();
 		final WSTextEditorPage aWSTextEditorPage = PrepToolsPluginExtension
 				.getPage(editorAccess);
 		return aWSTextEditorPage.getSelectionEnd();
@@ -72,7 +70,7 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	 * @param match
 	 */
 	protected final void select(final Match match) {
-		workspaceAccessPluginExtension.getPage().select(match.startOffset,
+		prepToolsPluginExtension.getPage().select(match.startOffset,
 				match.endOffset);
 	}
 
@@ -83,8 +81,18 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	 * @param pm
 	 */
 	protected final void select(final Match.PositionMatch pm) {
-		workspaceAccessPluginExtension.getPage().select(
-				pm.startOffset.getOffset(), pm.endOffset.getOffset());
+		prepToolsPluginExtension.getPage().select(pm.startOffset.getOffset(),
+				pm.endOffset.getOffset());
+	}
+
+	protected int getStartIndex() {
+		final Document document = prepToolsPluginExtension
+				.getDocumentMetaInfo().getDocument();
+		try {
+			return document.getText(0, document.getLength()).indexOf("<dtbook");
+		} catch (final BadLocationException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }
 
@@ -95,10 +103,9 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 
 	private final String MYTAG;
 
-	AbstractMarkupAction(
-			PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
+	AbstractMarkupAction(PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String tag) {
-		super(theWorkspaceAccessPluginExtension);
+		super(thePrepToolsPluginExtension);
 		MYTAG = tag;
 		markupUtil = new MarkupUtil(tag);
 	}
@@ -121,11 +128,11 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 			throws BadLocationException {
 		final Document document = aWSTextEditorPage.getDocument();
 		final String newText = document.getText(0, document.getLength());
-		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
+		final DocumentMetaInfo dmi = prepToolsPluginExtension
 				.getDocumentMetaInfo(editorAccess.getEditorLocation());
 		final Match match = find(startAt, newText, getPattern());
 		if (match.equals(Match.NULL_MATCH)) {
-			workspaceAccessPluginExtension.showDialog("You're done with "
+			prepToolsPluginExtension.showDialog("You're done with "
 					+ getProcessName() + "!");
 			dmi.getCurrentToolSpecificMetaInfo().done();
 			match.startOffset = 0;
@@ -146,7 +153,7 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 	abstract protected String getProcessName();
 
 	protected DocumentMetaInfo.MetaInfo getMetaInfo() {
-		return workspaceAccessPluginExtension.getDocumentMetaInfo()
+		return prepToolsPluginExtension.getDocumentMetaInfo()
 				.getCurrentToolSpecificMetaInfo();
 	}
 
@@ -156,23 +163,21 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 
 	AbstractMarkupStartAction(
-			PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
-			String tag) {
-		super(theWorkspaceAccessPluginExtension, tag);
+			PrepToolsPluginExtension thePrepToolsPluginExtension, String tag) {
+		super(thePrepToolsPluginExtension, tag);
 	}
 
 	@Override
 	protected void doSomething() throws BadLocationException {
-		final WSEditor editorAccess = workspaceAccessPluginExtension
-				.getWsEditor();
-		final WSTextEditorPage aWSTextEditorPage = workspaceAccessPluginExtension
+		final WSEditor editorAccess = prepToolsPluginExtension.getWsEditor();
+		final WSTextEditorPage aWSTextEditorPage = prepToolsPluginExtension
 				.getPage();
 		final URL editorLocation = editorAccess.getEditorLocation();
 		final DocumentMetaInfo.MetaInfo metaInfo = getMetaInfo();
 		if (metaInfo.isDone()) {
-			if (workspaceAccessPluginExtension.showConfirmDialog(
-					getProcessName() + ": Start Over?", "The document "
-							+ FileUtils.basename(editorLocation)
+			if (prepToolsPluginExtension.showConfirmDialog(getProcessName()
+					+ ": Start Over?",
+					"The document " + FileUtils.basename(editorLocation)
 							+ " has already been " + getProcessName()
 							+ "ed.\n Do you want to start over?")
 
@@ -184,9 +189,9 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 			}
 		}
 		else if (metaInfo.hasStarted()) {
-			if (workspaceAccessPluginExtension.showConfirmDialog(
-					getProcessName() + ": Start Over?", "The document "
-							+ FileUtils.basename(editorLocation)
+			if (prepToolsPluginExtension.showConfirmDialog(getProcessName()
+					+ ": Start Over?",
+					"The document " + FileUtils.basename(editorLocation)
 							+ " is currently being " + getProcessName()
 							+ "ed.\n Do you want to start over?")
 
@@ -200,7 +205,7 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 
 		metaInfo.setHasStarted(true);
 		metaInfo.setDone(false);
-		searchOn(aWSTextEditorPage, editorAccess, 0);
+		searchOn(aWSTextEditorPage, editorAccess, getStartIndex());
 	}
 
 }
@@ -209,9 +214,8 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 
 	AbstractMarkupProceedAction(
-			PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
-			String tag) {
-		super(theWorkspaceAccessPluginExtension, tag);
+			PrepToolsPluginExtension thePrepToolsPluginExtension, String tag) {
+		super(thePrepToolsPluginExtension, tag);
 	}
 
 	/**
@@ -244,7 +248,7 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 	 */
 	@Override
 	protected void doSomething() throws BadLocationException {
-		final WSTextEditorPage aWSTextEditorPage = workspaceAccessPluginExtension
+		final WSTextEditorPage aWSTextEditorPage = prepToolsPluginExtension
 				.getPage();
 
 		final String selText = aWSTextEditorPage.getSelectedText();
@@ -257,8 +261,8 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 		final int continueAt = handleText(aWSTextEditorPage.getDocument(),
 				selText);
 
-		searchOn(aWSTextEditorPage,
-				workspaceAccessPluginExtension.getWsEditor(), continueAt);
+		searchOn(aWSTextEditorPage, prepToolsPluginExtension.getWsEditor(),
+				continueAt);
 	}
 
 	/**
@@ -268,9 +272,9 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 	 * @param dmi
 	 */
 	private void handleManualCursorMovement() {
-		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
+		final DocumentMetaInfo dmi = prepToolsPluginExtension
 				.getDocumentMetaInfo();
-		final WSTextEditorPage aWSTextEditorPage = workspaceAccessPluginExtension
+		final WSTextEditorPage aWSTextEditorPage = prepToolsPluginExtension
 				.getPage();
 		lastMatchStart = aWSTextEditorPage.getSelectionStart();
 		lastMatchEnd = aWSTextEditorPage.getSelectionEnd();
@@ -278,9 +282,8 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 		if (lastMatchStart != pm.startOffset.getOffset()
 				|| lastMatchEnd != pm.endOffset.getOffset()
 				|| dmi.manualEditOccurred()) {
-			if (workspaceAccessPluginExtension.showConfirmDialog(
-					getProcessName() + ": Cursor",
-					"Cursor position has changed!\n",
+			if (prepToolsPluginExtension.showConfirmDialog(getProcessName()
+					+ ": Cursor", "Cursor position has changed!\n",
 					"Take up where we left off last time", "continue anyway")) {
 				select(pm);
 			}
@@ -296,9 +299,8 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 abstract class AbstractMarkupAcceptAction extends AbstractMarkupProceedAction {
 
 	AbstractMarkupAcceptAction(
-			PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
-			String tag) {
-		super(theWorkspaceAccessPluginExtension, tag);
+			PrepToolsPluginExtension thePrepToolsPluginExtension, String tag) {
+		super(thePrepToolsPluginExtension, tag);
 	}
 
 	@Override
@@ -328,9 +330,9 @@ abstract class AbstractMarkupAcceptAction extends AbstractMarkupProceedAction {
 abstract class AbstractMarkupFindAction extends AbstractMarkupProceedAction {
 
 	AbstractMarkupFindAction(
-			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			String tag) {
-		super(theWorkspaceAccessPluginExtension, tag);
+		super(thePrepToolsPluginExtension, tag);
 	}
 
 	/* (non-Javadoc)
@@ -351,11 +353,10 @@ class VFormActionHelper {
 
 	protected static final String TAG = "v-form";
 
-	private final PrepToolsPluginExtension workspaceAccessPluginExtension;
+	private final PrepToolsPluginExtension prepToolsPluginExtension;
 
-	VFormActionHelper(
-			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
-		workspaceAccessPluginExtension = theWorkspaceAccessPluginExtension;
+	VFormActionHelper(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
+		prepToolsPluginExtension = thePrepToolsPluginExtension;
 	}
 
 	public Pattern getPattern() {
@@ -374,7 +375,7 @@ class VFormActionHelper {
 	 * @return tool specific metainfo.
 	 */
 	protected final VFormPrepTool.MetaInfo getMetaInfo() {
-		return (VFormPrepTool.MetaInfo) workspaceAccessPluginExtension
+		return (VFormPrepTool.MetaInfo) prepToolsPluginExtension
 				.getDocumentMetaInfo().getToolSpecificMetaInfo(
 						VFormPrepTool.LABEL);
 	}
@@ -412,10 +413,10 @@ class RegexStartAction extends AbstractMarkupStartAction {
 	private final RegexHelper helper;
 
 	RegexStartAction(
-			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String thePattern, final String theProcessName,
 			final String theTag) {
-		super(theWorkspaceAccessPluginExtension, theTag);
+		super(thePrepToolsPluginExtension, theTag);
 		helper = new RegexHelper(thePattern, theProcessName, theTag);
 	}
 
@@ -435,10 +436,10 @@ class RegexAcceptAction extends AbstractMarkupAcceptAction {
 	private final RegexHelper helper;
 
 	RegexAcceptAction(
-			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String thePattern, final String theProcessName,
 			final String theTag) {
-		super(theWorkspaceAccessPluginExtension, theTag);
+		super(thePrepToolsPluginExtension, theTag);
 		helper = new RegexHelper(thePattern, theProcessName, theTag);
 	}
 
@@ -457,11 +458,10 @@ class RegexAcceptAction extends AbstractMarkupAcceptAction {
 class RegexFindAction extends AbstractMarkupFindAction {
 	private final RegexHelper helper;
 
-	RegexFindAction(
-			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension,
+	RegexFindAction(final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String thePattern, final String theProcessName,
 			final String theTag) {
-		super(theWorkspaceAccessPluginExtension, theTag);
+		super(thePrepToolsPluginExtension, theTag);
 		helper = new RegexHelper(thePattern, theProcessName, theTag);
 	}
 
@@ -480,10 +480,9 @@ class RegexFindAction extends AbstractMarkupFindAction {
 class VFormStartAction extends AbstractMarkupStartAction {
 	private final VFormActionHelper helper;
 
-	VFormStartAction(
-			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
-		super(theWorkspaceAccessPluginExtension, VFormActionHelper.TAG);
-		helper = new VFormActionHelper(theWorkspaceAccessPluginExtension);
+	VFormStartAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
+		super(thePrepToolsPluginExtension, VFormActionHelper.TAG);
+		helper = new VFormActionHelper(thePrepToolsPluginExtension);
 	}
 
 	@Override
@@ -501,10 +500,9 @@ class VFormStartAction extends AbstractMarkupStartAction {
 class VFormAcceptAction extends AbstractMarkupAcceptAction {
 	private final VFormActionHelper helper;
 
-	VFormAcceptAction(
-			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
-		super(theWorkspaceAccessPluginExtension, VFormActionHelper.TAG);
-		helper = new VFormActionHelper(theWorkspaceAccessPluginExtension);
+	VFormAcceptAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
+		super(thePrepToolsPluginExtension, VFormActionHelper.TAG);
+		helper = new VFormActionHelper(thePrepToolsPluginExtension);
 	}
 
 	@Override
@@ -522,10 +520,9 @@ class VFormAcceptAction extends AbstractMarkupAcceptAction {
 class VFormFindAction extends AbstractMarkupFindAction {
 	private final VFormActionHelper helper;
 
-	VFormFindAction(
-			final PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
-		super(theWorkspaceAccessPluginExtension, VFormActionHelper.TAG);
-		helper = new VFormActionHelper(theWorkspaceAccessPluginExtension);
+	VFormFindAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
+		super(thePrepToolsPluginExtension, VFormActionHelper.TAG);
+		helper = new VFormActionHelper(thePrepToolsPluginExtension);
 	}
 
 	@Override
@@ -560,9 +557,9 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 	 * @return tool specific metainfo.
 	 */
 	protected final ParensPrepTool.MetaInfo getMetaInfo() {
-		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
-				.getDocumentMetaInfo(workspaceAccessPluginExtension
-						.getWsEditor().getEditorLocation());
+		final DocumentMetaInfo dmi = prepToolsPluginExtension
+				.getDocumentMetaInfo(prepToolsPluginExtension.getWsEditor()
+						.getEditorLocation());
 		return (ParensPrepTool.MetaInfo) dmi
 				.getToolSpecificMetaInfo(ParensPrepTool.LABEL);
 	}
@@ -570,7 +567,7 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 	@Override
 	protected void doSomething() throws BadLocationException {
 		init();
-		final DocumentMetaInfo dmi = workspaceAccessPluginExtension
+		final DocumentMetaInfo dmi = prepToolsPluginExtension
 				.getDocumentMetaInfo();
 
 		if (getMetaInfo().hasNext()) {
@@ -590,8 +587,8 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 	}
 
 	AbstractOrphanParenAction(
-			PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
-		super(theWorkspaceAccessPluginExtension);
+			PrepToolsPluginExtension thePrepToolsPluginExtension) {
+		super(thePrepToolsPluginExtension);
 	}
 
 	protected void select(final DocumentMetaInfo dmi) {
@@ -603,22 +600,21 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 @SuppressWarnings("serial")
 class OrphanParenStartAction extends AbstractOrphanParenAction {
 
-	OrphanParenStartAction(
-			PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
-		super(theWorkspaceAccessPluginExtension);
+	OrphanParenStartAction(PrepToolsPluginExtension thePrepToolsPluginExtension) {
+		super(thePrepToolsPluginExtension);
 	}
 
 	@Override
 	protected void init() {
-		final WSTextEditorPage aWSTextEditorPage = workspaceAccessPluginExtension
+		final WSTextEditorPage aWSTextEditorPage = prepToolsPluginExtension
 				.getPage();
 		final Document document = aWSTextEditorPage.getDocument();
 		List<Match> orphans = null;
 		try {
-			orphans = ParensUtil.findOrphans(document.getText(0,
-					document.getLength()));
+			orphans = ParensUtil.findOrphans(
+					document.getText(0, document.getLength()), getStartIndex());
 		} catch (BadLocationException e) {
-			workspaceAccessPluginExtension.showMessage(e.getMessage());
+			prepToolsPluginExtension.showMessage(e.getMessage());
 			e.printStackTrace();
 		}
 		final ParensPrepTool.MetaInfo parensMetaInfo = getMetaInfo();
@@ -629,7 +625,7 @@ class OrphanParenStartAction extends AbstractOrphanParenAction {
 
 	@Override
 	protected void handleNoneFound() {
-		workspaceAccessPluginExtension.showDialog("No orphaned parens found.");
+		prepToolsPluginExtension.showDialog("No orphaned parens found.");
 		getMetaInfo().setDone(true);
 	}
 
@@ -639,13 +635,13 @@ class OrphanParenStartAction extends AbstractOrphanParenAction {
 class OrphanParenFindNextAction extends AbstractOrphanParenAction {
 
 	OrphanParenFindNextAction(
-			PrepToolsPluginExtension theWorkspaceAccessPluginExtension) {
-		super(theWorkspaceAccessPluginExtension);
+			PrepToolsPluginExtension thePrepToolsPluginExtension) {
+		super(thePrepToolsPluginExtension);
 	}
 
 	@Override
 	protected void handleNoneFound() {
-		workspaceAccessPluginExtension
+		prepToolsPluginExtension
 				.showDialog("You're done with orphaned parens.");
 		getMetaInfo().setDone(true);
 	}

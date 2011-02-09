@@ -359,6 +359,22 @@ public class ParensUtilTest {
 	}
 
 	@Test
+	public void testParensOffset() {
+		// ------------------------------1---------2
+		// --------012345678901234567890123456789
+		final String sample = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+				+ "<dtbook>" + ")" + "</dtbook>";
+		List<Match> orphans = ParensUtil.findOrphans(sample);
+		assertEquals(1, orphans.size());
+		Match match = orphans.get(0);
+		final int indexOf = sample.indexOf(')');
+		assertEquals(indexOf, match.startOffset);
+		assertEquals(indexOf + 1, match.endOffset);
+		assertEquals(1, ParensUtil.findOrphans(sample, indexOf).size());
+		assertEquals(0, ParensUtil.findOrphans(sample, indexOf + 1).size());
+	}
+
+	@Test
 	public void testParensLocQuot10() {
 		final String head = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 				+ "<dtbook>";
