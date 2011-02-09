@@ -178,4 +178,22 @@ public class RegexTest {
 		assertEquals("+152 +423 -444", pattern.matcher("+152 423 -444")
 				.replaceAll("+$1"));
 	}
+
+	@Test
+	public void testIgnoreCaseSwitch() {
+		final String regex = "(?i)ABC(?-i)ABC";
+		final Pattern pattern = Pattern.compile(regex);
+		assertTrue(pattern.matcher("abcABC").find());
+		assertTrue(pattern.matcher("ABCABC").find());
+		assertFalse(pattern.matcher("abcabc").find());
+	}
+
+	@Test
+	public void testIgnoreCaseGroup() {
+		final String regex = "(?i:ABC)ABC";
+		final Pattern pattern = Pattern.compile(regex);
+		assertTrue(pattern.matcher("abcABC").find());
+		assertTrue(pattern.matcher("ABCABC").find());
+		assertFalse(pattern.matcher("abcabc").find());
+	}
 }
