@@ -186,6 +186,32 @@ public class RegexTest {
 		assertTrue(pattern.matcher("abcABC").find());
 		assertTrue(pattern.matcher("ABCABC").find());
 		assertFalse(pattern.matcher("abcabc").find());
+		assertEquals("xsABCABCty",
+				pattern.matcher("xABCABCy").replaceAll("s$0t"));
+	}
+
+	@Test(expected = IndexOutOfBoundsException.class)
+	public void testIgnoreCaseNoGroup1() {
+		final String regex = "(?i)ABC(?-i)ABC";
+		final Pattern pattern = Pattern.compile(regex);
+		assertEquals("xsABCABCty",
+				pattern.matcher("xABCABCy").replaceAll("s$1t"));
+	}
+
+	@Test(expected = IndexOutOfBoundsException.class)
+	public void testIgnoreCaseNoGroup1b() {
+		final String regex = "(?i:ABC)ABC";
+		final Pattern pattern = Pattern.compile(regex);
+		assertEquals("xsABCABCty",
+				pattern.matcher("xABCABCy").replaceAll("s$1t"));
+	}
+
+	@Test
+	public void testIgnoreCaseGroup1() {
+		final String regex = "((?i:ABC)ABC)";
+		final Pattern pattern = Pattern.compile(regex);
+		assertEquals("xsABCABCty",
+				pattern.matcher("xABCABCy").replaceAll("s$1t"));
 	}
 
 	@Test
