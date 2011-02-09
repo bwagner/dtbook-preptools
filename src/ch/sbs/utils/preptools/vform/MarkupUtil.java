@@ -62,17 +62,17 @@ public class MarkupUtil {
 
 	/**
 	 * Utility method to create a RegionSkipper for skipping already marked up
-	 * text. ATTENTION: elementName passed will be prepended with "brl:"!
+	 * text.
 	 * 
-	 * @param elementName
-	 *            element name without preceding "brl:"
+	 * @param openingTag
 	 * @return RegionSkipper
 	 */
-	public static RegionSkipper makeMarkupRegionSkipper(final String elementName) {
+	public static RegionSkipper makeMarkupRegionSkipper(final String openingTag) {
 		final StringBuilder sb = new StringBuilder();
-		final String OPENING_TAG = "<" + elementName + "\\s*>";
+		final String OPENING_TAG = "<" + openingTag + "\\s*>";
 		final String NON_GREEDY_CONTENT = ".*?";
-		final String CLOSING_TAG = "</" + elementName + "\\s*>";
+		final String CLOSING_TAG = "</" + MarkupUtil.getClosingTag(openingTag)
+				+ "\\s*>";
 		sb.append(OPENING_TAG);
 		sb.append(NON_GREEDY_CONTENT);
 		sb.append(CLOSING_TAG);
@@ -99,6 +99,11 @@ public class MarkupUtil {
 		sb.append(theElement);
 		sb.append(">");
 		return sb.toString();
+	}
+
+	public static String getClosingTag(final String openingTag) {
+		return Pattern.compile("([A-Za-z:]+)(?:\\s+\\S+\\s*)")
+				.matcher(openingTag).replaceAll("$1");
 	}
 
 }
