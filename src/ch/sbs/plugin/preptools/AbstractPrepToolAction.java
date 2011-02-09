@@ -314,13 +314,15 @@ abstract class AbstractMarkupAcceptAction extends AbstractMarkupProceedAction {
 	@Override
 	protected int handleText(final Document document, final String selText)
 			throws BadLocationException {
-		final String ELEMENT_NAME = getTag();
+		final String OPENING_TAG = getTag();
+		final String FULL_OPENING_TAG = "<" + OPENING_TAG + ">";
+		final String FULL_CLOSING_TAG = "</" + MarkupUtil.getClosingTag(OPENING_TAG) + ">";
 		// starting with the end, so the start position doesn't shift
-		document.insertString(lastMatchEnd, "</" + ELEMENT_NAME + ">", null);
-		document.insertString(lastMatchStart, "<" + ELEMENT_NAME + ">", null);
+		document.insertString(lastMatchEnd, FULL_CLOSING_TAG, null);
+		document.insertString(lastMatchStart, FULL_OPENING_TAG, null);
 
-		final int continueAt = lastMatchStart + ELEMENT_NAME.length() * 2
-				+ "<></>".length() + selText.length();
+		final int continueAt = lastMatchStart + FULL_OPENING_TAG.length()
+				+ FULL_CLOSING_TAG.length() + selText.length();
 		return continueAt;
 	}
 
