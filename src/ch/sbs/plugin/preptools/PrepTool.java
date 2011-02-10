@@ -112,7 +112,7 @@ abstract class PrepTool {
 		return jButton;
 	}
 
-	private void assignAcceleratorKey(final Action theAction,
+	private static void assignAcceleratorKey(final Action theAction,
 			final String theLabel, int theKeyEvent, final JComponent jComponent) {
 		final InputMap keyMap = new ComponentInputMap(jComponent);
 		keyMap.put(
