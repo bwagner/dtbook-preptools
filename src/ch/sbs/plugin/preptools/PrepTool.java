@@ -328,11 +328,11 @@ class RegexPrepTool extends MarkupPrepTool {
 
 	RegexPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			int theMenuItemNr, int theMnemonic, final String theLabel,
-			final String theRegex, final String theTag) {
+			final String thePattern, final String theTag) {
 		super(thePrepToolsPluginExtension, theMenuItemNr);
 		MNEMOMIC = theMnemonic;
 		LABEL = theLabel;
-		PATTERN = theRegex;
+		PATTERN = thePattern;
 		TAG = theTag;
 	}
 
@@ -362,6 +362,28 @@ class RegexPrepTool extends MarkupPrepTool {
 	protected Action makeAcceptAction() {
 		return new RegexAcceptAction(prepToolsPluginExtension, PATTERN, LABEL,
 				TAG);
+	}
+
+}
+
+class FullRegexPrepTool extends RegexPrepTool {
+
+	private final String replaceString;
+
+	FullRegexPrepTool(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			int theMenuItemNr, int theMnemonic, final String theLabel,
+			final String theRegex, final String theTag,
+			final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic,
+				theLabel, theRegex, theTag);
+		replaceString = theReplaceString;
+	}
+
+	@Override
+	protected Action makeAcceptAction() {
+		return new FullRegexAcceptAction(prepToolsPluginExtension, PATTERN,
+				LABEL, TAG, replaceString);
 	}
 
 }

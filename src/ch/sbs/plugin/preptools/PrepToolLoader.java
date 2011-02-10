@@ -5,20 +5,27 @@ import java.util.List;
 
 public class PrepToolLoader {
 
+	// Ordnungszahlen
 	public static final String ORDINAL_REGEX = "\\d+\\.";
 
+	// Römische Zahlen
 	// ignore case
 	public static final String ROMAN_REGEX = "\\b(?i:[IVXCMLD]+\\.)";
 
+	// Zahl mit Masseinheit
 	// ignore case
 	public static final String MEASURE_REGEX = "(?i:\\d*['.,]*\\d+\\s?[A-Z]{1,2}\\b)";
 
-	// ignore case
-	public static final String ABBREV_PERIOD_REGEX = "(?i:[A-ZÄÖÜ]\\.\\s?[A-ZÄÖÜ]\\.)";
-
+	// Grossbuchstaben(folgen) des Typs A, A-Z, MM, USA, A4
 	// case sensitive
 	public static final String ABBREV_CAPITAL_REGEX = "(\\b[A-ZÄÖÜ]+)(\\d*\\b)";
+	public static final String ABBREV_CAPITAL_REPLACE = "<abbr>$1</abbr>$2";
 
+	// Abkürzungen des Typs x.y. oder x. y.
+	// ignore case
+	public static final String ABBREV_PERIOD_REGEX = "\\b(?i:[A-ZÄÖÜ]{1,4}\\.\\s?[A-ZÄÖÜ]{1,4}\\.)";
+
+	// Akronyme des Typs GmbH, GSoA, etc.
 	// case sensitive
 	public static final String ABBREV_ACRONYM_REGEX = "\\b\\w*[a-z]+[A-Z]+\\w*\\b";
 
@@ -42,10 +49,9 @@ public class PrepToolLoader {
 
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'a',
 				"AbbrevPeriod", ABBREV_PERIOD_REGEX, "abbr"));
-		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 't',
-		// FIXME: the replacement is more complicated:
-		// <abbr>$1</abbr>$2
-				"AbbrevCapital", ABBREV_CAPITAL_REGEX, "abbr"));
+		prepTools.add(new FullRegexPrepTool(thePrepToolsPluginExtension, i++,
+				't', "AbbrevCapital", ABBREV_CAPITAL_REGEX, "abbr",
+				ABBREV_CAPITAL_REPLACE));
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'y',
 				"Acronym", ABBREV_ACRONYM_REGEX, "abbr"));
 		return prepTools;

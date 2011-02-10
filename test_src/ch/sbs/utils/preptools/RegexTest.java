@@ -265,6 +265,7 @@ public class RegexTest {
 		final Pattern pattern = Pattern.compile(regex);
 		assertTrue(pattern.matcher("z.B.").find());
 		assertTrue(pattern.matcher("z. B.").find());
+		assertTrue(pattern.matcher("dipl. Inf.").find());
 		assertFalse(pattern.matcher("Z").find());
 	}
 
@@ -274,6 +275,10 @@ public class RegexTest {
 		final String regex = PrepToolLoader.ABBREV_CAPITAL_REGEX;
 		final Pattern pattern = Pattern.compile(regex);
 		assertTrue(pattern.matcher("bloss A4 brauchen").find());
+		assertEquals(
+				"bloss <abbr>A</abbr>4 brauchen",
+				pattern.matcher("bloss A4 brauchen").replaceAll(
+						PrepToolLoader.ABBREV_CAPITAL_REPLACE));
 		assertTrue(pattern.matcher("drum A geben").find());
 		assertFalse(pattern.matcher("drumA454 geben").find());
 	}

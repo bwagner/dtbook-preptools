@@ -131,7 +131,7 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 		final String newText = document.getText(0, document.getLength());
 		final DocumentMetaInfo dmi = prepToolsPluginExtension
 				.getDocumentMetaInfo(editorAccess.getEditorLocation());
-		final Match match = find(startAt, newText, getPattern());
+		final Match match = markupUtil.find(newText, startAt, getPattern());
 		if (match.equals(Match.NULL_MATCH)) {
 			prepToolsPluginExtension.showDialog("You're done with "
 					+ getProcessName() + "!");
@@ -144,11 +144,6 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
 	}
 
-	private Match find(final int startAt, final String newText,
-			final Pattern pattern) {
-		return markupUtil.find(newText, startAt, pattern);
-	}
-
 	abstract protected Pattern getPattern();
 
 	abstract protected String getProcessName();
@@ -157,7 +152,6 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 		return prepToolsPluginExtension.getDocumentMetaInfo()
 				.getCurrentToolSpecificMetaInfo();
 	}
-
 }
 
 @SuppressWarnings("serial")
@@ -299,9 +293,10 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 }
 
 @SuppressWarnings("serial")
-abstract class AbstractMarkupAcceptAction extends AbstractMarkupProceedAction {
+abstract class AbstractMarkupAcceptVetoAction extends
+		AbstractMarkupProceedAction {
 
-	AbstractMarkupAcceptAction(
+	AbstractMarkupAcceptVetoAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String tag) {
 		super(thePrepToolsPluginExtension, tag);
@@ -311,6 +306,17 @@ abstract class AbstractMarkupAcceptAction extends AbstractMarkupProceedAction {
 	protected boolean veto(final String selText) {
 		return (selText == null || !MarkupUtil.matches(selText, getPattern()));
 	}
+}
+
+@SuppressWarnings("serial")
+abstract class AbstractMarkupAcceptAction extends
+		AbstractMarkupAcceptVetoAction {
+
+	AbstractMarkupAcceptAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String tag) {
+		super(thePrepToolsPluginExtension, tag);
+	}
 
 	/* (non-Javadoc)
 	 * @see ch.sbs.plugin.preptools.ProceedAction#handleText(javax.swing.text.Document, java.lang.String)
@@ -318,10 +324,8 @@ abstract class AbstractMarkupAcceptAction extends AbstractMarkupProceedAction {
 	@Override
 	protected int handleText(final Document document, final String selText)
 			throws BadLocationException {
-		final String OPENING_TAG = getTag();
-		final String FULL_OPENING_TAG = "<" + OPENING_TAG + ">";
-		final String FULL_CLOSING_TAG = "</"
-				+ MarkupUtil.getClosingTag(OPENING_TAG) + ">";
+		final String FULL_OPENING_TAG = "<" + getTag() + ">";
+		final String FULL_CLOSING_TAG = "</" + MarkupUtil.getClosingTag(getTag()) + ">";
 		// starting with the end, so the start position doesn't shift
 		document.insertString(lastMatchEnd, FULL_CLOSING_TAG, null);
 		document.insertString(lastMatchStart, FULL_OPENING_TAG, null);
@@ -330,7 +334,34 @@ abstract class AbstractMarkupAcceptAction extends AbstractMarkupProceedAction {
 				+ FULL_CLOSING_TAG.length() + selText.length();
 		return continueAt;
 	}
+}
 
+@SuppressWarnings("serial")
+abstract class AbstractMarkupFullRegexAcceptAction extends
+		AbstractMarkupAcceptVetoAction {
+
+	private final String replaceString;
+
+	AbstractMarkupFullRegexAcceptAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String tag, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, tag);
+		replaceString = theReplaceString;
+	}
+
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.ProceedAction#handleText(javax.swing.text.Document, java.lang.String)
+	 */
+	@Override
+	protected int handleText(final Document document, final String selText)
+			throws BadLocationException {
+		final String newText = getPattern().matcher(selText).replaceAll(
+				replaceString);
+		document.remove(lastMatchStart, selText.length());
+		document.insertString(lastMatchStart, newText, null);
+
+		return lastMatchStart + newText.length();
+	}
 }
 
 @SuppressWarnings("serial")
@@ -350,7 +381,6 @@ abstract class AbstractMarkupFindAction extends AbstractMarkupProceedAction {
 			throws BadLocationException {
 		return getSelectionEnd();
 	}
-
 }
 
 /**
@@ -445,6 +475,29 @@ class RegexAcceptAction extends AbstractMarkupAcceptAction {
 			final String thePattern, final String theProcessName,
 			final String theTag) {
 		super(thePrepToolsPluginExtension, theTag);
+		helper = new RegexHelper(thePattern, theProcessName, theTag);
+	}
+
+	@Override
+	protected Pattern getPattern() {
+		return helper.getPattern();
+	}
+
+	@Override
+	protected String getProcessName() {
+		return helper.getProcessName();
+	}
+}
+
+@SuppressWarnings("serial")
+class FullRegexAcceptAction extends AbstractMarkupFullRegexAcceptAction {
+	private final RegexHelper helper;
+
+	FullRegexAcceptAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String thePattern, final String theProcessName,
+			final String theTag, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theTag, theReplaceString);
 		helper = new RegexHelper(thePattern, theProcessName, theTag);
 	}
 
