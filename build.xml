@@ -82,6 +82,25 @@
 		<property name="plugindir" value="${oxygendir}/plugins/${ant.project.name}" />
 		<zip destfile="${ant.project.name}.zip" duplicate="fail" basedir="${plugindir}/.." includes="${ant.project.name}/**"/>
 	</target>
+	
+	<target name="checkCmdlineParTag" unless="git.tag">
+		<fail message="git.tag not set. Please provide it with cmd line parameter -Dgit.tag=..."/>
+	</target>
+	
+	<target name="tag" depends="checkCmdlineParTag" description="Tags project with tag given on the commandline with -Dgit.tag=...">
+		<exec executable="git">
+			<arg value="tag" />
+			<arg value="${git.tag}" />
+		</exec>
+	</target>
+	
+	<target name="untag" depends="checkCmdlineParTag" description="removes tag given on the commandline with -Dgit.tag=...">
+		<exec executable="git">
+			<arg value="tag" />
+			<arg value="-d" />
+			<arg value="${git.tag}" />
+		</exec>
+	</target>
 
 	<target name="jar" depends="compile, stamp, git.revision"  description="create deployable jar file" >
 		<manifest file="${app.manifest}">
