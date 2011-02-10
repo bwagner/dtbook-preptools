@@ -77,6 +77,11 @@
 		<copy file="${stamp.properties}" todir="${plugindir}" />
 		-->
 	</target>
+	
+	<target name="zip" depends="dist" description="makes zip for official distribution">
+		<property name="plugindir" value="${oxygendir}/plugins/${ant.project.name}" />
+		<zip destfile="${ant.project.name}.zip" duplicate="fail" basedir="${plugindir}/.." includes="${ant.project.name}/**"/>
+	</target>
 
 	<target name="jar" depends="compile, stamp, git.revision"  description="create deployable jar file" >
 		<manifest file="${app.manifest}">
