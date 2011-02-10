@@ -482,6 +482,7 @@ class VFormPrepTool extends MarkupPrepTool {
 
 	private JCheckBox makeCheckbox() {
 		final JCheckBox checkBox = new JCheckBox("All");
+		checkBox.setMnemonic('A');
 		checkBox.addItemListener(new ItemListener() {
 
 			@Override
