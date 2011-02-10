@@ -51,7 +51,7 @@
 		<mkdir dir="${build.dir}" />
 	</target>
 
-	<target name="compile" depends="init, boilerplate">
+	<target name="compile" depends="init, boilerplate" description="compile project">
 		<javac destdir="${build.dir}" deprecation="on" debug="on">
 			<src path="${src.dir}" />
 			<src path="${src.generated}" />
@@ -61,13 +61,13 @@
 		</javac>
 	</target>
 
-	<target name="deploy">
+	<target name="deploy" description="install plugin in local oxygen and restart oxygen" >
 		<antcall target="stopoxy" />
 		<antcall target="dist" />
 		<antcall target="startoxy" />
 	</target>
 
-	<target name="dist" depends="jar, plugin.xml, oxygendir">
+	<target name="dist" depends="jar, plugin.xml, oxygendir" description="install plugin in local oxygen" >
 		<property name="plugindir" value="${oxygendir}/plugins/${ant.project.name}" />
 		<delete dir="${plugindir}" />
 		<mkdir dir="${plugindir}/lib" />
@@ -78,7 +78,7 @@
 		-->
 	</target>
 
-	<target name="jar" depends="compile, stamp, git.revision">
+	<target name="jar" depends="compile, stamp, git.revision"  description="create deployable jar file" >
 		<manifest file="${app.manifest}">
 			<attribute name="Built-By" value="${user.name}" />
 			<attribute name="Build-Time" value="${release.time}" />
@@ -99,14 +99,14 @@
 			</echo>
 	</target>
 
-	<target name="oxygendir">
+	<target name="oxygendir"  description="figure out oxygen installation dir" >
 		<exec executable="sh" outputproperty="oxygendir">
 			<arg value="-c" />
 			<arg value="which oxygen|perl -MFile::Basename -ne 'chomp;print dirname readlink'" />
 		</exec>
 	</target>
 
-	<target name="plugin.xml">
+	<target name="plugin.xml"  description="generate plugin.xml" >
 		<echo file="${pluginfile}">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 			&lt;!DOCTYPE plugin SYSTEM "../plugin.dtd"&gt;
 			&lt;!-- ${header.generated} --&gt;
@@ -128,7 +128,7 @@
 		</echo>
 	</target>
 
-	<target name="boilerplate" depends="package2dir">
+	<target name="boilerplate" depends="package2dir" description="generate boilerplate classes" >
 		<mkdir dir="${src.generated}/${packagedir}" />
 		<echo file="${src.generated}/${packagedir}/${clazz}.java">
 			// ${header.generated}
@@ -184,7 +184,7 @@
 
 	</target>
 
-	<target name="stamp" depends="git.revision">
+	<target name="stamp" depends="git.revision" description="generate file stamp.properties" >
 		<tstamp>
 			<format property="release.time" pattern="dd.MM.yyyy HH:mm:ss" />
 		</tstamp>
@@ -203,7 +203,7 @@
 		</exec>
 	</target>
 
-	<target name="stopoxy">
+	<target name="stopoxy" description="stop oxygen" >
 		<exec executable="xdotool">
 			<arg line="search --onlyvisible --name '&lt;oXygen/&gt; XML Editor' windowactivate --sync key alt+F4" />
 		</exec>
@@ -246,7 +246,7 @@
 		</exec>
 	</target>
 
-	<target name="startoxy">
+	<target name="startoxy" description="start oxygen" >
 		<exec executable="oxygen" />
 	</target>
 
