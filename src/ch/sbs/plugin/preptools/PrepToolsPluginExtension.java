@@ -354,14 +354,24 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 						public void actionPerformed(ActionEvent e) {
 							final MetaInfo metaInfo = getDocumentMetaInfo()
 									.getCurrentToolSpecificMetaInfo();
-							final String label = getDocumentMetaInfo()
-									.getCurrentPrepTool().getLabel();
-							if (!metaInfo.isProcessing()
-									|| showConfirmDialog("PrepTools",
-											"Currently Processing " + label
+							final PrepTool currentPrepTool = getDocumentMetaInfo()
+									.getCurrentPrepTool();
+							final String label = currentPrepTool.getLabel();
+							if (preptool != currentPrepTool
+									&& (!metaInfo.isProcessing() || showConfirmDialog(
+											"PrepTools",
+											"Not Yet Done Processing " + label
 													+ "!", "Switch Anyway",
-											"Cancel")) {
+											"Cancel"))) {
 								preptool.activate();
+							}
+							else {
+								// not the smartest way
+								// but since there won't be more than 20
+								// preptools the linear search (indexOf) of
+								// the current tool should be bearable.
+								selectPrepToolItem(prepTools
+										.indexOf(currentPrepTool));
 							}
 						}
 					});
