@@ -43,6 +43,8 @@ import ch.sbs.utils.preptools.PropsUtils;
 
 /**
  * Plugin extension - workspace access extension.
+ * NOTE: the build file expects this class to be called ...Extension.
+ * 
  */
 public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension {
 
@@ -101,8 +103,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	}
 
 	void setPrepToolItemDone(int i) {
-		final JMenuItem item = menuPrepTools.getItem(i);
-		setPrepToolItemDone(item);
+		setPrepToolItemDone(menuPrepTools.getItem(i));
 	}
 
 	void setPrepToolItemNormal(final JMenuItem item) {
@@ -184,7 +185,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 					// PrepTools menu
 					menuPrepTools = createPrepToolsMenu();
 					menuPrepTools.setMnemonic(KeyEvent.VK_R);
-					// Add the CMS menu before the Help menu
+					// Add the Preptools menu before the Help menu
 					mainMenuBar.add(menuPrepTools,
 							mainMenuBar.getMenuCount() - 1);
 				}
@@ -351,7 +352,17 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							preptool.activate();
+							final MetaInfo metaInfo = getDocumentMetaInfo()
+									.getCurrentToolSpecificMetaInfo();
+							final String label = getDocumentMetaInfo()
+									.getCurrentPrepTool().getLabel();
+							if (!metaInfo.isProcessing()
+									|| showConfirmDialog("PrepTools",
+											"Currently Processing " + label
+													+ "!", "Switch Anyway",
+											"Cancel")) {
+								preptool.activate();
+							}
 						}
 					});
 			item.setText(preptool.getLabel());
@@ -456,6 +467,13 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		return showConfirmDialog(title, msg, "Ok", "Cancel");
 	}
 
+	/**
+	 * @param title
+	 * @param msg
+	 * @param confirm
+	 * @param deny
+	 * @return true if user clicked "confirm", false if user clicked "deny"
+	 */
 	boolean showConfirmDialog(final String title, final String msg,
 			final String confirm, final String deny) {
 		return pluginWorkspaceAccess.showConfirmDialog(title, msg,
