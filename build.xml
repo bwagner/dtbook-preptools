@@ -235,7 +235,7 @@
 		<!-- http://code.google.com/p/semicomplete/issues/detail?id=45#hc4 -->
 
 		<exec executable="xdotool">
-			<arg line="search --onlyvisible --name '^v-form' windowactivate key --window 0 Return" />
+			<arg line="search --onlyvisible --name '^PrepTools' windowactivate key --window 0 Return" />
 		</exec>
 
 		<exec executable="xdotool">

@@ -450,7 +450,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 				sb.insert(0,
 						"The following documents are still being processed:");
 				sb.append("\n\nProceed with closing anyway?");
-				applicationClosing = showConfirmDialog("v-form: Close?",
+				applicationClosing = showConfirmDialog("PrepTools: Close?",
 						sb.toString());
 				return applicationClosing;
 			}
