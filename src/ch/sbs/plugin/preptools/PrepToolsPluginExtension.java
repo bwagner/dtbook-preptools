@@ -409,6 +409,9 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		disableAllActions(dmi);
 		dmi.finish();
 		documentMetaInfos.remove(dmi.getUrl());
+		if (documentMetaInfos.isEmpty()) {
+			disableMenuPrepTools();
+		}
 	}
 
 	private String getVersion() {
