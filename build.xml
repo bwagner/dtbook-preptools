@@ -130,7 +130,7 @@
 		</exec>
 	</target>
 
-	<target name="plugin.xml"  description="generate plugin.xml" >
+	<target name="plugin.xml" depends="stamp, git.revision" description="generate plugin.xml" >
 		<echo file="${pluginfile}">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 			&lt;!DOCTYPE plugin SYSTEM "../plugin.dtd"&gt;
 			&lt;!-- ${header.generated} --&gt;
@@ -138,7 +138,7 @@
 			&lt;plugin
 					name="${ant.project.name}"
 					description="${description}"
-					version="1.0.0"
+					version="${git.revision} (${release.time})"
 					vendor="SBS"
 					class="${fqnclazz}"&gt;
 				&lt;runtime&gt;
