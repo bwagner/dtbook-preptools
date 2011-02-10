@@ -366,9 +366,9 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 								preptool.activate();
 							}
 							else {
-								// not the smartest way
-								// but since there won't be more than 20
-								// preptools the linear search (indexOf) of
+								// not the smartest way, but since
+								// there won't be more than 20 preptools
+								// the linear search (indexOf) of
 								// the current tool should be bearable.
 								selectPrepToolItem(prepTools
 										.indexOf(currentPrepTool));
