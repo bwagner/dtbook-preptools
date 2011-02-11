@@ -89,7 +89,7 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 		final Document document = prepToolsPluginExtension
 				.getDocumentMetaInfo().getDocument();
 		try {
-			return document.getText(0, document.getLength()).indexOf("<dtbook");
+			return document.getText(0, document.getLength()).indexOf("<book");
 		} catch (final BadLocationException e) {
 			throw new RuntimeException(e);
 		}
