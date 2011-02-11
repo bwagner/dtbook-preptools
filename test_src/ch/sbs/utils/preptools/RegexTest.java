@@ -227,10 +227,11 @@ public class RegexTest {
 
 	@Test
 	public void testOrdinal() {
-		// \d+\.
+		// \b\d+\.
 		final String regex = PrepToolLoader.ORDINAL_REGEX;
 		final Pattern pattern = Pattern.compile(regex);
 		assertTrue(pattern.matcher("5.").find());
+		assertFalse(pattern.matcher("a5.").find());
 		assertTrue(pattern.matcher("23423.").find());
 		assertFalse(pattern.matcher("2342").find());
 	}

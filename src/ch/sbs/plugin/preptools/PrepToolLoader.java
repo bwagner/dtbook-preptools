@@ -6,7 +6,7 @@ import java.util.List;
 public class PrepToolLoader {
 
 	// Ordnungszahlen
-	public static final String ORDINAL_REGEX = "\\d+\\.";
+	public static final String ORDINAL_REGEX = "\\b\\d+\\.";
 
 	// Römische Zahlen
 	// case sensitive
