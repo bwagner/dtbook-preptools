@@ -325,7 +325,8 @@ abstract class AbstractMarkupAcceptAction extends
 	protected int handleText(final Document document, final String selText)
 			throws BadLocationException {
 		final String FULL_OPENING_TAG = "<" + getTag() + ">";
-		final String FULL_CLOSING_TAG = "</" + MarkupUtil.getClosingTag(getTag()) + ">";
+		final String FULL_CLOSING_TAG = "</"
+				+ MarkupUtil.getClosingTag(getTag()) + ">";
 		// starting with the end, so the start position doesn't shift
 		document.insertString(lastMatchEnd, FULL_CLOSING_TAG, null);
 		document.insertString(lastMatchStart, FULL_OPENING_TAG, null);
@@ -640,8 +641,10 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 
 	}
 
-	protected void handleNoneFound() {
-
+	private void handleNoneFound() {
+		prepToolsPluginExtension.showDialog("You're done with "
+				+ getProcessName());
+		getMetaInfo().setDone(true);
 	}
 
 	AbstractOrphanParenAction(
@@ -653,6 +656,9 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 		select(getMetaInfo().next());
 	}
 
+	public String getProcessName() {
+		return ParensPrepTool.LABEL;
+	}
 }
 
 @SuppressWarnings("serial")
@@ -681,13 +687,6 @@ class OrphanParenStartAction extends AbstractOrphanParenAction {
 		parensMetaInfo.setHasStarted(true);
 		parensMetaInfo.setDone(false);
 	}
-
-	@Override
-	protected void handleNoneFound() {
-		prepToolsPluginExtension.showDialog("No orphaned parens found.");
-		getMetaInfo().setDone(true);
-	}
-
 }
 
 @SuppressWarnings("serial")
@@ -696,12 +695,5 @@ class OrphanParenFindNextAction extends AbstractOrphanParenAction {
 	OrphanParenFindNextAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
 		super(thePrepToolsPluginExtension);
-	}
-
-	@Override
-	protected void handleNoneFound() {
-		prepToolsPluginExtension
-				.showDialog("You're done with orphaned parens.");
-		getMetaInfo().setDone(true);
 	}
 }
