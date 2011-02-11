@@ -9,8 +9,8 @@ public class PrepToolLoader {
 	public static final String ORDINAL_REGEX = "\\d+\\.";
 
 	// Römische Zahlen
-	// ignore case
-	public static final String ROMAN_REGEX = "\\b(?i:[IVXCMLD]+\\.)";
+	// case sensitive
+	public static final String ROMAN_REGEX = "\\b[IVXCMLD]+\\b\\.?";
 
 	// Zahl mit Masseinheit
 	// ignore case
