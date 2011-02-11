@@ -237,11 +237,12 @@ public class RegexTest {
 
 	@Test
 	public void testRoman() {
-		// (?i:[IVXCMLD]+\.)
+		// \b[IVXCMLD]+\.?
 		final String regex = PrepToolLoader.ROMAN_REGEX;
 		final Pattern pattern = Pattern.compile(regex);
 		assertTrue(pattern.matcher("IXII.").find());
-		assertTrue(pattern.matcher("ixviv.").find());
+		assertTrue(pattern.matcher("IXII").find());
+		assertFalse(pattern.matcher("ixviv.").find());
 		assertFalse(pattern.matcher("ixviv").find());
 	}
 
