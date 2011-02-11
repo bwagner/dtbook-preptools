@@ -38,7 +38,7 @@ public class MarkupUtil {
 		skipAlreadyMarkedUp.findRegionsToSkip(text);
 		literalSkipper.findRegionsToSkip(text);
 		while (inSkipRegion && m.find(start)) {
-			start++;
+			start = m.start() + 1;
 			inSkipRegion = skipAlreadyMarkedUp.inSkipRegion(m)
 					|| literalSkipper.inSkipRegion(m);
 
