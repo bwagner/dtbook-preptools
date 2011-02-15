@@ -4,16 +4,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ch.sbs.utils.preptools.Match;
-import ch.sbs.utils.preptools.RegionSkipperComposite;
-import ch.sbs.utils.preptools.RegionSkipperLeaf;
+import ch.sbs.utils.preptools.RegionSkipperComponent;
 
 public class MarkupUtil {
-	private final RegionSkipperComposite skipper;
+	private final RegionSkipperComponent skipper;
 
-	public MarkupUtil(final String theElementName) {
-		skipper = RegionSkipperLeaf.getLiteralAndCommentSkipper();
-		skipper.addComponent(RegionSkipperLeaf
-				.makeMarkupRegionSkipper(theElementName));
+	public MarkupUtil(final RegionSkipperComponent theRegionSkipperComponent) {
+		skipper = theRegionSkipperComponent;
 	}
 
 	/**

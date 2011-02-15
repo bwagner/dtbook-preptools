@@ -2,9 +2,6 @@ package ch.sbs.utils.preptools.vform;
 
 import java.util.regex.Pattern;
 
-import ch.sbs.plugin.preptools.Constants;
-import ch.sbs.utils.preptools.Match;
-
 public class VFormUtil {
 	// Mail von Mischa Kuenzle 12.1.2011 15:09
 	// 3. Person PL (obligatorische Abfrage)
@@ -48,9 +45,6 @@ public class VFormUtil {
 
 	private static Pattern vFormDefaultPattern;
 
-	private static final MarkupUtil markupUtil = new MarkupUtil(
-			Constants.VFORM_TAG);
-
 	private static final Pattern vFormPatternAll;
 	private static final Pattern vFormPattern3rdPersonPlural;
 
@@ -79,32 +73,6 @@ public class VFormUtil {
 		sb.setLength(sb.length() - 1); // chop off last "|"
 		sb.append(")\\b"); // make sure we don't match substrings.
 		return Pattern.compile(sb.toString());
-	}
-
-	/**
-	 * Returns Match where the pattern occurs or NULL_MATCH
-	 * 
-	 * @param text
-	 *            Text to search
-	 * @param start
-	 *            index where to start
-	 * @param pattern
-	 *            pattern to match
-	 * @return Match
-	 */
-	public static Match find(final String text, int start, final Pattern pattern) {
-		return markupUtil.find(text, start, pattern);
-	}
-
-	/**
-	 * Does the same as @see find using the default pattern.
-	 * 
-	 * @param text
-	 * @param start
-	 * @return
-	 */
-	public static Match find(final String text, int start) {
-		return find(text, start, vFormDefaultPattern);
 	}
 
 	/**

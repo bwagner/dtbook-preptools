@@ -5,8 +5,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
@@ -40,6 +42,9 @@ import ch.sbs.plugin.preptools.DocumentMetaInfo.MetaInfo;
 import ch.sbs.utils.preptools.FileUtils;
 import ch.sbs.utils.preptools.Match.PositionMatch;
 import ch.sbs.utils.preptools.PropsUtils;
+import ch.sbs.utils.preptools.RegionSkipperComponent;
+import ch.sbs.utils.preptools.RegionSkipperComposite;
+import ch.sbs.utils.preptools.RegionSkipperLeaf;
 
 /**
  * Plugin extension - workspace access extension.
@@ -49,6 +54,7 @@ import ch.sbs.utils.preptools.PropsUtils;
 public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension {
 
 	private List<PrepTool> prepTools;
+	private Set<String> tags;
 
 	/**
 	 * A method to support DocumentMetaInfo's independence of specific
@@ -80,6 +86,25 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 	private void populatePrepTools() {
 		prepTools = PrepToolLoader.loadPrepTools(this);
+		tags = new HashSet<String>();
+		for (final PrepTool prepTool : prepTools) {
+			final String tag = prepTool.getTag();
+			if (tag != null) {
+				tags.add(tag);
+			}
+		}
+	}
+
+	public RegionSkipperComponent makeSkipper() {
+		// using local RegionSkipperComposite var in order to hide the fact that
+		// this is a RegionSkipperComposite and not a RegionSkipperComponent.
+		final RegionSkipperComposite compositeSkipper = RegionSkipperLeaf
+				.getLiteralAndCommentSkipper();
+		for (final String tag : tags) {
+			compositeSkipper.addComponent(RegionSkipperLeaf
+					.makeMarkupRegionSkipper(tag));
+		}
+		return compositeSkipper;
 	}
 
 	private static void setBold(final JMenuItem item) {

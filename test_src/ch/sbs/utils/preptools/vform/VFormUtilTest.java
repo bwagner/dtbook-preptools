@@ -6,7 +6,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import ch.sbs.plugin.preptools.Constants;
 import ch.sbs.utils.preptools.Match;
+import ch.sbs.utils.preptools.RegionSkipperLeaf;
 
 public class VFormUtilTest {
 
@@ -29,50 +31,36 @@ public class VFormUtilTest {
 
 	@Test
 	public void testReplaceKeep() {
-		assertEquals(Match.NULL_MATCH, VFormUtil.find("Sieb", 0));
+		MarkupUtil mu = new MarkupUtil(RegionSkipperLeaf.getCommentSkipper());
+		assertEquals(Match.NULL_MATCH,
+				mu.find("Sieb", 0, VFormUtil.getAllPattern()));
 		final String text = "Sieben können Sie haben.";
-		final Match match = VFormUtil.find(text, 0);
+		final Match match = mu.find(text, 0, VFormUtil.getAllPattern());
 		final String vform = "Sie";
 		assertEquals(text.lastIndexOf(vform), match.startOffset);
 		assertEquals(text.lastIndexOf(vform) + vform.length(), match.endOffset);
 	}
 
 	@Test
-	public void testSkip() {
-		assertEquals(Match.NULL_MATCH, VFormUtil.find("Sieb", 0));
-		final Match m = VFormUtil.find(
-				"Sieben können " + MarkupUtil.wrap("Sie", "brl:v-form")
-						+ " haben.", 0);
-		assertEquals(Match.NULL_MATCH, m);
-	}
-
-	@Test
-	public void testSkipLiteral() {
-		assertEquals(Match.NULL_MATCH, VFormUtil.find("Sieb", 0));
-		final Match m = VFormUtil.find(
-				"Sieben können " + MarkupUtil.wrap("Sie", "brl:literal")
-						+ " haben.", 0);
-		assertEquals(Match.NULL_MATCH, m);
-	}
-
-	@Test
 	public void testMatch() {
 
 		final String text = "Das können Sie zu Ihren Akten legen.";
+		final MarkupUtil mu = new MarkupUtil(
+				RegionSkipperLeaf.getCommentSkipper());
 
-		Match match = VFormUtil.find(text, 0);
+		Match match = mu.find(text, 0, VFormUtil.getAllPattern());
 
 		final String vform = "Sie";
 		assertEquals(text.indexOf(vform), match.startOffset);
 		assertEquals(text.indexOf(vform) + vform.length(), match.endOffset);
 
-		match = VFormUtil.find(text, match.endOffset);
+		match = mu.find(text, match.endOffset, VFormUtil.getAllPattern());
 
 		final String vform2 = "Ihren";
 		assertEquals(text.indexOf(vform2), match.startOffset);
 		assertEquals(text.indexOf(vform2) + vform2.length(), match.endOffset);
 
-		match = VFormUtil.find(text, match.endOffset);
+		match = mu.find(text, match.endOffset, VFormUtil.getAllPattern());
 
 		assertEquals(Match.NULL_MATCH, match);
 
@@ -82,20 +70,22 @@ public class VFormUtilTest {
 	public void testMatchBoundary() {
 
 		final String text = "Dann können Sie's Ihrem Kollegen geben.";
+		final MarkupUtil mu = new MarkupUtil(
+				RegionSkipperLeaf.getCommentSkipper());
 
-		Match match = VFormUtil.find(text, 0);
+		Match match = mu.find(text, 0, VFormUtil.getAllPattern());
 
 		final String vform = "Sie";
 		assertEquals(text.indexOf(vform), match.startOffset);
 		assertEquals(text.indexOf(vform) + vform.length(), match.endOffset);
 
-		match = VFormUtil.find(text, match.endOffset);
+		match = mu.find(text, match.endOffset, VFormUtil.getAllPattern());
 
 		final String vform2 = "Ihrem";
 		assertEquals(text.indexOf(vform2), match.startOffset);
 		assertEquals(text.indexOf(vform2) + vform2.length(), match.endOffset);
 
-		match = VFormUtil.find(text, match.endOffset);
+		match = mu.find(text, match.endOffset, VFormUtil.getAllPattern());
 
 		assertEquals(Match.NULL_MATCH, match);
 
@@ -104,9 +94,11 @@ public class VFormUtilTest {
 	@Test
 	public void testNoMatch() {
 
+		final MarkupUtil mu = new MarkupUtil(
+				RegionSkipperLeaf.getCommentSkipper());
 		final String text = "Dann kann Anna es ihrem Kollegen geben.";
 
-		final Match match = VFormUtil.find(text, 0);
+		final Match match = mu.find(text, 0, VFormUtil.getAllPattern());
 
 		assertEquals(Match.NULL_MATCH, match);
 
@@ -115,9 +107,11 @@ public class VFormUtilTest {
 	@Test
 	public void testMatch1() {
 
+		final MarkupUtil mu = new MarkupUtil(
+				RegionSkipperLeaf.getCommentSkipper());
 		final String text = "Dann kann Anna es Ihrem Kollegen geben.";
 
-		final Match match = VFormUtil.find(text, 0);
+		final Match match = mu.find(text, 0, VFormUtil.getAllPattern());
 
 		final String vform = "Ihrem";
 		assertEquals(text.indexOf(vform), match.startOffset);
@@ -128,12 +122,14 @@ public class VFormUtilTest {
 	@Test
 	public void testNoMatch1() {
 
+		final String tag = "brl:v-form";
+		final MarkupUtil mu = new MarkupUtil(
+				RegionSkipperLeaf.makeMarkupRegionSkipper(tag));
+
 		assertEquals(
 				Match.NULL_MATCH,
-				VFormUtil.find(
-						"Dann kann Anna es "
-								+ MarkupUtil.wrap("Ihrem", "brl:v-form")
-								+ " Kollegen geben.", 0));
+				mu.find("Dann kann Anna es " + MarkupUtil.wrap("Ihrem", tag)
+						+ " Kollegen geben.", 0, VFormUtil.getAllPattern()));
 
 	}
 
@@ -141,8 +137,9 @@ public class VFormUtilTest {
 	public void testSettingPatternAll() {
 
 		final String text = "Dann kann Anna es Deinem Kollegen geben.";
-
-		final Match match = VFormUtil.find(text, 0, VFormUtil.getAllPattern());
+		final MarkupUtil mu = new MarkupUtil(
+				RegionSkipperLeaf.makeMarkupRegionSkipper(Constants.VFORM_TAG));
+		final Match match = mu.find(text, 0, VFormUtil.getAllPattern());
 
 		final String vform = "Deinem";
 		assertEquals(text.indexOf(vform), match.startOffset);
@@ -153,8 +150,10 @@ public class VFormUtilTest {
 	@Test
 	public void testSettingPattern3rdPP() {
 
-		assertEquals(VFormUtil.find("Dann kann Anna es Deinem Kollegen geben.",
-				0, VFormUtil.get3rdPPPattern()), Match.NULL_MATCH);
+		final MarkupUtil mu = new MarkupUtil(
+				RegionSkipperLeaf.makeMarkupRegionSkipper(Constants.VFORM_TAG));
+		assertEquals(mu.find("Dann kann Anna es Deinem Kollegen geben.", 0,
+				VFormUtil.get3rdPPPattern()), Match.NULL_MATCH);
 
 	}
 }

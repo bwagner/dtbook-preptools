@@ -1,5 +1,6 @@
 package ch.sbs.utils.preptools;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -8,7 +9,36 @@ import java.util.regex.Pattern;
 
 import org.junit.Test;
 
+import ch.sbs.plugin.preptools.Constants;
+import ch.sbs.utils.preptools.vform.MarkupUtil;
+import ch.sbs.utils.preptools.vform.VFormUtil;
+
 public class RegionSkipperTest {
+
+	@Test
+	public void testSkip() {
+		final String tag = "brl:v-form";
+		RegionSkipperComponent theRegionSkipperComponent = RegionSkipperLeaf
+				.makeMarkupRegionSkipper(tag);
+		final MarkupUtil mu = new MarkupUtil(theRegionSkipperComponent);
+		final Match m = mu.find("Sieben können " + MarkupUtil.wrap("Sie", tag)
+				+ " haben.", 0, VFormUtil.get3rdPPPattern());
+		assertEquals(Match.NULL_MATCH, m);
+	}
+
+	@Test
+	public void testSkipLiteral() {
+		final RegionSkipperComposite rs = RegionSkipperLeaf
+				.getLiteralAndCommentSkipper();
+		rs.addComponent(RegionSkipperLeaf
+				.makeMarkupRegionSkipper(Constants.VFORM_TAG));
+		final MarkupUtil mu = new MarkupUtil(rs);
+		final Match m = mu.find(
+				"Sieben können " + MarkupUtil.wrap("Sie", "brl:literal")
+						+ " haben.", 0, VFormUtil.get3rdPPPattern());
+		assertEquals(Match.NULL_MATCH, m);
+	}
+
 	@Test
 	public void testLiteralSkipper() {
 		final RegionSkipperComponent literalSkipper = RegionSkipperLeaf

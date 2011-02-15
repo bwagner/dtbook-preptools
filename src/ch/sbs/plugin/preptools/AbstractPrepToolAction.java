@@ -108,7 +108,7 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 			final String tag) {
 		super(thePrepToolsPluginExtension);
 		MYTAG = tag;
-		markupUtil = new MarkupUtil(tag);
+		markupUtil = new MarkupUtil(thePrepToolsPluginExtension.makeSkipper());
 	}
 
 	protected String getTag() {
