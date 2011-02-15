@@ -256,6 +256,7 @@ public class RegexTest {
 		final String regex = PrepToolLoader.MEASURE_REGEX;
 		final Pattern pattern = Pattern.compile(regex);
 		assertTrue(pattern.matcher("5.6km weg").find());
+		assertTrue(pattern.matcher("5.6\nkm weg").find());
 		assertTrue(pattern.matcher("5'300.62 k dabei").find());
 		assertFalse(pattern.matcher("2343").find());
 	}
@@ -268,6 +269,7 @@ public class RegexTest {
 		assertTrue(pattern.matcher("z.B.").find());
 		assertTrue(pattern.matcher("z. B.").find());
 		assertTrue(pattern.matcher("dipl. Inf.").find());
+		assertTrue(pattern.matcher("a.\n          b.").find());
 		assertFalse(pattern.matcher("Z").find());
 	}
 
@@ -289,6 +291,14 @@ public class RegexTest {
 	public void testAbbrevAcronym() {
 		// \b\w*[a-z]+[A-Z]+\w*\b
 		final String regex = PrepToolLoader.ABBREV_ACRONYM_REGEX;
+		final Pattern pattern = Pattern.compile(regex);
+		assertTrue(pattern.matcher("Die GSoA ist").find());
+		assertTrue(pattern.matcher("ein mE guter").find());
+		assertFalse(pattern.matcher("ein Arbeiten").find());
+	}
+
+	public void testDotAll() {
+		final String regex = "";
 		final Pattern pattern = Pattern.compile(regex);
 		assertTrue(pattern.matcher("Die GSoA ist").find());
 		assertTrue(pattern.matcher("ein mE guter").find());
