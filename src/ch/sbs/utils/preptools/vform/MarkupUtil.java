@@ -4,21 +4,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ch.sbs.utils.preptools.Match;
-import ch.sbs.utils.preptools.RegionSkipper;
+import ch.sbs.utils.preptools.RegionSkipperComposite;
+import ch.sbs.utils.preptools.RegionSkipperLeaf;
 
 public class MarkupUtil {
-	private static final RegionSkipper literalSkipper = RegionSkipper
-			.getLiteralSkipper();
-	private final String elementName;
-	private final RegionSkipper skipAlreadyMarkedUp;
+	private final RegionSkipperComposite skipper;
 
 	public MarkupUtil(final String theElementName) {
-		elementName = theElementName;
-		skipAlreadyMarkedUp = makeMarkupRegionSkipper();
-	}
-
-	public RegionSkipper makeMarkupRegionSkipper() {
-		return makeMarkupRegionSkipper(elementName);
+		skipper = RegionSkipperLeaf.getLiteralAndCommentSkipper();
+		skipper.addComponent(RegionSkipperLeaf
+				.makeMarkupRegionSkipper(theElementName));
 	}
 
 	/**
@@ -35,18 +30,13 @@ public class MarkupUtil {
 	public Match find(final String text, int start, final Pattern pattern) {
 		final Matcher m = pattern.matcher(text);
 		boolean inSkipRegion = true;
-		skipAlreadyMarkedUp.findRegionsToSkip(text);
-		literalSkipper.findRegionsToSkip(text);
+		skipper.findRegionsToSkip(text);
 		while (inSkipRegion && m.find(start)) {
 			start = m.start() + 1;
-			inSkipRegion = skipAlreadyMarkedUp.inSkipRegion(m)
-					|| literalSkipper.inSkipRegion(m);
+			inSkipRegion = skipper.inSkipRegion(m);
 
 		}
-		if (inSkipRegion) {
-			return Match.NULL_MATCH;
-		}
-		return new Match(m.start(), m.end());
+		return inSkipRegion ? Match.NULL_MATCH : new Match(m.start(), m.end());
 	}
 
 	/**
@@ -58,25 +48,6 @@ public class MarkupUtil {
 	 */
 	public static boolean matches(final String region, final Pattern pattern) {
 		return region != null && pattern.matcher(region).matches();
-	}
-
-	/**
-	 * Utility method to create a RegionSkipper for skipping already marked up
-	 * text.
-	 * 
-	 * @param openingTag
-	 * @return RegionSkipper
-	 */
-	public static RegionSkipper makeMarkupRegionSkipper(final String openingTag) {
-		final StringBuilder sb = new StringBuilder();
-		final String OPENING_TAG = "<" + openingTag + "\\s*>";
-		final String NON_GREEDY_CONTENT = ".*?";
-		final String CLOSING_TAG = "</" + MarkupUtil.getClosingTag(openingTag)
-				+ "\\s*>";
-		sb.append(OPENING_TAG);
-		sb.append(NON_GREEDY_CONTENT);
-		sb.append(CLOSING_TAG);
-		return new RegionSkipper(sb.toString());
 	}
 
 	/**

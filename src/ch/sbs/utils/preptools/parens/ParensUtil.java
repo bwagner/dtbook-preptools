@@ -7,7 +7,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ch.sbs.utils.preptools.Match;
-import ch.sbs.utils.preptools.RegionSkipper;
+import ch.sbs.utils.preptools.RegionSkipperComponent;
+import ch.sbs.utils.preptools.RegionSkipperLeaf;
 
 public class ParensUtil {
 
@@ -26,9 +27,6 @@ public class ParensUtil {
 
 	static abstract class OrphanMatcher {
 
-		private static final RegionSkipper literalSkipper = RegionSkipper
-				.getLiteralSkipper();
-
 		/**
 		 * Finds list of potentially orphaned parens.
 		 * 
@@ -39,7 +37,9 @@ public class ParensUtil {
 		 * @return list of potentially orphaned parens. It can be empty.
 		 */
 		public List<Match> findOrphans(final String theText, int offset) {
-			literalSkipper.findRegionsToSkip(theText);
+			final RegionSkipperComponent literalAndCommentSkipper = RegionSkipperLeaf
+					.getLiteralAndCommentSkipper();
+			literalAndCommentSkipper.findRegionsToSkip(theText);
 			final List<Match> orphans = new ArrayList<Match>();
 			final String[][] patternPairs = getPatternPairs();
 			for (final String[] patPair : patternPairs) {
@@ -59,7 +59,7 @@ public class ParensUtil {
 				Match previousMatch = null;
 				matcher.reset();
 				while (matcher.find()) {
-					if (literalSkipper.inSkipRegion(matcher)
+					if (literalAndCommentSkipper.inSkipRegion(matcher)
 							|| matcher.start() < offset) {
 						continue;
 					}
