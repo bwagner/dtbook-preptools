@@ -297,11 +297,29 @@ public class RegexTest {
 		assertFalse(pattern.matcher("ein Arbeiten").find());
 	}
 
+	@Test
 	public void testDotAll() {
-		final String regex = "";
+		final String regex = "<!--.*-->";
+		final String regexDotAll = "(?s:" + regex + ")";
+		assertTrue(Pattern.compile(regex).matcher("<!-- Die GSoA ist -->")
+				.find());
+		assertFalse(Pattern.compile(regex)
+				.matcher("<!-- Die GSoA\n\nblabla \n ist -->").find());
+		assertTrue(Pattern.compile(regexDotAll)
+				.matcher("<!-- Die GSoA ist -->").find());
+		assertTrue(Pattern.compile(regexDotAll)
+				.matcher("<!-- Die GSoA ist -->").find());
+		assertTrue(Pattern.compile(regexDotAll)
+				.matcher("<!-- Die GSoA\n\nblabla \n ist -->").find());
+	}
+
+	@Test
+	public void testComment() {
+		final String regex = "(?s:<!--.*-->)";
 		final Pattern pattern = Pattern.compile(regex);
-		assertTrue(pattern.matcher("Die GSoA ist").find());
-		assertTrue(pattern.matcher("ein mE guter").find());
+		assertTrue(pattern.matcher("<!-- Die GSoA ist -->").find());
+		assertTrue(pattern.matcher("<!-- Die GSoA\n\nblabla \n ist -->").find());
+		assertFalse(pattern.matcher("ein mE guter").find());
 		assertFalse(pattern.matcher("ein Arbeiten").find());
 	}
 }
