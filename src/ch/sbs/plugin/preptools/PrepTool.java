@@ -79,6 +79,8 @@ abstract class PrepTool {
 		for (final JComponent component : components) {
 			prepToolsPluginExtension.toolbarPanel.add(component);
 		}
+		prepToolsPluginExtension.toolbarPanel
+				.add(trafficLight = new TrafficLight(26));
 		prepToolsPluginExtension.toolbarPanel.add(new JLabel(" " + getLabel()));
 		setCurrentState(prepToolsPluginExtension.getDocumentMetaInfo());
 		relayout();
@@ -153,7 +155,7 @@ abstract class PrepTool {
 	 * optional hook to disable gui stuff
 	 */
 	protected void disableStuff() {
-
+		trafficLight.off();
 	}
 
 	/**
@@ -188,6 +190,7 @@ abstract class PrepTool {
 		if (theDocumentMetaInfo != null && theDocumentMetaInfo.isDtBook()) {
 			prepToolsPluginExtension.enableMenuPrepTools();
 			doSetCurrentState(theDocumentMetaInfo);
+			updateTrafficLight(theDocumentMetaInfo);
 			if (theDocumentMetaInfo.isDone()) {
 				prepToolsPluginExtension.setPrepToolItemDone(menuItemNr);
 			}
@@ -196,6 +199,30 @@ abstract class PrepTool {
 			prepToolsPluginExtension.disableMenuPrepTools();
 			setAllActionsEnabled(false);
 		}
+	}
+
+	private void updateTrafficLight(final DocumentMetaInfo theDocumentMetaInfo) {
+		final boolean isTextPage = isTextPage(theDocumentMetaInfo);
+		if (!theDocumentMetaInfo.hasStarted()) { // not started
+			if (isTextPage) {
+				trafficLight.go();
+			}
+			else {
+				trafficLight.stop();
+			}
+		}
+		else if (theDocumentMetaInfo.isDone()) { // done
+			trafficLight.done();
+		}
+		else { // inProgress
+			if (isTextPage) {
+				trafficLight.inProgress();
+			}
+			else {
+				trafficLight.stop();
+			}
+		}
+
 	}
 
 	/**
@@ -218,6 +245,8 @@ abstract class PrepTool {
 	public String getTag() {
 		return null;
 	}
+
+	private TrafficLight trafficLight;
 }
 
 /**
@@ -237,8 +266,6 @@ abstract class MarkupPrepTool extends PrepTool {
 
 	protected abstract Action makeAcceptAction();
 
-	private TrafficLight trafficLight;
-
 	@Override
 	protected Action[] getAllActions() {
 		if (startAction == null) {
@@ -255,18 +282,12 @@ abstract class MarkupPrepTool extends PrepTool {
 		return new JComponent[] {
 				makeButton(startAction, "Start", KeyEvent.VK_7),
 				makeButton(findAction, "Find", KeyEvent.VK_8),
-				makeButton(acceptAction, "Accept", KeyEvent.VK_9),
-				trafficLight = new TrafficLight(26) };
+				makeButton(acceptAction, "Accept", KeyEvent.VK_9), };
 	}
 
 	MarkupPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			int theMenuItemNr) {
 		super(thePrepToolsPluginExtension, theMenuItemNr);
-	}
-
-	@Override
-	protected void disableStuff() {
-		trafficLight.off();
 	}
 
 	@Override
@@ -298,26 +319,13 @@ abstract class MarkupPrepTool extends PrepTool {
 		if (!theDocumentMetaInfo.hasStarted()) { // not started
 			findAction.setEnabled(false);
 			acceptAction.setEnabled(false);
-			if (isTextPage) {
-				trafficLight.go();
-			}
-			else {
-				trafficLight.stop();
-			}
 		}
 		else if (theDocumentMetaInfo.isDone()) { // done
-			trafficLight.done();
 			findAction.setEnabled(false);
 			acceptAction.setEnabled(false);
 		}
 		else { // inProgress
 			setAllActionsEnabled(isTextPage);
-			if (isTextPage) {
-				trafficLight.inProgress();
-			}
-			else {
-				trafficLight.stop();
-			}
 		}
 	}
 }
