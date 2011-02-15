@@ -10,12 +10,21 @@ import org.junit.Test;
 
 public class RegionSkipperTest {
 	@Test
-	public void testRegionSkipper() {
+	public void testLiteralSkipper() {
 		final RegionSkipper literalSkipper = RegionSkipper.getLiteralSkipper();
 		final String theText = "\nhallo\n<brl:literal>\ndu\n</brl:literal>\nhier\n";
 		literalSkipper.findRegionsToSkip(theText);
 		assertFalse(literalSkipper.inSkipRegion(makeMatcher("hallo", theText)));
 		assertTrue(literalSkipper.inSkipRegion(makeMatcher("du", theText)));
+	}
+
+	@Test
+	public void tesCommentSkipper() {
+		final RegionSkipper commentSkipper = RegionSkipper.getCommentSkipper();
+		final String theText = "\nhallo\n<!--\ndu\n-->\nhier\n";
+		commentSkipper.findRegionsToSkip(theText);
+		assertFalse(commentSkipper.inSkipRegion(makeMatcher("hallo", theText)));
+		assertTrue(commentSkipper.inSkipRegion(makeMatcher("du", theText)));
 	}
 
 	private static Matcher makeMatcher(final String thePattern,

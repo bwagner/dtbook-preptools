@@ -64,4 +64,13 @@ public class RegionSkipper {
 		return literalSkipper;
 	}
 
+	private static final RegionSkipper commentSkipper;
+	static {
+		commentSkipper = new RegionSkipper("(?s:<!--.*-->)");
+	}
+
+	public static RegionSkipper getCommentSkipper() {
+		return commentSkipper;
+	}
+
 }
