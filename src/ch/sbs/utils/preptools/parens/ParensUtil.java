@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 
 import ch.sbs.utils.preptools.Match;
 import ch.sbs.utils.preptools.RegionSkipperComponent;
-import ch.sbs.utils.preptools.RegionSkipperLeaf;
 
 public class ParensUtil {
 
@@ -34,12 +33,12 @@ public class ParensUtil {
 		 *            The text to search
 		 * @param offset
 		 *            from where to start searching in the given text.
+		 * @param theRegionSkipperComponent
 		 * @return list of potentially orphaned parens. It can be empty.
 		 */
-		public List<Match> findOrphans(final String theText, int offset) {
-			final RegionSkipperComponent literalAndCommentSkipper = RegionSkipperLeaf
-					.getLiteralAndCommentSkipper();
-			literalAndCommentSkipper.findRegionsToSkip(theText);
+		public List<Match> findOrphans(final String theText, int offset,
+				final RegionSkipperComponent theRegionSkipperComponent) {
+			theRegionSkipperComponent.findRegionsToSkip(theText);
 			final List<Match> orphans = new ArrayList<Match>();
 			final String[][] patternPairs = getPatternPairs();
 			for (final String[] patPair : patternPairs) {
@@ -59,7 +58,7 @@ public class ParensUtil {
 				Match previousMatch = null;
 				matcher.reset();
 				while (matcher.find()) {
-					if (literalAndCommentSkipper.inSkipRegion(matcher)
+					if (theRegionSkipperComponent.inSkipRegion(matcher)
 							|| matcher.start() < offset) {
 						continue;
 					}
@@ -168,18 +167,6 @@ public class ParensUtil {
 		}
 	}
 
-	static List<Match> findOrphansQuotes(final String theText, int offset) {
-		final List<Match> findOrphans = new QuoteOrphanMatcher().findOrphans(
-				theText, offset);
-		return findOrphans;
-	}
-
-	static List<Match> findOrphansParens(final String theText, int offset) {
-		final List<Match> findOrphans = new ParensOrphanMatcher().findOrphans(
-				theText, offset);
-		return findOrphans;
-	}
-
 	/**
 	 * Finds list of potentially orphaned parens.
 	 * 
@@ -187,12 +174,15 @@ public class ParensUtil {
 	 *            The text to search
 	 * @param offset
 	 *            from where to start searching in the given text.
+	 * @param theRegionSkipperComponent
 	 * @return list of potentially orphaned parens. It can be empty.
 	 */
-	public static List<Match> findOrphans(final String theText, int offset) {
+	public static List<Match> findOrphans(final String theText, int offset,
+			final RegionSkipperComponent theRegionSkipperComponent) {
 		final List<Match> orphans = new QuoteOrphanMatcher().findOrphans(
-				theText, offset);
-		orphans.addAll(new ParensOrphanMatcher().findOrphans(theText, offset));
+				theText, offset, theRegionSkipperComponent);
+		orphans.addAll(new ParensOrphanMatcher().findOrphans(theText, offset,
+				theRegionSkipperComponent));
 		Collections.sort(orphans);
 		return orphans;
 	}
@@ -202,9 +192,11 @@ public class ParensUtil {
 	 * 
 	 * @param theText
 	 *            The text to search
+	 * @param theRegionSkipperComponent
 	 * @return list of potentially orphaned parens. It can be empty.
 	 */
-	public static List<Match> findOrphans(final String theText) {
-		return findOrphans(theText, 0);
+	public static List<Match> findOrphans(final String theText,
+			final RegionSkipperComponent theRegionSkipperComponent) {
+		return findOrphans(theText, 0, theRegionSkipperComponent);
 	}
 }

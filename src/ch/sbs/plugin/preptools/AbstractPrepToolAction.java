@@ -644,7 +644,8 @@ class OrphanParenStartAction extends AbstractOrphanParenAction {
 		List<Match> orphans = null;
 		try {
 			orphans = ParensUtil.findOrphans(
-					document.getText(0, document.getLength()), getStartIndex());
+					document.getText(0, document.getLength()), getStartIndex(),
+					prepToolsPluginExtension.makeSkipper());
 		} catch (BadLocationException e) {
 			prepToolsPluginExtension.showMessage(e.getMessage());
 			e.printStackTrace();
