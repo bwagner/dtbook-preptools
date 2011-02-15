@@ -384,39 +384,6 @@ abstract class AbstractMarkupFindAction extends AbstractMarkupProceedAction {
 	}
 }
 
-/**
- * Helper class to factor out common code in VFormActions.
- */
-class VFormActionHelper {
-
-	private final PrepToolsPluginExtension prepToolsPluginExtension;
-
-	VFormActionHelper(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		prepToolsPluginExtension = thePrepToolsPluginExtension;
-	}
-
-	public Pattern getPattern() {
-		return getMetaInfo().getCurrentPattern();
-	}
-
-	public String getProcessName() {
-		return VFormPrepTool.LABEL;
-	}
-
-	/**
-	 * Utility method to get tool specific metainfo.
-	 * Covariant return type. (VFormPrepTool.MetaInfo is a subclass of
-	 * DocumentMetaInfo.MetaInfo)
-	 * 
-	 * @return tool specific metainfo.
-	 */
-	protected final VFormPrepTool.MetaInfo getMetaInfo() {
-		return (VFormPrepTool.MetaInfo) prepToolsPluginExtension
-				.getDocumentMetaInfo().getToolSpecificMetaInfo(
-						VFormPrepTool.LABEL);
-	}
-}
-
 class RegexHelper {
 
 	private final Pattern pattern;
@@ -540,7 +507,7 @@ class VFormStartAction extends AbstractMarkupStartAction {
 	private final VFormActionHelper helper;
 
 	VFormStartAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension, Constants.VFORM_TAG);
+		super(thePrepToolsPluginExtension, VFormActionHelper.VFORM_TAG);
 		helper = new VFormActionHelper(thePrepToolsPluginExtension);
 	}
 
@@ -560,7 +527,7 @@ class VFormAcceptAction extends AbstractMarkupAcceptAction {
 	private final VFormActionHelper helper;
 
 	VFormAcceptAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension, Constants.VFORM_TAG);
+		super(thePrepToolsPluginExtension, VFormActionHelper.VFORM_TAG);
 		helper = new VFormActionHelper(thePrepToolsPluginExtension);
 	}
 
@@ -580,7 +547,7 @@ class VFormFindAction extends AbstractMarkupFindAction {
 	private final VFormActionHelper helper;
 
 	VFormFindAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension, Constants.VFORM_TAG);
+		super(thePrepToolsPluginExtension, VFormActionHelper.VFORM_TAG);
 		helper = new VFormActionHelper(thePrepToolsPluginExtension);
 	}
 

@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 import org.junit.Test;
 
-import ch.sbs.plugin.preptools.Constants;
+import ch.sbs.plugin.preptools.VFormActionHelper;
 import ch.sbs.utils.preptools.vform.MarkupUtil;
 import ch.sbs.utils.preptools.vform.VFormUtil;
 
@@ -31,7 +31,7 @@ public class RegionSkipperTest {
 		final RegionSkipperComposite rs = RegionSkipperLeaf
 				.getLiteralAndCommentSkipper();
 		rs.addComponent(RegionSkipperLeaf
-				.makeMarkupRegionSkipper(Constants.VFORM_TAG));
+				.makeMarkupRegionSkipper(VFormActionHelper.VFORM_TAG));
 		final MarkupUtil mu = new MarkupUtil(rs);
 		final Match m = mu.find(
 				"Sieben können " + MarkupUtil.wrap("Sie", "brl:literal")

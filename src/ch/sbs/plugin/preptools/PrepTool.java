@@ -464,7 +464,7 @@ class VFormPrepTool extends MarkupPrepTool {
 
 	@Override
 	public String getTag() {
-		return Constants.VFORM_TAG;
+		return VFormActionHelper.VFORM_TAG;
 	}
 
 	@Override

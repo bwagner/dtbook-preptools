@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import ch.sbs.plugin.preptools.Constants;
+import ch.sbs.plugin.preptools.VFormActionHelper;
 import ch.sbs.utils.preptools.Match;
 import ch.sbs.utils.preptools.RegionSkipperLeaf;
 
@@ -138,7 +138,8 @@ public class VFormUtilTest {
 
 		final String text = "Dann kann Anna es Deinem Kollegen geben.";
 		final MarkupUtil mu = new MarkupUtil(
-				RegionSkipperLeaf.makeMarkupRegionSkipper(Constants.VFORM_TAG));
+				RegionSkipperLeaf
+						.makeMarkupRegionSkipper(VFormActionHelper.VFORM_TAG));
 		final Match match = mu.find(text, 0, VFormUtil.getAllPattern());
 
 		final String vform = "Deinem";
@@ -151,7 +152,8 @@ public class VFormUtilTest {
 	public void testSettingPattern3rdPP() {
 
 		final MarkupUtil mu = new MarkupUtil(
-				RegionSkipperLeaf.makeMarkupRegionSkipper(Constants.VFORM_TAG));
+				RegionSkipperLeaf
+						.makeMarkupRegionSkipper(VFormActionHelper.VFORM_TAG));
 		assertEquals(mu.find("Dann kann Anna es Deinem Kollegen geben.", 0,
 				VFormUtil.get3rdPPPattern()), Match.NULL_MATCH);
 
