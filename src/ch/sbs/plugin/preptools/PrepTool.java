@@ -209,6 +209,15 @@ abstract class PrepTool {
 		return theDocumentMetaInfo.getCurrentEditorPage().equals(
 				EditorPageConstants.PAGE_TEXT);
 	}
+
+	/**
+	 * Optional hook for PrepTools to provide the tag they insert.
+	 * 
+	 * @return Tag
+	 */
+	public String getTag() {
+		return null;
+	}
 }
 
 /**
@@ -337,6 +346,11 @@ class RegexPrepTool extends MarkupPrepTool {
 	}
 
 	@Override
+	public String getTag() {
+		return TAG;
+	}
+
+	@Override
 	protected String getLabel() {
 		return LABEL;
 	}
@@ -446,6 +460,11 @@ class VFormPrepTool extends MarkupPrepTool {
 	@Override
 	protected String getLabel() {
 		return LABEL;
+	}
+
+	@Override
+	public String getTag() {
+		return Constants.VFORM_TAG;
 	}
 
 	@Override
