@@ -36,7 +36,7 @@ public class Match implements Comparable<Match> {
 	public static final Match NULL_MATCH = new Match(-1, -1);
 
 	@Override
-	public int compareTo(Match o) {
+	public int compareTo(final Match o) {
 		return startOffset - (o).startOffset;
 	}
 
