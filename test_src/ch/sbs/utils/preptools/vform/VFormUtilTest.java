@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import ch.sbs.plugin.preptools.VFormActionHelper;
 import ch.sbs.utils.preptools.Match;
-import ch.sbs.utils.preptools.RegionSkipperLeaf;
+import ch.sbs.utils.preptools.RegionSkipper;
 
 public class VFormUtilTest {
 
@@ -31,7 +31,7 @@ public class VFormUtilTest {
 
 	@Test
 	public void testReplaceKeep() {
-		MarkupUtil mu = new MarkupUtil(RegionSkipperLeaf.getCommentSkipper());
+		MarkupUtil mu = new MarkupUtil(RegionSkipper.getCommentSkipper());
 		assertEquals(Match.NULL_MATCH,
 				mu.find("Sieb", 0, VFormUtil.getAllPattern()));
 		final String text = "Sieben können Sie haben.";
@@ -46,7 +46,7 @@ public class VFormUtilTest {
 
 		final String text = "Das können Sie zu Ihren Akten legen.";
 		final MarkupUtil mu = new MarkupUtil(
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 
 		Match match = mu.find(text, 0, VFormUtil.getAllPattern());
 
@@ -71,7 +71,7 @@ public class VFormUtilTest {
 
 		final String text = "Dann können Sie's Ihrem Kollegen geben.";
 		final MarkupUtil mu = new MarkupUtil(
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 
 		Match match = mu.find(text, 0, VFormUtil.getAllPattern());
 
@@ -95,7 +95,7 @@ public class VFormUtilTest {
 	public void testNoMatch() {
 
 		final MarkupUtil mu = new MarkupUtil(
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		final String text = "Dann kann Anna es ihrem Kollegen geben.";
 
 		final Match match = mu.find(text, 0, VFormUtil.getAllPattern());
@@ -108,7 +108,7 @@ public class VFormUtilTest {
 	public void testMatch1() {
 
 		final MarkupUtil mu = new MarkupUtil(
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		final String text = "Dann kann Anna es Ihrem Kollegen geben.";
 
 		final Match match = mu.find(text, 0, VFormUtil.getAllPattern());
@@ -124,7 +124,7 @@ public class VFormUtilTest {
 
 		final String tag = "brl:v-form";
 		final MarkupUtil mu = new MarkupUtil(
-				RegionSkipperLeaf.makeMarkupRegionSkipper(tag));
+				RegionSkipper.makeMarkupRegionSkipper(tag));
 
 		assertEquals(
 				Match.NULL_MATCH,
@@ -138,7 +138,7 @@ public class VFormUtilTest {
 
 		final String text = "Dann kann Anna es Deinem Kollegen geben.";
 		final MarkupUtil mu = new MarkupUtil(
-				RegionSkipperLeaf
+				RegionSkipper
 						.makeMarkupRegionSkipper(VFormActionHelper.VFORM_TAG));
 		final Match match = mu.find(text, 0, VFormUtil.getAllPattern());
 
@@ -152,7 +152,7 @@ public class VFormUtilTest {
 	public void testSettingPattern3rdPP() {
 
 		final MarkupUtil mu = new MarkupUtil(
-				RegionSkipperLeaf
+				RegionSkipper
 						.makeMarkupRegionSkipper(VFormActionHelper.VFORM_TAG));
 		assertEquals(mu.find("Dann kann Anna es Deinem Kollegen geben.", 0,
 				VFormUtil.get3rdPPPattern()), Match.NULL_MATCH);

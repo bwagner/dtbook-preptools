@@ -9,7 +9,7 @@ import java.util.List;
 import org.junit.Test;
 
 import ch.sbs.utils.preptools.Match;
-import ch.sbs.utils.preptools.RegionSkipperLeaf;
+import ch.sbs.utils.preptools.RegionSkipper;
 
 public class ParensUtilTest {
 
@@ -40,7 +40,7 @@ public class ParensUtilTest {
 		assertEquals(
 				0,
 				ParensUtil.findOrphans(sample,
-						RegionSkipperLeaf.getCommentSkipper()).size());
+						RegionSkipper.getCommentSkipper()).size());
 	}
 
 	@Test
@@ -49,7 +49,7 @@ public class ParensUtilTest {
 		assertEquals(
 				1,
 				ParensUtil.findOrphans(sample,
-						RegionSkipperLeaf.getCommentSkipper()).size());
+						RegionSkipper.getCommentSkipper()).size());
 	}
 
 	@Test
@@ -58,7 +58,7 @@ public class ParensUtilTest {
 		assertEquals(
 				2,
 				ParensUtil.findOrphans(sample,
-						RegionSkipperLeaf.getCommentSkipper()).size());
+						RegionSkipper.getCommentSkipper()).size());
 	}
 
 	@Test
@@ -67,7 +67,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "« » ‹ › 〈    ) [ ] {  ";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		assertEquals(3, orphans.size());
 		int i = 0;
 		Match match = orphans.get(i++);
@@ -87,7 +87,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "« » ‹ › 〈 (    [ ] {  ";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		assertEquals(3, orphans.size());
 		int i = 0;
 		Match match = orphans.get(i++);
@@ -107,7 +107,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "« » ‹ › 〈 ( )) (( [ ] { } ";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		Collections.sort(orphans);
 		assertEquals(4, orphans.size());
 		int i = 0;
@@ -131,7 +131,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "(( )) (( [   } ";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		Collections.sort(orphans);
 		assertEquals(6, orphans.size());
 		int i = 0;
@@ -161,7 +161,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "(( ))";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		Collections.sort(orphans);
 		assertEquals(2, orphans.size());
 		int i = 0;
@@ -179,7 +179,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "«« »»";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		Collections.sort(orphans);
 		assertEquals(2, orphans.size());
 		int i = 0;
@@ -197,7 +197,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "«« »» ‹ › 〈 〉 ";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		Collections.sort(orphans);
 		assertEquals(2, orphans.size());
 		int i = 0;
@@ -215,7 +215,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "« » ‹ › 〈 〉 ";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		assertEquals(0, orphans.size());
 	}
 
@@ -225,7 +225,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "〈 › « ";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		Collections.sort(orphans);
 		assertEquals(3, orphans.size());
 		int i = 0;
@@ -246,7 +246,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "« › » ";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		Collections.sort(orphans);
 		assertEquals(1, orphans.size());
 		int i = 0;
@@ -261,7 +261,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "<brl:literal>›</brl:literal>";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getLiteralAndCommentSkipper());
+				RegionSkipper.getLiteralAndCommentSkipper());
 		Collections.sort(orphans);
 		assertEquals(0, orphans.size());
 	}
@@ -272,7 +272,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "<brl:literal>(</brl:literal>";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getLiteralAndCommentSkipper());
+				RegionSkipper.getLiteralAndCommentSkipper());
 		Collections.sort(orphans);
 		assertEquals(0, orphans.size());
 	}
@@ -283,7 +283,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "<brl:literal brl:grade=\"0\">(</brl:literal>";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getLiteralAndCommentSkipper());
+				RegionSkipper.getLiteralAndCommentSkipper());
 		Collections.sort(orphans);
 		assertEquals(0, orphans.size());
 	}
@@ -294,7 +294,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "<brl:literal brl:grade=\"1\">(</brl:literal>";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getLiteralAndCommentSkipper());
+				RegionSkipper.getLiteralAndCommentSkipper());
 		Collections.sort(orphans);
 		assertEquals(0, orphans.size());
 	}
@@ -305,7 +305,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "<brl:literal brl:grade=\"2\">(</brl:literal>";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getLiteralAndCommentSkipper());
+				RegionSkipper.getLiteralAndCommentSkipper());
 		Collections.sort(orphans);
 		assertEquals(0, orphans.size());
 	}
@@ -316,7 +316,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "<brl:literal>« › »</brl:literal>";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getLiteralAndCommentSkipper());
+				RegionSkipper.getLiteralAndCommentSkipper());
 		Collections.sort(orphans);
 		assertEquals(0, orphans.size());
 	}
@@ -327,7 +327,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "« ‹ 〈 〉 › » ";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		assertEquals(0, orphans.size());
 	}
 
@@ -337,7 +337,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "Du, (<brl:literal>(!Sie </brl:literal> wert <brl:literal brl:grade=\"2\">und)]}</brl:literal>) [Eure, Ihre";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getLiteralAndCommentSkipper());
+				RegionSkipper.getLiteralAndCommentSkipper());
 		assertEquals(1, orphans.size());
 	}
 
@@ -347,7 +347,7 @@ public class ParensUtilTest {
 		// --------------------012345678901234567890123456789
 		final String sample = "(<brl:literal></brl:literal>)";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		assertEquals(0, orphans.size());
 	}
 
@@ -363,7 +363,7 @@ public class ParensUtilTest {
 				+ "</oh><ol>" + "<li>a) «bla»</li>" + "<li>b) «blu»</li></ol>"
 				+ "{ bla }" + "</section>" + "</dtbook>";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getLiteralAndCommentSkipper());
+				RegionSkipper.getLiteralAndCommentSkipper());
 		assertEquals(3, orphans.size());
 	}
 
@@ -374,7 +374,7 @@ public class ParensUtilTest {
 		final String sample = "" + "( wert ) [Eure, Ihre" + "<li>a)</li>"
 				+ "<li>b)</li></ol>";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		assertEquals(3, orphans.size());
 	}
 
@@ -386,7 +386,7 @@ public class ParensUtilTest {
 				+ "<dtbook>" + " <brl:literal brl:grade=\"0\">)</brl:literal>"
 				+ "</dtbook>";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getLiteralAndCommentSkipper());
+				RegionSkipper.getLiteralAndCommentSkipper());
 		assertEquals(0, orphans.size());
 	}
 
@@ -397,7 +397,7 @@ public class ParensUtilTest {
 		final String sample = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 				+ "<dtbook>" + ")" + "</dtbook>";
 		List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		assertEquals(1, orphans.size());
 		Match match = orphans.get(0);
 		final int indexOf = sample.indexOf(')');
@@ -406,11 +406,11 @@ public class ParensUtilTest {
 		assertEquals(
 				1,
 				ParensUtil.findOrphans(sample, indexOf,
-						RegionSkipperLeaf.getCommentSkipper()).size());
+						RegionSkipper.getCommentSkipper()).size());
 		assertEquals(
 				0,
 				ParensUtil.findOrphans(sample, indexOf + 1,
-						RegionSkipperLeaf.getCommentSkipper()).size());
+						RegionSkipper.getCommentSkipper()).size());
 	}
 
 	@Test
@@ -423,7 +423,7 @@ public class ParensUtilTest {
 		final String sample = head + middle + "<li>a)</li><li>b)</li>"
 				+ "</dtbook>";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
-				RegionSkipperLeaf.getCommentSkipper());
+				RegionSkipper.getCommentSkipper());
 		assertEquals(2, orphans.size());
 		int i = 0;
 		Match match = orphans.get(i++);

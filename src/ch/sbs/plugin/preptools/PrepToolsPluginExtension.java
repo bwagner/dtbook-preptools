@@ -42,9 +42,7 @@ import ch.sbs.plugin.preptools.DocumentMetaInfo.MetaInfo;
 import ch.sbs.utils.preptools.FileUtils;
 import ch.sbs.utils.preptools.Match.PositionMatch;
 import ch.sbs.utils.preptools.PropsUtils;
-import ch.sbs.utils.preptools.RegionSkipperComponent;
-import ch.sbs.utils.preptools.RegionSkipperComposite;
-import ch.sbs.utils.preptools.RegionSkipperLeaf;
+import ch.sbs.utils.preptools.RegionSkipper;
 
 /**
  * Plugin extension - workspace access extension.
@@ -95,14 +93,11 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		}
 	}
 
-	public RegionSkipperComponent makeSkipper() {
-		// using local RegionSkipperComposite var in order to hide the fact that
-		// this is a RegionSkipperComposite and not a RegionSkipperComponent.
-		final RegionSkipperComposite compositeSkipper = RegionSkipperLeaf
+	public RegionSkipper makeSkipper() {
+		final RegionSkipper compositeSkipper = RegionSkipper
 				.getLiteralAndCommentSkipper();
 		for (final String tag : tags) {
-			compositeSkipper.addComponent(RegionSkipperLeaf
-					.makeMarkupRegionSkipper(tag));
+			compositeSkipper.addPattern(RegionSkipper.makeMarkupRegex(tag));
 		}
 		return compositeSkipper;
 	}

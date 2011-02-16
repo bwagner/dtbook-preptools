@@ -30,6 +30,16 @@ public class TestIntervalTree {
 	}
 
 	@Test
+	public void testSlimOverlapCaseOnEqual() {
+		tree.insert(new Interval(1, 5));
+		assertEquals(new Interval(1, 5), searchInterval(1, 1));
+		assertEquals(new Interval(1, 5), searchInterval(2, 2));
+		assertEquals(new Interval(1, 5), searchInterval(3, 3));
+		assertEquals(new Interval(1, 5), searchInterval(4, 4));
+		assertEquals(new Interval(1, 5), searchInterval(5, 5));
+	}
+
+	@Test
 	public void testSimpleOverlapCaseOnEqual() {
 		tree.insert(new Interval(1, 5));
 		assertEquals(new Interval(1, 5), searchInterval(1, 5));

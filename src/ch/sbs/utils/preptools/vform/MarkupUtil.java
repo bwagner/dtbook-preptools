@@ -4,12 +4,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ch.sbs.utils.preptools.Match;
-import ch.sbs.utils.preptools.RegionSkipperComponent;
+import ch.sbs.utils.preptools.RegionSkipper;
 
 public class MarkupUtil {
-	private final RegionSkipperComponent skipper;
+	private final RegionSkipper skipper;
 
-	public MarkupUtil(final RegionSkipperComponent theRegionSkipperComponent) {
+	public MarkupUtil(final RegionSkipper theRegionSkipperComponent) {
 		skipper = theRegionSkipperComponent;
 	}
 

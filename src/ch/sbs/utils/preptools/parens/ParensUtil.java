@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ch.sbs.utils.preptools.Match;
-import ch.sbs.utils.preptools.RegionSkipperComponent;
+import ch.sbs.utils.preptools.RegionSkipper;
 
 public class ParensUtil {
 
@@ -37,7 +37,7 @@ public class ParensUtil {
 		 * @return list of potentially orphaned parens. It can be empty.
 		 */
 		public List<Match> findOrphans(final String theText, int offset,
-				final RegionSkipperComponent theRegionSkipperComponent) {
+				final RegionSkipper theRegionSkipperComponent) {
 			theRegionSkipperComponent.findRegionsToSkip(theText);
 			final List<Match> orphans = new ArrayList<Match>();
 			final String[][] patternPairs = getPatternPairs();
@@ -178,7 +178,7 @@ public class ParensUtil {
 	 * @return list of potentially orphaned parens. It can be empty.
 	 */
 	public static List<Match> findOrphans(final String theText, int offset,
-			final RegionSkipperComponent theRegionSkipperComponent) {
+			final RegionSkipper theRegionSkipperComponent) {
 		final List<Match> orphans = new QuoteOrphanMatcher().findOrphans(
 				theText, offset, theRegionSkipperComponent);
 		orphans.addAll(new ParensOrphanMatcher().findOrphans(theText, offset,
@@ -196,7 +196,7 @@ public class ParensUtil {
 	 * @return list of potentially orphaned parens. It can be empty.
 	 */
 	public static List<Match> findOrphans(final String theText,
-			final RegionSkipperComponent theRegionSkipperComponent) {
+			final RegionSkipper theRegionSkipperComponent) {
 		return findOrphans(theText, 0, theRegionSkipperComponent);
 	}
 }

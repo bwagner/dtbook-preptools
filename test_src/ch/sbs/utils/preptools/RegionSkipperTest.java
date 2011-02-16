@@ -18,7 +18,7 @@ public class RegionSkipperTest {
 	@Test
 	public void testSkip() {
 		final String tag = "brl:v-form";
-		RegionSkipperComponent theRegionSkipperComponent = RegionSkipperLeaf
+		RegionSkipper theRegionSkipperComponent = RegionSkipper
 				.makeMarkupRegionSkipper(tag);
 		final MarkupUtil mu = new MarkupUtil(theRegionSkipperComponent);
 		final Match m = mu.find("Sieben können " + MarkupUtil.wrap("Sie", tag)
@@ -28,10 +28,9 @@ public class RegionSkipperTest {
 
 	@Test
 	public void testSkipLiteral() {
-		final RegionSkipperComposite rs = RegionSkipperLeaf
-				.getLiteralAndCommentSkipper();
-		rs.addComponent(RegionSkipperLeaf
-				.makeMarkupRegionSkipper(VFormActionHelper.VFORM_TAG));
+		final RegionSkipper rs = RegionSkipper.getLiteralAndCommentSkipper();
+		rs.addPattern(RegionSkipper
+				.makeMarkupRegex(VFormActionHelper.VFORM_TAG));
 		final MarkupUtil mu = new MarkupUtil(rs);
 		final Match m = mu.find(
 				"Sieben können " + MarkupUtil.wrap("Sie", "brl:literal")
@@ -41,8 +40,7 @@ public class RegionSkipperTest {
 
 	@Test
 	public void testLiteralSkipper() {
-		final RegionSkipperComponent literalSkipper = RegionSkipperLeaf
-				.getLiteralSkipper();
+		final RegionSkipper literalSkipper = RegionSkipper.getLiteralSkipper();
 		final String theText = "\nhallo\n<brl:literal>\ndu\n</brl:literal>\nhier\n";
 		literalSkipper.findRegionsToSkip(theText);
 		assertFalse(literalSkipper.inSkipRegion(makeMatcher("hallo", theText)));
@@ -51,8 +49,7 @@ public class RegionSkipperTest {
 
 	@Test
 	public void tesCommentSkipper() {
-		final RegionSkipperComponent commentSkipper = RegionSkipperLeaf
-				.getCommentSkipper();
+		final RegionSkipper commentSkipper = RegionSkipper.getCommentSkipper();
 		final String theText = "\nhallo\n<!--\ndu\n-->\nhier\n";
 		commentSkipper.findRegionsToSkip(theText);
 		assertFalse(commentSkipper.inSkipRegion(makeMatcher("hallo", theText)));
@@ -61,7 +58,7 @@ public class RegionSkipperTest {
 
 	@Test
 	public void testLiteralSkipper1() {
-		final RegionSkipperComponent literalSkipper = RegionSkipperLeaf
+		final RegionSkipper literalSkipper = RegionSkipper
 				.getLiteralAndCommentSkipper();
 		final String theText = "\nhallo\n<brl:literal>\ndu\n</brl:literal>\nhier\n";
 		literalSkipper.findRegionsToSkip(theText);
@@ -71,7 +68,7 @@ public class RegionSkipperTest {
 
 	@Test
 	public void tesCommentSkipper1() {
-		final RegionSkipperComponent commentSkipper = RegionSkipperLeaf
+		final RegionSkipper commentSkipper = RegionSkipper
 				.getLiteralAndCommentSkipper();
 		final String theText = "\nhallo\n<!--\ndu\n-->\nhier\n";
 		commentSkipper.findRegionsToSkip(theText);
