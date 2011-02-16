@@ -283,8 +283,12 @@
 			<arg value="--quiet" />
 		</exec>
 	</target>
-	
-	<target name="git.describe">
+
+	<target name="git.revision" description="Store git revision in ${repository.version}" if="git.present">
+		<!-- observed strange behaviour of git:
+			 - If "git describe" is called, often "dirty" is indicated, even though everything is checked in.
+			 - This can be fixed by calling "git diff" before.
+		 -->
 		<antcall target="git.diff"/>
 		<exec executable="git" outputproperty="git.revision" failifexecutionfails="false" errorproperty="">
 			<arg value="describe" />
@@ -294,14 +298,6 @@
 		</exec>
 		<echo>${git.revision}
 		</echo>
-	</target>
-
-	<target name="git.revision" description="Store git revision in ${repository.version}" if="git.present">
-		<!-- observed strange behaviour of git:
-			 - If "git describe" is called, often "dirty" is indicated, even though everything is checked in.
-			 - This can be fixed by calling "git diff" before.
-		 -->
-		<antcall target="git.describe"/>
 		<condition property="repository.version" value="${git.revision}" else="unknown">
 			<and>
 				<isset property="git.revision" />
