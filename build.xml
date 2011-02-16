@@ -279,11 +279,12 @@
 
 	<target name="git.revision" description="Store git revision in ${repository.version}" if="git.present">
 		<!-- observed strange behaviour of git:
-			 - if git describe is called, often "dirty" is indicated, even though everything is checked in.
-			 - by calling git diff before this can be fixed.
+			 - If "git describe" is called, often "dirty" is indicated, even though everything is checked in.
+			 - This can be fixed by calling "git diff" before.
 		 -->
 		<exec executable="git" failifexecutionfails="false" errorproperty="">
 			<arg value="diff" />
+			<arg value="--quiet" />
 		</exec>
 		<exec executable="git" outputproperty="git.revision" failifexecutionfails="false" errorproperty="">
 			<arg value="describe" />
