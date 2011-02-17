@@ -13,6 +13,7 @@ import ro.sync.exml.workspace.api.editor.WSEditor;
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
 import ch.sbs.utils.preptools.FileUtils;
 import ch.sbs.utils.preptools.Match;
+import ch.sbs.utils.preptools.RegionSkipper;
 import ch.sbs.utils.preptools.parens.ParensUtil;
 import ch.sbs.utils.preptools.vform.MarkupUtil;
 
@@ -120,8 +121,6 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 @SuppressWarnings("serial")
 abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 
-	private final MarkupUtil markupUtil;
-
 	private final String MYTAG;
 
 	AbstractMarkupAction(
@@ -129,7 +128,6 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 			final String tag) {
 		super(thePrepToolsPluginExtension);
 		MYTAG = tag;
-		markupUtil = new MarkupUtil(thePrepToolsPluginExtension.makeSkipper());
 	}
 
 	protected String getTag() {
@@ -152,7 +150,14 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 		final String newText = document.getText(0, document.getLength());
 		final DocumentMetaInfo dmi = prepToolsPluginExtension
 				.getDocumentMetaInfo(editorAccess.getEditorLocation());
-		final Match match = markupUtil.find(newText, startAt, getPattern());
+		// Possibly improve this: don't create a skipper for every searchOn
+		// call.
+		// Instead save the skipper in DocumentMetaInfo. However, make sure
+		// it is properly synced with changes occurring in the text, also
+		// via Undo!
+		final RegionSkipper skipper = prepToolsPluginExtension.makeSkipper();
+		final Match match = new MarkupUtil(skipper).find(newText, startAt,
+				getPattern());
 		if (match.equals(Match.NULL_MATCH)) {
 			prepToolsPluginExtension.showDialog("You're done with "
 					+ getProcessName() + "!");
