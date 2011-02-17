@@ -37,7 +37,8 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 			try {
 				doSomething();
 			} catch (final BadLocationException e) {
-				e.printStackTrace();
+				prepToolsPluginExtension.showMessage(e.getMessage());
+				throw new RuntimeException(e);
 			}
 			prepToolsPluginExtension.getDocumentMetaInfo().setCurrentState();
 		}
@@ -89,8 +90,18 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 		final Document document = prepToolsPluginExtension
 				.getDocumentMetaInfo().getDocument();
 		try {
-			return document.getText(0, document.getLength()).indexOf("<book");
+			final String bookTag = "<book";
+			final int indexOf = document.getText(0, document.getLength())
+					.indexOf(bookTag);
+			if (indexOf < 0) {
+				final String message = "\"" + bookTag
+						+ "\" not found in document!";
+				prepToolsPluginExtension.showMessage(message);
+				throw new RuntimeException(message);
+			}
+			return indexOf;
 		} catch (final BadLocationException e) {
+			prepToolsPluginExtension.showMessage(e.getMessage());
 			throw new RuntimeException(e);
 		}
 	}
@@ -648,7 +659,7 @@ class OrphanParenStartAction extends AbstractOrphanParenAction {
 					prepToolsPluginExtension.makeSkipper());
 		} catch (BadLocationException e) {
 			prepToolsPluginExtension.showMessage(e.getMessage());
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 		final ParensPrepTool.MetaInfo parensMetaInfo = getMetaInfo();
 		parensMetaInfo.set(orphans);
