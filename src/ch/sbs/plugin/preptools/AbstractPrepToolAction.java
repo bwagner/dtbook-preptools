@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.undo.UndoableEditSupport;
 
 import ro.sync.exml.workspace.api.editor.WSEditor;
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
@@ -34,12 +36,24 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	@Override
 	public void actionPerformed(final ActionEvent arg0) {
 		if ((prepToolsPluginExtension.getPage()) != null) {
+			final Document document = prepToolsPluginExtension
+					.getDocumentMetaInfo().getDocument();
+			final UndoableEditSupport support = (UndoableEditSupport) ((AbstractDocument) document)
+					.getProperty("oxygenUndoSupport");
 			try {
-				doSomething();
-			} catch (final BadLocationException e) {
-				prepToolsPluginExtension.showMessage(e.getMessage());
-				throw new RuntimeException(e);
+				support.beginUpdate();
+
+				try {
+					doSomething();
+				} catch (final BadLocationException e) {
+					prepToolsPluginExtension.showMessage(e.getMessage());
+					throw new RuntimeException(e);
+				}
+
+			} finally {
+				support.endUpdate();
 			}
+
 			prepToolsPluginExtension.getDocumentMetaInfo().setCurrentState();
 		}
 	}
