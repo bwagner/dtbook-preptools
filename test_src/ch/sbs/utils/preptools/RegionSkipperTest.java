@@ -18,9 +18,9 @@ public class RegionSkipperTest {
 	@Test
 	public void testSkip() {
 		final String tag = "brl:v-form";
-		RegionSkipper theRegionSkipperComponent = RegionSkipper
+		final RegionSkipper theRegionSkipper = RegionSkipper
 				.makeMarkupRegionSkipper(tag);
-		final MarkupUtil mu = new MarkupUtil(theRegionSkipperComponent);
+		final MarkupUtil mu = new MarkupUtil(theRegionSkipper);
 		final Match m = mu.find("Sieben können " + MarkupUtil.wrap("Sie", tag)
 				+ " haben.", 0, VFormUtil.get3rdPPPattern());
 		assertEquals(Match.NULL_MATCH, m);
@@ -28,10 +28,11 @@ public class RegionSkipperTest {
 
 	@Test
 	public void testSkipLiteral() {
-		final RegionSkipper rs = RegionSkipper.getLiteralAndCommentSkipper();
-		rs.addPattern(RegionSkipper
+		final RegionSkipper theRegionSkipper = RegionSkipper
+				.getLiteralAndCommentSkipper();
+		theRegionSkipper.addPattern(RegionSkipper
 				.makeMarkupRegex(VFormActionHelper.VFORM_TAG));
-		final MarkupUtil mu = new MarkupUtil(rs);
+		final MarkupUtil mu = new MarkupUtil(theRegionSkipper);
 		final Match m = mu.find(
 				"Sieben können " + MarkupUtil.wrap("Sie", "brl:literal")
 						+ " haben.", 0, VFormUtil.get3rdPPPattern());
@@ -48,7 +49,7 @@ public class RegionSkipperTest {
 	}
 
 	@Test
-	public void tesCommentSkipper() {
+	public void testCommentSkipper() {
 		final RegionSkipper commentSkipper = RegionSkipper.getCommentSkipper();
 		final String theText = "\nhallo\n<!--\ndu\n-->\nhier\n";
 		commentSkipper.findRegionsToSkip(theText);

@@ -33,12 +33,12 @@ public class ParensUtil {
 		 *            The text to search
 		 * @param offset
 		 *            from where to start searching in the given text.
-		 * @param theRegionSkipperComponent
+		 * @param theRegionSkipper
 		 * @return list of potentially orphaned parens. It can be empty.
 		 */
 		public List<Match> findOrphans(final String theText, int offset,
-				final RegionSkipper theRegionSkipperComponent) {
-			theRegionSkipperComponent.findRegionsToSkip(theText);
+				final RegionSkipper theRegionSkipper) {
+			theRegionSkipper.findRegionsToSkip(theText);
 			final List<Match> orphans = new ArrayList<Match>();
 			final String[][] patternPairs = getPatternPairs();
 			for (final String[] patPair : patternPairs) {
@@ -58,7 +58,7 @@ public class ParensUtil {
 				Match previousMatch = null;
 				matcher.reset();
 				while (matcher.find()) {
-					if (theRegionSkipperComponent.inSkipRegion(matcher)
+					if (theRegionSkipper.inSkipRegion(matcher)
 							|| matcher.start() < offset) {
 						continue;
 					}
