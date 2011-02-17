@@ -29,6 +29,10 @@ public class PrepToolLoader {
 	// case sensitive
 	public static final String ABBREV_ACRONYM_REGEX = "\\b\\w*[a-z]+[A-Z]+\\w*\\b";
 
+	// http://redmine.sbszh.ch/issues/show/1203
+	public static final String PAGEBREAK_REGEX = "</p>\\s*(<pagenum.*</pagenum\\s*>)\\s*<p>";
+	public static final String PAGEBREAK_REPLACE = " $1 ";
+
 	// TODO: preptools should load themselves.
 	// PrepToolLoader shouldn't know or care about specific tools.
 	public static List<PrepTool> loadPrepTools(
@@ -54,6 +58,8 @@ public class PrepToolLoader {
 				ABBREV_CAPITAL_REPLACE));
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'y',
 				"Acronym", ABBREV_ACRONYM_REGEX, "abbr"));
+		prepTools.add(new FullRegexPrepTool(thePrepToolsPluginExtension, i++,
+				'p', "Pagebreak", PAGEBREAK_REGEX, null, PAGEBREAK_REPLACE));
 		return prepTools;
 	}
 }
