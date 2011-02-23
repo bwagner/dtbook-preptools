@@ -2,6 +2,7 @@
 <project name="preptools" default="deploy">
 	<!-- used by "send" -->
 	<property name="recipient" value="Mischa%20Kuenzle%20&lt;mischa.kuenzle@sbs.ch&gt;" />
+	<property name="greet" value="Hallo%20Mischa" />
 
 	<!-- used by "deploy" and "plugin.xml" -->
 	<property name="pluginfile" value="plugin.xml" />
@@ -90,7 +91,7 @@
 		<exec executable="pwd" outputproperty="pwd" failifexecutionfails="false" errorproperty="" />
 		<exec executable="thunderbird">
 			<arg value="-compose"/>
-			<arg value="to=${recipient},subject=Neue%20Version%20Preptools:%20${git.revision},attachment=file://${pwd}/${ant.project.name}.zip,body=Version:%20${git.revision}"/>
+			<arg value="to=${recipient},subject=Neue%20Version%20Preptools:%20${git.revision},attachment=file://${pwd}/${ant.project.name}.zip,body=${greet}%0A%0AVersion:%20${git.revision}%0A%0A"/>
 		</exec>
 	</target>
 	
