@@ -116,6 +116,19 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 			throw new RuntimeException(e);
 		}
 	}
+
+	/**
+	 * Subclasses call this method to notify completion of process.
+	 */
+	protected void done() {
+		prepToolsPluginExtension.showDialog("You're done with "
+				+ getProcessName() + "!");
+		final DocumentMetaInfo dmi = prepToolsPluginExtension
+				.getDocumentMetaInfo();
+		dmi.getCurrentToolSpecificMetaInfo().done();
+	}
+
+	protected abstract String getProcessName();
 }
 
 @SuppressWarnings("serial")
@@ -159,11 +172,9 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 		final Match match = new MarkupUtil(skipper).find(newText, startAt,
 				getPattern());
 		if (match.equals(Match.NULL_MATCH)) {
-			prepToolsPluginExtension.showDialog("You're done with "
-					+ getProcessName() + "!");
-			dmi.getCurrentToolSpecificMetaInfo().done();
 			match.startOffset = 0;
 			match.endOffset = 0;
+			done();
 		}
 		dmi.setCurrentState();
 		select(match);
@@ -171,8 +182,6 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 	}
 
 	abstract protected Pattern getPattern();
-
-	abstract protected String getProcessName();
 
 	protected DocumentMetaInfo.MetaInfo getMetaInfo() {
 		return prepToolsPluginExtension.getDocumentMetaInfo()
@@ -635,9 +644,7 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 	}
 
 	private void handleNoneFound() {
-		prepToolsPluginExtension.showDialog("You're done with "
-				+ getProcessName());
-		getMetaInfo().setDone(true);
+		done();
 	}
 
 	AbstractOrphanParenAction(
@@ -649,6 +656,7 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 		select(getMetaInfo().next());
 	}
 
+	@Override
 	public String getProcessName() {
 		return ParensPrepTool.LABEL;
 	}
