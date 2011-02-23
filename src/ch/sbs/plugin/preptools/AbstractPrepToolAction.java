@@ -1,6 +1,8 @@
 package ch.sbs.plugin.preptools;
 
 import java.awt.event.ActionEvent;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -45,8 +47,13 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 
 					try {
 						doSomething();
+					} catch (final RuntimeException e) {
+						prepToolsPluginExtension
+								.showDialog("RuntimeException occurred: " + e
+										+ " " + getStackTrace(e));
 					} catch (final BadLocationException e) {
-						prepToolsPluginExtension.showMessage(e.getMessage());
+						prepToolsPluginExtension.showDialog(e.getMessage()
+								+ " " + getStackTrace(e));
 						throw new RuntimeException(e);
 					}
 
@@ -54,6 +61,12 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 			});
 			prepToolsPluginExtension.getDocumentMetaInfo().setCurrentState();
 		}
+	}
+
+	private String getStackTrace(final Exception e) {
+		final StringWriter sw = new StringWriter();
+		e.printStackTrace(new PrintWriter(sw));
+		return sw.toString();
 	}
 
 	/**
