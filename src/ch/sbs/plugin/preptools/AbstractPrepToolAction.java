@@ -635,16 +635,12 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 			select(dmi);
 		}
 		else {
-			handleNoneFound();
+			done();
 		}
 	}
 
 	protected void init() {
 
-	}
-
-	private void handleNoneFound() {
-		done();
 	}
 
 	AbstractOrphanParenAction(
