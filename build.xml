@@ -83,6 +83,13 @@
 		<zip destfile="${ant.project.name}.zip" duplicate="fail" basedir="${plugindir}/.." includes="${ant.project.name}/**"/>
 	</target>
 	
+	<target name="send" depends="zip" description="opens nautilus to send zip">
+		<exec executable="thunderbird">
+			<arg value="-compose"/>
+			<arg value="to=Mischa%20Kuenzle%20&lt;mischa.kuenzle@sbs.ch&gt;,subject=Neue%20Version%20Preptools:%20${git.revision},attachment=file://${ant.project.name}.zip,body=Version:%20${git.revision}"/>
+		</exec>
+	</target>
+	
 	<target name="checkCmdlineParTag" unless="git.tag">
 		<fail message="git.tag not set. Please provide it with cmd line parameter -Dgit.tag=..."/>
 	</target>
