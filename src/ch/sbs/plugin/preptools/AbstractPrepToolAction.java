@@ -13,6 +13,7 @@ import ro.sync.exml.workspace.api.editor.WSEditor;
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
 import ch.sbs.utils.preptools.FileUtils;
 import ch.sbs.utils.preptools.Match;
+import ch.sbs.utils.preptools.MetaUtils;
 import ch.sbs.utils.preptools.RegionSkipper;
 import ch.sbs.utils.preptools.parens.ParensUtil;
 import ch.sbs.utils.preptools.vform.MarkupUtil;
@@ -126,6 +127,8 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 		final DocumentMetaInfo dmi = prepToolsPluginExtension
 				.getDocumentMetaInfo();
 		dmi.getCurrentToolSpecificMetaInfo().done();
+		MetaUtils.insertPrepToolInfo(prepToolsPluginExtension
+				.getDocumentMetaInfo().getDocument(), getProcessName());
 	}
 
 	protected abstract String getProcessName();
