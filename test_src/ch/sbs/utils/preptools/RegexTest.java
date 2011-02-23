@@ -322,4 +322,34 @@ public class RegexTest {
 		assertFalse(pattern.matcher("ein mE guter").find());
 		assertFalse(pattern.matcher("ein Arbeiten").find());
 	}
+
+	// public static final String PAGEBREAK_REGEX =
+	// "</p>\\s*(<pagenum.*?</pagenum\\s*>)\\s*<p>";
+	@Test
+	public void testPagebreak1() {
+		final String regex = PrepToolLoader.PAGEBREAK_REGEX;
+		final Pattern pattern = Pattern.compile(regex);
+		final String inner = "<pagenum id=\"page-20\" page=\"normal\">20</pagenum>";
+		final String input = "</p>\n\t" + inner + "\n\t<p>";
+		assertTrue(pattern.matcher(input).find());
+		assertEquals(
+				" " + inner + " ",
+				pattern.matcher(input).replaceAll(
+						PrepToolLoader.PAGEBREAK_REPLACE));
+	}
+
+	public void testPagebreak2() {
+		final String regex = PrepToolLoader.PAGEBREAK_REGEX;
+		final Pattern pattern = Pattern.compile(regex);
+		final String input = "</p>\n\t<pagenum id=\"page-20\" page=\"normal\">20</pagenum>\n\t<p>";
+		assertTrue(pattern.matcher(input).find());
+		assertEquals(
+				" <pagenum id=\"page-20\" page=\"normal\">20</pagenum> ",
+				pattern.matcher(input).replaceAll(
+						PrepToolLoader.PAGEBREAK_REPLACE));
+		assertEquals(
+				" <pagenum id=\"page-20\" page=\"normal\">20</pagenum> ",
+				pattern.matcher(input + input).replaceAll(
+						PrepToolLoader.PAGEBREAK_REPLACE));
+	}
 }

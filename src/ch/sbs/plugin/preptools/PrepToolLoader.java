@@ -30,7 +30,7 @@ public class PrepToolLoader {
 	public static final String ABBREV_ACRONYM_REGEX = "\\b\\w*[a-z]+[A-Z]+\\w*\\b";
 
 	// http://redmine.sbszh.ch/issues/show/1203
-	public static final String PAGEBREAK_REGEX = "</p>\\s*(<pagenum.*</pagenum\\s*>)\\s*<p>";
+	public static final String PAGEBREAK_REGEX = "</p\\s*>\\s*(<pagenum\\s+id\\s*=\\s*\"page-\\d+\" page\\s*=\\s*\"normal\"\\s*>\\s*\\d+\\s*</pagenum\\s*>)\\s*<p\\s*>";
 	public static final String PAGEBREAK_REPLACE = " $1 ";
 
 	// TODO: preptools should load themselves.
