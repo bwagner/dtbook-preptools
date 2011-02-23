@@ -319,10 +319,10 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 }
 
 @SuppressWarnings("serial")
-abstract class AbstractMarkupAcceptVetoAction extends
+abstract class AbstractMarkupChangeVetoAction extends
 		AbstractMarkupProceedAction {
 
-	AbstractMarkupAcceptVetoAction(
+	AbstractMarkupChangeVetoAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String tag) {
 		super(thePrepToolsPluginExtension, tag);
@@ -335,10 +335,10 @@ abstract class AbstractMarkupAcceptVetoAction extends
 }
 
 @SuppressWarnings("serial")
-abstract class AbstractMarkupAcceptAction extends
-		AbstractMarkupAcceptVetoAction {
+abstract class AbstractMarkupChangeAction extends
+		AbstractMarkupChangeVetoAction {
 
-	AbstractMarkupAcceptAction(
+	AbstractMarkupChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String tag) {
 		super(thePrepToolsPluginExtension, tag);
@@ -364,12 +364,12 @@ abstract class AbstractMarkupAcceptAction extends
 }
 
 @SuppressWarnings("serial")
-abstract class AbstractMarkupFullRegexAcceptAction extends
-		AbstractMarkupAcceptVetoAction {
+abstract class AbstractMarkupFullRegexChangeAction extends
+		AbstractMarkupChangeVetoAction {
 
 	private final String replaceString;
 
-	AbstractMarkupFullRegexAcceptAction(
+	AbstractMarkupFullRegexChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String tag, final String theReplaceString) {
 		super(thePrepToolsPluginExtension, tag);
@@ -461,10 +461,10 @@ class RegexStartAction extends AbstractMarkupStartAction {
 }
 
 @SuppressWarnings("serial")
-class RegexAcceptAction extends AbstractMarkupAcceptAction {
+class RegexChangeAction extends AbstractMarkupChangeAction {
 	private final RegexHelper helper;
 
-	RegexAcceptAction(
+	RegexChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String thePattern, final String theProcessName,
 			final String theTag) {
@@ -484,10 +484,10 @@ class RegexAcceptAction extends AbstractMarkupAcceptAction {
 }
 
 @SuppressWarnings("serial")
-class FullRegexAcceptAction extends AbstractMarkupFullRegexAcceptAction {
+class FullRegexChangeAction extends AbstractMarkupFullRegexChangeAction {
 	private final RegexHelper helper;
 
-	FullRegexAcceptAction(
+	FullRegexChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String thePattern, final String theProcessName,
 			final String theTag, final String theReplaceString) {
@@ -549,10 +549,10 @@ class VFormStartAction extends AbstractMarkupStartAction {
 }
 
 @SuppressWarnings("serial")
-class VFormAcceptAction extends AbstractMarkupAcceptAction {
+class VFormChangeAction extends AbstractMarkupChangeAction {
 	private final VFormActionHelper helper;
 
-	VFormAcceptAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
+	VFormChangeAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
 		super(thePrepToolsPluginExtension, VFormActionHelper.VFORM_TAG);
 		helper = new VFormActionHelper(thePrepToolsPluginExtension);
 	}

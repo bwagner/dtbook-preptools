@@ -258,22 +258,22 @@ abstract class MarkupPrepTool extends PrepTool {
 
 	private Action findAction;
 
-	private Action acceptAction;
+	private Action changeAction;
 
 	protected abstract Action makeStartAction();
 
 	protected abstract Action makeFindAction();
 
-	protected abstract Action makeAcceptAction();
+	protected abstract Action makeChangeAction();
 
 	@Override
 	protected Action[] getAllActions() {
 		if (startAction == null) {
 			startAction = makeStartAction();
 			findAction = makeFindAction();
-			acceptAction = makeAcceptAction();
+			changeAction = makeChangeAction();
 		}
-		return new Action[] { startAction, acceptAction, findAction };
+		return new Action[] { startAction, changeAction, findAction };
 	}
 
 	@Override
@@ -282,7 +282,7 @@ abstract class MarkupPrepTool extends PrepTool {
 		return new JComponent[] {
 				makeButton(startAction, "Start", KeyEvent.VK_7),
 				makeButton(findAction, "Find", KeyEvent.VK_8),
-				makeButton(acceptAction, "Accept", KeyEvent.VK_9), };
+				makeButton(changeAction, "Change", KeyEvent.VK_9), };
 	}
 
 	MarkupPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
@@ -306,23 +306,23 @@ abstract class MarkupPrepTool extends PrepTool {
 			 - traffic:    0 0 3 1 2 3
 			 - start:      0 0 0 1 1 1 = isTextPage
 			 - find:       0 0 0 0 1 0 = isTextPage && hasStarted && !isDone
-			 - accept:     0 0 0 0 1 0 = isTextPage && hasStarted && !isDone
+			 - change:     0 0 0 0 1 0 = isTextPage && hasStarted && !isDone
 			 - allforms:   0 0 0 1 1 1 = isTextPage
 			 UI elements
 			 - traffic:    stop:0/go:1/inProgress:2/done:3
 			 - start:      disabled:0/enabled:1
 			 - find:       disabled:0/enabled:1
-			 - accept:     disabled:0/enabled:1
+			 - change:     disabled:0/enabled:1
 			 - allforms:   disabled:0/enabled:1
 		 */
 		startAction.setEnabled(isTextPage);
 		if (!theDocumentMetaInfo.hasStarted()) { // not started
 			findAction.setEnabled(false);
-			acceptAction.setEnabled(false);
+			changeAction.setEnabled(false);
 		}
 		else if (theDocumentMetaInfo.isDone()) { // done
 			findAction.setEnabled(false);
-			acceptAction.setEnabled(false);
+			changeAction.setEnabled(false);
 		}
 		else { // inProgress
 			setAllActionsEnabled(isTextPage);
@@ -381,8 +381,8 @@ class RegexPrepTool extends MarkupPrepTool {
 	}
 
 	@Override
-	protected Action makeAcceptAction() {
-		return new RegexAcceptAction(prepToolsPluginExtension, PATTERN, LABEL,
+	protected Action makeChangeAction() {
+		return new RegexChangeAction(prepToolsPluginExtension, PATTERN, LABEL,
 				TAG);
 	}
 
@@ -403,8 +403,8 @@ class FullRegexPrepTool extends RegexPrepTool {
 	}
 
 	@Override
-	protected Action makeAcceptAction() {
-		return new FullRegexAcceptAction(prepToolsPluginExtension, PATTERN,
+	protected Action makeChangeAction() {
+		return new FullRegexChangeAction(prepToolsPluginExtension, PATTERN,
 				LABEL, TAG, replaceString);
 	}
 
@@ -541,8 +541,8 @@ class VFormPrepTool extends MarkupPrepTool {
 	}
 
 	@Override
-	protected Action makeAcceptAction() {
-		return new VFormAcceptAction(prepToolsPluginExtension);
+	protected Action makeChangeAction() {
+		return new VFormChangeAction(prepToolsPluginExtension);
 	}
 }
 
