@@ -169,11 +169,6 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	 */
 	private StandalonePluginWorkspace pluginWorkspaceAccess;
 
-	/**
-	 * If <code>true</code> then the plugin is running.
-	 */
-	private boolean runPlugin;
-
 	private boolean applicationClosing;
 
 	private MyCaretListener caretHandler;
@@ -187,179 +182,169 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	public void applicationStarted(
 			final StandalonePluginWorkspace thePluginWorkspaceAccess) {
 		pluginWorkspaceAccess = thePluginWorkspaceAccess;
-		final URL resource = getClass().getResource(
-				"/" + getClass().getName().replace('.', '/') + ".class");
-		runPlugin = "jar".equals(resource.getProtocol()) ? true : System
-				.getProperty("cms.sample.plugin") != null;
-		if (runPlugin) {
 
-			caretHandler = new MyCaretListener();
+		caretHandler = new MyCaretListener();
 
-			populatePrepTools();
+		populatePrepTools();
 
-			pluginWorkspaceAccess.addMenuBarCustomizer(new MenuBarCustomizer() {
-				/**
-				 * @see ro.sync.exml.workspace.api.standalone.MenuBarCustomizer#customizeMainMenu(javax.swing.JMenuBar)
-				 */
-				@Override
-				public void customizeMainMenu(final JMenuBar mainMenuBar) {
-					// PrepTools menu
-					menuPrepTools = createPrepToolsMenu();
-					menuPrepTools.setMnemonic(KeyEvent.VK_R);
-					// Add the Preptools menu before the Help menu
-					mainMenuBar.add(menuPrepTools,
-							mainMenuBar.getMenuCount() - 1);
-				}
-			});
+		pluginWorkspaceAccess.addMenuBarCustomizer(new MenuBarCustomizer() {
+			/**
+			 * @see ro.sync.exml.workspace.api.standalone.MenuBarCustomizer#customizeMainMenu(javax.swing.JMenuBar)
+			 */
+			@Override
+			public void customizeMainMenu(final JMenuBar mainMenuBar) {
+				// PrepTools menu
+				menuPrepTools = createPrepToolsMenu();
+				menuPrepTools.setMnemonic(KeyEvent.VK_R);
+				// Add the Preptools menu before the Help menu
+				mainMenuBar.add(menuPrepTools, mainMenuBar.getMenuCount() - 1);
+			}
+		});
 
-			pluginWorkspaceAccess.addEditorChangeListener(
-					new WSEditorChangeListener() {
+		pluginWorkspaceAccess.addEditorChangeListener(
+				new WSEditorChangeListener() {
 
-						// explore modal dialog instead of toolbar:
-						// http://www.javacoffeebreak.com/faq/faq0019.html
+					// explore modal dialog instead of toolbar:
+					// http://www.javacoffeebreak.com/faq/faq0019.html
 
-						@Override
-						public void editorOpened(URL editorLocation) {
-							final WSEditor editorAccess = getWsEditor();
-							final WSTextEditorPage page = getPage(editorAccess);
-							if (page == null) {
-								final boolean isText = EditorPageConstants.PAGE_TEXT
-										.equals(editorAccess.getCurrentPageID());
-								showMessage("document could not be accessed "
-										+ (isText ? "(unknown reason)"
-												: "(current page is not "
-														+ EditorPageConstants.PAGE_TEXT
-														+ " but "
-														+ editorAccess
-																.getCurrentPageID()
-														+ ")"));
-								return;
-							}
-							// we don't do much else here since in every case
-							// editorSelected will be called after editorOpened.
-
-							// addCaretHandler();
+					@Override
+					public void editorOpened(URL editorLocation) {
+						final WSEditor editorAccess = getWsEditor();
+						final WSTextEditorPage page = getPage(editorAccess);
+						if (page == null) {
+							final boolean isText = EditorPageConstants.PAGE_TEXT
+									.equals(editorAccess.getCurrentPageID());
+							showMessage("document could not be accessed "
+									+ (isText ? "(unknown reason)"
+											: "(current page is not "
+													+ EditorPageConstants.PAGE_TEXT
+													+ " but "
+													+ editorAccess
+															.getCurrentPageID()
+													+ ")"));
+							return;
 						}
+						// we don't do much else here since in every case
+						// editorSelected will be called after editorOpened.
 
-						@SuppressWarnings("unused")
-						private void addCaretHandler() {
-							final JTextArea ta = getJTextArea();
-							ta.addCaretListener(caretHandler);
-						}
+						// addCaretHandler();
+					}
 
-						@Override
-						public void editorClosed(final URL editorLocation) {
-							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
-							if (dmi.isProcessing() && !applicationClosing) {
-								// we can't veto closing!
-								if (showConfirmDialog(
-										"v-form: Continue?",
-										"Document "
-												+ FileUtils
-														.basename(editorLocation)
-												+ " was still being processed. Want to continue?")) {
-									SwingUtilities.invokeLater(new Runnable() {
-										@Override
-										public void run() {
-											pluginWorkspaceAccess
-													.open(editorLocation);
-											dmi.setPageAndDocument(PrepToolsPluginExtension.this);
-											dmi.setCurrentState();
-											final PositionMatch match = dmi
-													.getCurrentPositionMatch();
-											getPage()
-													.select(match.startOffset
-															.getOffset(),
-															match.endOffset
-																	.getOffset());
-											dmi.resetManualEdit();
-										}
-									});
+					@SuppressWarnings("unused")
+					private void addCaretHandler() {
+						final JTextArea ta = getJTextArea();
+						ta.addCaretListener(caretHandler);
+					}
 
-								}
-								else {
-									removeDocumentMetaInfo(dmi);
-								}
+					@Override
+					public void editorClosed(final URL editorLocation) {
+						final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
+						if (dmi.isProcessing() && !applicationClosing) {
+							// we can't veto closing!
+							if (showConfirmDialog(
+									"v-form: Continue?",
+									"Document "
+											+ FileUtils
+													.basename(editorLocation)
+											+ " was still being processed. Want to continue?")) {
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										pluginWorkspaceAccess
+												.open(editorLocation);
+										dmi.setPageAndDocument(PrepToolsPluginExtension.this);
+										dmi.setCurrentState();
+										final PositionMatch match = dmi
+												.getCurrentPositionMatch();
+										getPage().select(
+												match.startOffset.getOffset(),
+												match.endOffset.getOffset());
+										dmi.resetManualEdit();
+									}
+								});
+
 							}
 							else {
 								removeDocumentMetaInfo(dmi);
 							}
-						};
+						}
+						else {
+							removeDocumentMetaInfo(dmi);
+						}
+					};
 
-						@Override
-						public void editorPageChanged(URL editorLocation) {
-							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
-							dmi.setCurrentEditorPage(getPageId());
-							dmi.setCurrentState();
-						};
+					@Override
+					public void editorPageChanged(URL editorLocation) {
+						final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
+						dmi.setCurrentEditorPage(getPageId());
+						dmi.setCurrentState();
+					};
 
-						@Override
-						public void editorSelected(URL editorLocation) {
-							final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
-							if (dmi != null) {
-								PrepTool currentPrepTool = dmi
-										.getCurrentPrepTool();
-								if (currentPrepTool == null) {
-									currentPrepTool = getDefaultPrepTool();
+					@Override
+					public void editorSelected(URL editorLocation) {
+						final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
+						if (dmi != null) {
+							PrepTool currentPrepTool = dmi.getCurrentPrepTool();
+							if (currentPrepTool == null) {
+								currentPrepTool = getDefaultPrepTool();
+							}
+							updatePrepToolItems();
+							currentPrepTool.activate();
+						}
+					};
+				}, StandalonePluginWorkspace.MAIN_EDITING_AREA);
+
+		pluginWorkspaceAccess
+				.addToolbarComponentsCustomizer(new ToolbarComponentsCustomizer() {
+					/**
+					 * @see ro.sync.exml.workspace.api.standalone.ToolbarComponentsCustomizer#customizeToolbar(ro.sync.exml.workspace.api.standalone.ToolbarInfo)
+					 */
+					@Override
+					public void customizeToolbar(ToolbarInfo theToolbarInfo) {
+						if (ToolbarComponentsCustomizer.CUSTOM
+								.equals(theToolbarInfo.getToolbarID())) {
+
+							toolbarPanel = new JPanel();
+							toolbarPanel.setLayout(new BoxLayout(toolbarPanel,
+									BoxLayout.LINE_AXIS));
+							theToolbarInfo
+									.setComponents(new JComponent[] { toolbarPanel });
+							theToolbarInfo.setTitle("PrepTools");
+
+							SwingUtilities.invokeLater(new Runnable() {
+
+								@Override
+								public void run() {
+									getDefaultPrepTool().activate();
 								}
-								updatePrepToolItems();
-								currentPrepTool.activate();
-							}
-						};
-					}, StandalonePluginWorkspace.MAIN_EDITING_AREA);
-
-			pluginWorkspaceAccess
-					.addToolbarComponentsCustomizer(new ToolbarComponentsCustomizer() {
-						/**
-						 * @see ro.sync.exml.workspace.api.standalone.ToolbarComponentsCustomizer#customizeToolbar(ro.sync.exml.workspace.api.standalone.ToolbarInfo)
-						 */
-						@Override
-						public void customizeToolbar(ToolbarInfo theToolbarInfo) {
-							if (ToolbarComponentsCustomizer.CUSTOM
-									.equals(theToolbarInfo.getToolbarID())) {
-
-								toolbarPanel = new JPanel();
-								toolbarPanel.setLayout(new BoxLayout(
-										toolbarPanel, BoxLayout.LINE_AXIS));
-								theToolbarInfo
-										.setComponents(new JComponent[] { toolbarPanel });
-								theToolbarInfo.setTitle("PrepTools");
-
-								SwingUtilities.invokeLater(new Runnable() {
-
-									@Override
-									public void run() {
-										getDefaultPrepTool().activate();
-									}
-								});
-							}
+							});
 						}
-					});
+					}
+				});
 
-			pluginWorkspaceAccess
-					.addViewComponentCustomizer(new ViewComponentCustomizer() {
-						/**
-						 * @see ro.sync.exml.workspace.api.standalone.ViewComponentCustomizer#customizeView(ro.sync.exml.workspace.api.standalone.ViewInfo)
-						 */
-						@Override
-						public void customizeView(ViewInfo viewInfo) {
-							if (ViewComponentCustomizer.CUSTOM.equals(viewInfo
-									.getViewID())) {
-								prepToolsMessagesArea = new JTextArea(
-										"PrepTools Session History:");
-								viewInfo.setComponent(new JScrollPane(
-										prepToolsMessagesArea));
-								viewInfo.setTitle("PrepTools Messages");
-								viewInfo.setIcon(Icons.CMS_MESSAGES_CUSTOM_VIEW);
-								showMessage(getVersion());
-							}
-							else if ("Project".equals(viewInfo.getViewID())) {
-								viewInfo.setTitle("PrepTools Project");
-							}
+		pluginWorkspaceAccess
+				.addViewComponentCustomizer(new ViewComponentCustomizer() {
+					/**
+					 * @see ro.sync.exml.workspace.api.standalone.ViewComponentCustomizer#customizeView(ro.sync.exml.workspace.api.standalone.ViewInfo)
+					 */
+					@Override
+					public void customizeView(ViewInfo viewInfo) {
+						if (ViewComponentCustomizer.CUSTOM.equals(viewInfo
+								.getViewID())) {
+							prepToolsMessagesArea = new JTextArea(
+									"PrepTools Session History:");
+							viewInfo.setComponent(new JScrollPane(
+									prepToolsMessagesArea));
+							viewInfo.setTitle("PrepTools Messages");
+							viewInfo.setIcon(Icons.CMS_MESSAGES_CUSTOM_VIEW);
+							showMessage(getVersion());
 						}
+						else if ("Project".equals(viewInfo.getViewID())) {
+							viewInfo.setTitle("PrepTools Project");
+						}
+					}
 
-					});
-		}
+				});
 	}
 
 	@SuppressWarnings("serial")
@@ -458,23 +443,20 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	public boolean applicationClosing() {
 		final StringBuilder sb = new StringBuilder();
 		boolean showDialog = false;
-		if (runPlugin) {
-			for (final URL url : documentMetaInfos.keySet()) {
-				if (documentMetaInfos.get(url).isProcessing()) {
-					showDialog = true;
-					sb.append("\n- ");
-					sb.append(FileUtils.basename(url));
-				}
+		for (final URL url : documentMetaInfos.keySet()) {
+			if (documentMetaInfos.get(url).isProcessing()) {
+				showDialog = true;
+				sb.append("\n- ");
+				sb.append(FileUtils.basename(url));
 			}
+		}
 
-			if (showDialog) {
-				sb.insert(0,
-						"The following documents are still being processed:");
-				sb.append("\n\nProceed with closing anyway?");
-				applicationClosing = showConfirmDialog("PrepTools: Close?",
-						sb.toString());
-				return applicationClosing;
-			}
+		if (showDialog) {
+			sb.insert(0, "The following documents are still being processed:");
+			sb.append("\n\nProceed with closing anyway?");
+			applicationClosing = showConfirmDialog("PrepTools: Close?",
+					sb.toString());
+			return applicationClosing;
 		}
 		applicationClosing = true;
 		return true;
