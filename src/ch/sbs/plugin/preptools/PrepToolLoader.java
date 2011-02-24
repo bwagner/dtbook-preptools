@@ -39,8 +39,9 @@ public class PrepToolLoader {
 			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
 		final List<PrepTool> prepTools = new ArrayList<PrepTool>();
 		int i = 0;
-		prepTools.add(new VFormPrepTool(thePrepToolsPluginExtension, i++));
-		prepTools.add(new ParensPrepTool(thePrepToolsPluginExtension, i++));
+		prepTools.add(new VFormPrepTool(thePrepToolsPluginExtension, i++, 'v'));
+		prepTools
+				.add(new ParensPrepTool(thePrepToolsPluginExtension, i++, 's'));
 
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'o',
 				"Ordinal", ORDINAL_REGEX, "brl:num role=\"ordinal\""));
@@ -59,7 +60,7 @@ public class PrepToolLoader {
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'y',
 				"Acronym", ABBREV_ACRONYM_REGEX, "abbr"));
 		prepTools.add(new FullRegexPrepTool(thePrepToolsPluginExtension, i++,
-				'p', "Pagebreak", PAGEBREAK_REGEX, null, PAGEBREAK_REPLACE));
+				'k', "Pagebreak", PAGEBREAK_REGEX, null, PAGEBREAK_REPLACE));
 		return prepTools;
 	}
 }

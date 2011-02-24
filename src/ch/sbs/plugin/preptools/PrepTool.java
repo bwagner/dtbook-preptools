@@ -40,15 +40,19 @@ abstract class PrepTool {
 
 	protected final PrepToolsPluginExtension prepToolsPluginExtension;
 	private final int menuItemNr;
+	private final int MNEMONIC;
 
 	/**
 	 * @param thePrepToolsPluginExtension
 	 * @param theMenuItemNr
+	 * @param theMnemonic
+	 *            TODO
 	 */
 	PrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			int theMenuItemNr) {
+			int theMenuItemNr, int theMnemonic) {
 		prepToolsPluginExtension = thePrepToolsPluginExtension;
 		menuItemNr = theMenuItemNr;
+		MNEMONIC = theMnemonic;
 	}
 
 	/**
@@ -181,10 +185,9 @@ abstract class PrepTool {
 		return new JComponent[0];
 	}
 
-	/**
-	 * hook to provide mnemonic for this tool
-	 */
-	public abstract int getMnemonic();
+	public int getMnemonic() {
+		return MNEMONIC;
+	}
 
 	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
 		if (theDocumentMetaInfo != null && theDocumentMetaInfo.isDtBook()) {
@@ -286,8 +289,8 @@ abstract class MarkupPrepTool extends PrepTool {
 	}
 
 	MarkupPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			int theMenuItemNr) {
-		super(thePrepToolsPluginExtension, theMenuItemNr);
+			int theMenuItemNr, int theMnemonic) {
+		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic);
 	}
 
 	@Override
@@ -340,14 +343,12 @@ class RegexPrepTool extends MarkupPrepTool {
 
 	final String LABEL;
 	final String TAG;
-	final int MNEMOMIC;
 	final String PATTERN;
 
 	RegexPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			int theMenuItemNr, int theMnemonic, final String theLabel,
 			final String thePattern, final String theTag) {
-		super(thePrepToolsPluginExtension, theMenuItemNr);
-		MNEMOMIC = theMnemonic;
+		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic);
 		LABEL = theLabel;
 		PATTERN = thePattern;
 		TAG = theTag;
@@ -361,11 +362,6 @@ class RegexPrepTool extends MarkupPrepTool {
 	@Override
 	protected String getLabel() {
 		return LABEL;
-	}
-
-	@Override
-	public int getMnemonic() {
-		return MNEMOMIC;
 	}
 
 	@Override
@@ -459,8 +455,8 @@ class VFormPrepTool extends MarkupPrepTool {
 	static final String LABEL = "VForms";
 
 	VFormPrepTool(final PrepToolsPluginExtension prepToolsPluginExtension,
-			int theMenuItemNr) {
-		super(prepToolsPluginExtension, theMenuItemNr);
+			int theMenuItemNr, int theMnemonic) {
+		super(prepToolsPluginExtension, theMenuItemNr, theMnemonic);
 	}
 
 	private JCheckBox allForms;
@@ -485,11 +481,6 @@ class VFormPrepTool extends MarkupPrepTool {
 				Arrays.asList(comps));
 		list.add(list.size() - 1, allForms = makeCheckbox());
 		return list.toArray(new JComponent[0]);
-	}
-
-	@Override
-	public int getMnemonic() {
-		return KeyEvent.VK_V;
 	}
 
 	@Override
@@ -599,8 +590,8 @@ class ParensPrepTool extends PrepTool {
 	static final String LABEL = "Parens";
 
 	ParensPrepTool(final PrepToolsPluginExtension prepToolsPluginExtension,
-			int theMenuItemNr) {
-		super(prepToolsPluginExtension, theMenuItemNr);
+			int theMenuItemNr, int theMnemonic) {
+		super(prepToolsPluginExtension, theMenuItemNr, theMnemonic);
 	}
 
 	private final Action startAction = new OrphanParenStartAction(
@@ -618,11 +609,6 @@ class ParensPrepTool extends PrepTool {
 		return new JComponent[] {
 				makeButton(startAction, "Start", KeyEvent.VK_7),
 				makeButton(findNextAction, "Find", KeyEvent.VK_8) };
-	}
-
-	@Override
-	public int getMnemonic() {
-		return KeyEvent.VK_P;
 	}
 
 	@Override
