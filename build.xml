@@ -283,7 +283,7 @@
 	</target>
 
 	<target name="startoxy" description="start oxygen" >
-		<exec executable="oxygen" />
+		<exec executable="oxygen" spawn="true"/>
 	</target>
 
 	<!-- begin git stuff -->
