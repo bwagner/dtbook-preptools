@@ -7,14 +7,15 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 public class MetaUtils {
-	public static final String OUR_PLACE_HOLDER = "______";
-	public static final String META_TAG = ">(\\s*)(<meta.*?>)(\\s*</head\\s*>)";
-	public static final String REPLACE_META_TAG = ">$1$2$1<meta name=\"prod:"
-			+ OUR_PLACE_HOLDER + "\" content=\"done\"/>$3";
+	private static final String OUR_PLACE_HOLDER = "______";
+	private static final String PREFIX = "prod:PrepTool:";
+	private static final String META_TAG = ">(\\s*)(<meta.*?>)(\\s*</head\\s*>)";
+	private static final String REPLACE_META_TAG = ">$1$2$1<meta name=\""
+			+ PREFIX + OUR_PLACE_HOLDER + "\" content=\"done\"/>$3";
 	private static final Pattern META_PATTERN = Pattern.compile(META_TAG);
 
-	public static final String HEAD_TAG = ">(\\s*)(</head\\s*>)";
-	public static final String REPLACE_HEAD_TAG = ">$1<meta name=\"prod:"
+	private static final String HEAD_TAG = ">(\\s*)(</head\\s*>)";
+	private static final String REPLACE_HEAD_TAG = ">$1<meta name=\"" + PREFIX
 			+ OUR_PLACE_HOLDER + "\" content=\"done\"/>$1$2";
 	private static final Pattern HEAD_PATTERN = Pattern.compile(HEAD_TAG);
 
