@@ -15,6 +15,7 @@ import ro.sync.exml.workspace.api.editor.WSEditor;
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
 import ch.sbs.utils.preptools.FileUtils;
 import ch.sbs.utils.preptools.Match;
+import ch.sbs.utils.preptools.Match.PositionMatch;
 import ch.sbs.utils.preptools.MetaUtils;
 import ch.sbs.utils.preptools.RegionSkipper;
 import ch.sbs.utils.preptools.parens.ParensUtil;
@@ -87,28 +88,6 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 		final WSTextEditorPage aWSTextEditorPage = PrepToolsPluginExtension
 				.getPage(editorAccess);
 		return aWSTextEditorPage.getSelectionEnd();
-	}
-
-	/**
-	 * 
-	 * Utility method to select text.
-	 * 
-	 * @param match
-	 */
-	protected final void select(final Match match) {
-		prepToolsPluginExtension.getPage().select(match.startOffset,
-				match.endOffset);
-	}
-
-	/**
-	 * 
-	 * Utility method to select text.
-	 * 
-	 * @param pm
-	 */
-	protected final void select(final Match.PositionMatch pm) {
-		prepToolsPluginExtension.getPage().select(pm.startOffset.getOffset(),
-				pm.endOffset.getOffset());
 	}
 
 	protected int getStartIndex() {
@@ -193,7 +172,7 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 			done();
 		}
 		dmi.setCurrentState();
-		select(match);
+		prepToolsPluginExtension.select(match.startOffset, match.endOffset);
 		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
 	}
 
@@ -333,7 +312,8 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 			if (prepToolsPluginExtension.showConfirmDialog(getProcessName()
 					+ ": Cursor", "Cursor position has changed!\n",
 					"Take up where we left off last time", "continue anyway")) {
-				select(pm);
+				prepToolsPluginExtension.select(pm.startOffset.getOffset(),
+						pm.endOffset.getOffset());
 			}
 		}
 	}
@@ -644,11 +624,11 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 	@Override
 	protected void doSomething() throws BadLocationException {
 		init();
-		final DocumentMetaInfo dmi = prepToolsPluginExtension
-				.getDocumentMetaInfo();
 
 		if (getMetaInfo().hasNext()) {
-			select(dmi);
+			final PositionMatch match = getMetaInfo().next();
+			prepToolsPluginExtension.select(match.startOffset.getOffset(),
+					match.endOffset.getOffset());
 		}
 		else {
 			done();
@@ -662,10 +642,6 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 	AbstractOrphanParenAction(
 			PrepToolsPluginExtension thePrepToolsPluginExtension) {
 		super(thePrepToolsPluginExtension);
-	}
-
-	protected void select(final DocumentMetaInfo dmi) {
-		select(getMetaInfo().next());
 	}
 
 	@Override
@@ -687,7 +663,7 @@ class OrphanParenStartAction extends AbstractOrphanParenAction {
 		final WSTextEditorPage aWSTextEditorPage = prepToolsPluginExtension
 				.getPage();
 		final Document document = aWSTextEditorPage.getDocument();
-		List<Match> orphans = null;
+		final List<Match> orphans;
 		try {
 			orphans = ParensUtil.findOrphans(
 					document.getText(0, document.getLength()), getStartIndex(),

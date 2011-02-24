@@ -28,6 +28,7 @@ import javax.swing.text.Document;
 
 import ro.sync.exml.editor.EditorPageConstants;
 import ro.sync.exml.plugin.workspace.WorkspaceAccessPluginExtension;
+import ro.sync.exml.view.graphics.Rectangle;
 import ro.sync.exml.workspace.api.editor.WSEditor;
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
 import ro.sync.exml.workspace.api.listeners.WSEditorChangeListener;
@@ -551,6 +552,23 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		}
 		final JTextArea ta = (JTextArea) tc;
 		return ta;
+	}
+
+	/**
+	 * 
+	 * Utility method to select text. Scrolls the found position off the view
+	 * borders.
+	 * 
+	 * @param start
+	 * @param end
+	 */
+	protected void select(int start, int end) {
+		final int OFFSET = 200;
+		final JTextArea textArea = getJTextArea();
+		getPage().select(start, end);
+		final Rectangle r = getPage().modelToViewRectangle(end);
+		textArea.scrollRectToVisible(new java.awt.Rectangle(r.x, r.y - OFFSET
+				/ 2, r.width, r.height + OFFSET));
 	}
 
 	/*
