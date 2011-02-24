@@ -39,8 +39,9 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	@Override
 	public void actionPerformed(final ActionEvent arg0) {
 		if ((prepToolsPluginExtension.getPage()) != null) {
-			final Document document = prepToolsPluginExtension
-					.getDocumentMetaInfo().getDocument();
+			final DocumentMetaInfo dmi = prepToolsPluginExtension
+					.getDocumentMetaInfo();
+			final Document document = dmi.getDocument();
 
 			OxygenEditGrouper.perform(document, new OxygenEditGrouper.Edit() {
 				@Override
@@ -60,7 +61,25 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 
 				}
 			});
-			prepToolsPluginExtension.getDocumentMetaInfo().setCurrentState();
+			dmi.setCurrentState();
+			if (dmi.isDone()) {
+				prepToolsPluginExtension.showDialog("You're done with "
+						+ getProcessName() + "!");
+
+				OxygenEditGrouper.perform(document,
+						new OxygenEditGrouper.Edit() {
+							@Override
+							public void edit() {
+
+								MetaUtils.insertPrepToolInfo(
+										prepToolsPluginExtension
+												.getDocumentMetaInfo()
+												.getDocument(),
+										getProcessName());
+
+							}
+						});
+			}
 		}
 	}
 
@@ -114,13 +133,7 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	 * Subclasses call this method to notify completion of process.
 	 */
 	protected void done() {
-		prepToolsPluginExtension.showDialog("You're done with "
-				+ getProcessName() + "!");
-		final DocumentMetaInfo dmi = prepToolsPluginExtension
-				.getDocumentMetaInfo();
-		dmi.getCurrentToolSpecificMetaInfo().done();
-		MetaUtils.insertPrepToolInfo(prepToolsPluginExtension
-				.getDocumentMetaInfo().getDocument(), getProcessName());
+		prepToolsPluginExtension.getDocumentMetaInfo().setDone(true);
 	}
 
 	protected abstract String getProcessName();
