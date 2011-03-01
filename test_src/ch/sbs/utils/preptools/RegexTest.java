@@ -338,6 +338,7 @@ public class RegexTest {
 						PrepToolLoader.PAGEBREAK_REPLACE));
 	}
 
+	@Test
 	public void testPagebreak2() {
 		final String regex = PrepToolLoader.PAGEBREAK_REGEX;
 		final Pattern pattern = Pattern.compile(regex);
@@ -347,9 +348,6 @@ public class RegexTest {
 				" <pagenum id=\"page-20\" page=\"normal\">20</pagenum> ",
 				pattern.matcher(input).replaceAll(
 						PrepToolLoader.PAGEBREAK_REPLACE));
-		assertEquals(
-				" <pagenum id=\"page-20\" page=\"normal\">20</pagenum> ",
-				pattern.matcher(input + input).replaceAll(
-						PrepToolLoader.PAGEBREAK_REPLACE));
 	}
+
 }
