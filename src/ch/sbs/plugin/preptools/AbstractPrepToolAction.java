@@ -13,6 +13,7 @@ import javax.swing.text.Document;
 
 import ro.sync.exml.workspace.api.editor.WSEditor;
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
+import ch.sbs.utils.preptools.DocumentUtils;
 import ch.sbs.utils.preptools.FileUtils;
 import ch.sbs.utils.preptools.Match;
 import ch.sbs.utils.preptools.Match.PositionMatch;
@@ -63,6 +64,7 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 			});
 			dmi.setCurrentState();
 			if (dmi.isDone()) {
+				wrapUp(document);
 				prepToolsPluginExtension.showDialog("You're done with "
 						+ getProcessName() + "!");
 
@@ -81,6 +83,28 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 						});
 			}
 		}
+	}
+
+	private void wrapUp(final Document document) {
+
+		OxygenEditGrouper.perform(document, new OxygenEditGrouper.Edit() {
+			@Override
+			public void edit() {
+
+				doWrapUp();
+
+			}
+
+		});
+
+	}
+
+	/**
+	 * Hook thet gets called just before meta-information is inserted into the
+	 * document.
+	 */
+	protected void doWrapUp() {
+
 	}
 
 	private String getStackTrace(final Exception e) {
@@ -522,6 +546,120 @@ class FullRegexChangeAction extends AbstractMarkupFullRegexChangeAction {
 	protected String getProcessName() {
 		return helper.getProcessName();
 	}
+}
+
+@SuppressWarnings("serial")
+abstract class AccentChangeAction extends FullRegexChangeAction {
+
+	private static final String PLACE_HOLDER = "_";
+	private static final String REGEX_SPAN_TEMPLATE = "<span\\s+brl:accents\\s*=\\s*\""
+			+ PLACE_HOLDER + "\"\\s*>(.*?)</span\\s*>";
+	public static final String REGEX_SPAN_REDUCED = REGEX_SPAN_TEMPLATE
+			.replace(PLACE_HOLDER, "reduced");
+
+	public static final String REGEX_SPAN_DETAILED = REGEX_SPAN_TEMPLATE
+			.replace(PLACE_HOLDER, "detailed");
+
+	public static final String REPLACE = "$1";
+
+	AccentChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String thePattern, final String theProcessName,
+			final String theTag, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, thePattern, theProcessName, theTag,
+				theReplaceString);
+	}
+
+	@Override
+	protected void doSomething() throws BadLocationException {
+		super.doSomething();
+		incrementCounter();
+	}
+
+	protected abstract void incrementCounter();
+
+	@Override
+	protected void doWrapUp() {
+		final AccentPrepTool.MetaInfo metaInfo = getMetaInfo();
+		final int foreignCount = metaInfo.getForeignCount();
+		final int swissCount = metaInfo.getSwissCount();
+		if (foreignCount > swissCount) {
+			DocumentUtils.performReplacement(prepToolsPluginExtension
+					.getDocumentMetaInfo().getDocument(), REGEX_SPAN_REDUCED,
+					REPLACE);
+		}
+		else {
+			DocumentUtils.performReplacement(prepToolsPluginExtension
+					.getDocumentMetaInfo().getDocument(), REGEX_SPAN_DETAILED,
+					REPLACE);
+		}
+	}
+
+	/**
+	 * Utility (not hook!) method to get tool specific metainfo.
+	 * 
+	 * @return tool specific metainfo.
+	 */
+	@Override
+	protected final AccentPrepTool.MetaInfo getMetaInfo() {
+		final DocumentMetaInfo dmi = prepToolsPluginExtension
+				.getDocumentMetaInfo(prepToolsPluginExtension.getWsEditor()
+						.getEditorLocation());
+		return (AccentPrepTool.MetaInfo) dmi
+				.getToolSpecificMetaInfo(AccentPrepTool.LABEL);
+	}
+
+}
+
+@SuppressWarnings("serial")
+class AccentStartAction extends RegexStartAction {
+
+	AccentStartAction(PrepToolsPluginExtension thePrepToolsPluginExtension,
+			String thePattern, String theProcessName, String theTag) {
+		super(thePrepToolsPluginExtension, thePattern, theProcessName, theTag);
+	}
+
+	@Override
+	protected void doSomething() throws BadLocationException {
+		((AccentPrepTool.MetaInfo) getMetaInfo()).resetCounts();
+		super.doSomething();
+	}
+
+}
+
+@SuppressWarnings("serial")
+class SwissAccentChangeAction extends AccentChangeAction {
+
+	SwissAccentChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String thePattern, final String theProcessName,
+			final String theTag, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, thePattern, theProcessName, theTag,
+				theReplaceString);
+	}
+
+	@Override
+	protected void incrementCounter() {
+		getMetaInfo().incrementSwissCount();
+	}
+}
+
+@SuppressWarnings("serial")
+class ForeignAccentChangeAction extends AccentChangeAction {
+
+	ForeignAccentChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String thePattern, final String theProcessName,
+			final String theTag, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, thePattern, theProcessName, theTag,
+				theReplaceString);
+	}
+
+	@Override
+	protected void incrementCounter() {
+		getMetaInfo().incrementForeignCount();
+	}
+
 }
 
 @SuppressWarnings("serial")

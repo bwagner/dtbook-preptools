@@ -435,6 +435,10 @@ class AccentPrepTool extends RegexPrepTool {
 		public void incrementForeignCount() {
 			foreignCount++;
 		}
+
+		public void resetCounts() {
+			foreignCount = swissCount = 0;
+		}
 	}
 
 	private final String replaceString;
@@ -460,6 +464,12 @@ class AccentPrepTool extends RegexPrepTool {
 				makeButton(startAction, "Start", KeyEvent.VK_7),
 				makeButton(findAction, "Swiss", KeyEvent.VK_8),
 				makeButton(changeAction, "Foreign", KeyEvent.VK_9), };
+	}
+
+	@Override
+	protected Action makeStartAction() {
+		return new AccentStartAction(prepToolsPluginExtension, PATTERN, LABEL,
+				TAG);
 	}
 
 	@Override
