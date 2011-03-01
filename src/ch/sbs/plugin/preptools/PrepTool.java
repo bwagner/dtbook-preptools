@@ -46,7 +46,6 @@ abstract class PrepTool {
 	 * @param thePrepToolsPluginExtension
 	 * @param theMenuItemNr
 	 * @param theMnemonic
-	 *            TODO
 	 */
 	PrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			int theMenuItemNr, int theMnemonic) {
@@ -149,7 +148,7 @@ abstract class PrepTool {
 	}
 
 	/**
-	 * optional hookto enable gui stuff
+	 * optional hook to enable gui stuff
 	 */
 	protected void enableStuff() {
 
@@ -257,11 +256,11 @@ abstract class PrepTool {
  */
 abstract class MarkupPrepTool extends PrepTool {
 
-	private Action startAction;
+	protected Action startAction;
 
-	private Action findAction;
+	protected Action findAction;
 
-	private Action changeAction;
+	protected Action changeAction;
 
 	protected abstract Action makeStartAction();
 
@@ -406,11 +405,86 @@ class FullRegexPrepTool extends RegexPrepTool {
 
 }
 
+class AccentPrepTool extends RegexPrepTool {
+
+	// TODO: Label here, label in the constuctor: clean this stuff up!
+	static final String LABEL = "Accent";
+
+	@Override
+	public DocumentMetaInfo.MetaInfo makeMetaInfo(final Document document) {
+		return new MetaInfo();
+	}
+
+	static class MetaInfo extends DocumentMetaInfo.MetaInfo {
+
+		private int swissCount;
+		private int foreignCount;
+
+		public int getSwissCount() {
+			return swissCount;
+		}
+
+		public void incrementSwissCount() {
+			swissCount++;
+		}
+
+		public int getForeignCount() {
+			return foreignCount;
+		}
+
+		public void incrementForeignCount() {
+			foreignCount++;
+		}
+	}
+
+	private final String replaceString;
+
+	AccentPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			int theMenuItemNr, int theMnemonic, final String theLabel,
+			final String theRegex, final String theTag,
+			final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic,
+				theLabel, theRegex, theTag);
+		replaceString = theReplaceString;
+	}
+
+	@Override
+	protected JComponent[] getComponents() {
+		getAllActions();
+		return new JComponent[] {
+				// TODO: if our action provided the label, we could keep this
+				// stuff in the superclass.
+				// e.g. by saying:
+				// makeButton(startAction, startAction.getLabel(),
+				// KeyEvent.VK_7),
+				makeButton(startAction, "Start", KeyEvent.VK_7),
+				makeButton(findAction, "Swiss", KeyEvent.VK_8),
+				makeButton(changeAction, "Foreign", KeyEvent.VK_9), };
+	}
+
+	@Override
+	protected Action makeFindAction() {
+		return new SwissAccentChangeAction(prepToolsPluginExtension, PATTERN,
+				LABEL, TAG, replaceString.replace(PrepToolLoader.PLACEHOLDER,
+						"detailed")); // TODO "detailed" belongs in
+										// SwissAccentChangeAction
+	}
+
+	@Override
+	protected Action makeChangeAction() {
+		return new ForeignAccentChangeAction(prepToolsPluginExtension, PATTERN,
+				LABEL, TAG, replaceString.replace(PrepToolLoader.PLACEHOLDER,
+						"reduced")); // TODO "reduced" belongs in
+										// ForeignAccentChangeAction
+	}
+
+}
+
 class VFormPrepTool extends MarkupPrepTool {
 
 	@Override
 	public DocumentMetaInfo.MetaInfo makeMetaInfo(final Document document) {
-		return new VFormPrepTool.MetaInfo();
+		return new MetaInfo();
 	}
 
 	static class MetaInfo extends DocumentMetaInfo.MetaInfo {
@@ -541,7 +615,7 @@ class ParensPrepTool extends PrepTool {
 
 	@Override
 	public DocumentMetaInfo.MetaInfo makeMetaInfo(final Document document) {
-		return new ParensPrepTool.MetaInfo(document);
+		return new MetaInfo(document);
 	}
 
 	static class MetaInfo extends DocumentMetaInfo.MetaInfo {
