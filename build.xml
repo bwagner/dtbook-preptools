@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="preptools" default="deploy">
-	<!-- used by "send" -->
-	<property name="recipient" value="Mischa%20Kuenzle%20&lt;mischa.kuenzle@sbs.ch&gt;" />
-	<property name="greet" value="Hallo%20Mischa" />
+	
+	<!-- used by "send": properties "recipient" and "greet" -->
+	<property file="build.properties" />
 
 	<!-- used by "deploy" and "plugin.xml" -->
 	<property name="pluginfile" value="plugin.xml" />
