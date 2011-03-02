@@ -429,6 +429,9 @@ abstract class AbstractMarkupFullRegexChangeAction extends
 	@Override
 	protected int handleText(final Document document, final String selText)
 			throws BadLocationException {
+		if (selText == null) {
+			return lastMatchStart;
+		}
 		final String newText = getPattern().matcher(selText).replaceAll(
 				replaceString);
 		document.remove(lastMatchStart, selText.length());
@@ -579,6 +582,12 @@ abstract class AccentChangeAction extends FullRegexChangeAction {
 	protected void doSomething() throws BadLocationException {
 		super.doSomething();
 		incrementCounter();
+	}
+
+	// override veto behaviour from intermediate superclasses.
+	@Override
+	protected boolean veto(final String selText) {
+		return false;
 	}
 
 	protected abstract void incrementCounter();
