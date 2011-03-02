@@ -1,6 +1,7 @@
 package ch.sbs.plugin.preptools;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.regex.Pattern;
 
@@ -51,6 +52,7 @@ public class AccentRegexTest {
 	@Test
 	public void testAccentRegexDetailedTwice() {
 		assertEquals(
+				"Pattern AccentChangeAction.REGEX_SPAN_DETAILED works when occurring twice on a line.",
 				"Térezia bla Térezia",
 				Pattern.compile(AccentChangeAction.REGEX_SPAN_DETAILED)
 						.matcher(inputTwiceSameline)
@@ -60,9 +62,89 @@ public class AccentRegexTest {
 	@Test
 	public void testAccentRegexDetailedTwiceNewline() {
 		assertEquals(
+				"Pattern AccentChangeAction.REGEX_SPAN_DETAILED works on newlines.",
 				"Térezia \n Térezia",
 				Pattern.compile(AccentChangeAction.REGEX_SPAN_DETAILED)
 						.matcher(inputTwiceNewline)
 						.replaceAll(AccentChangeAction.REPLACE));
 	}
+
+	@Test
+	public void testCapitalLetters1() {
+		final String string = "Frau évora ist kompetent.";
+		final String exp = "Frau <span brl:accents=\"_____\">évora</span> ist kompetent.";
+		assertEquals(
+				"Pattern PrepToolLoader.ACCENT_REGEX works on accented chars.",
+				exp,
+				Pattern.compile(PrepToolLoader.ACCENT_REGEX).matcher(string)
+						.replaceAll(PrepToolLoader.ACCENT_REPLACE));
+	}
+
+	@Test
+	public void testCapitalLettersUnicode_flag() {
+		final String string = "Frau Évora ist kompetent.";
+		final String exp = "Frau <span brl:accents=\"_____\">Évora</span> ist kompetent.";
+		assertEquals(
+				"Pattern.UNICODE_CASE can be set via flag to compile, too.",
+				exp,
+				Pattern.compile(PrepToolLoader.ACCENT_REGEX.replace("u", ""),
+						Pattern.UNICODE_CASE).matcher(string)
+						.replaceAll(PrepToolLoader.ACCENT_REPLACE));
+	}
+
+	@Test
+	public void testCapitalLetters2Unicode_uRange() {
+		final String string = "Frau Évora ist kompetent.";
+		final String exp = "Frau <span brl:accents=\"_____\">Évora</span> ist kompetent.";
+		assertEquals(
+				"Pattern.UNICODE_CASE can surround the regex, too, using (?u: <regex> )",
+				exp,
+				Pattern.compile(
+						"(?u:" + PrepToolLoader.ACCENT_REGEX.replace("u", "")
+								+ ")").matcher(string)
+						.replaceAll(PrepToolLoader.ACCENT_REPLACE));
+	}
+
+	@Test
+	public void testCapitalLettersUnicode_uSwitch() {
+		final String string = "Frau Évora ist kompetent.";
+		final String exp = "Frau <span brl:accents=\"_____\">Évora</span> ist kompetent.";
+		assertEquals(
+				"Pattern.UNICODE_CASE can be prepended, too, using (?u)",
+				exp,
+				Pattern.compile(
+						"(?u)" + PrepToolLoader.ACCENT_REGEX.replace("u", ""))
+						.matcher(string)
+						.replaceAll(PrepToolLoader.ACCENT_REPLACE));
+	}
+
+	@Test
+	public void testCapitalLettersUnicode_no() {
+		final String string = "Frau Évora ist kompetent.";
+		assertEquals(
+				"Pattern.CASE_INSENSITIVE flag without Pattern.UNICODE_CASE doesn't work on É",
+				string,
+				Pattern.compile(PrepToolLoader.ACCENT_REGEX.replace("u", ""))
+						.matcher(string)
+						.replaceAll(PrepToolLoader.ACCENT_REPLACE));
+	}
+
+	@Test
+	public void testCapitalLettersUnicode_no2() {
+		final String string = "Frau Évora ist kompetent.";
+		assertEquals(
+				"Pattern.UNICODE_CASE flag without Pattern.CASE_INSENSITIVE does nothing",
+				string,
+				Pattern.compile(PrepToolLoader.ACCENT_REGEX.replace("i", ""))
+						.matcher(string)
+						.replaceAll(PrepToolLoader.ACCENT_REPLACE));
+	}
+
+	@Test
+	public void testAbbrevPeriod() {
+		final String string = "a.b.";
+		assertTrue(Pattern.compile(PrepToolLoader.ABBREV_PERIOD_REGEX)
+				.matcher(string).find());
+	}
+
 }

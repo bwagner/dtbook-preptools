@@ -36,7 +36,7 @@ public class PrepToolLoader {
 	// http://redmine.sbszh.ch/issues/show/1201
 
 	public static final String PLACEHOLDER = "_____";
-	public static final String ACCENT_REGEX = "(?i:(\\b\\w*[àâçéèêëìîïòôœùû]\\w*\\b))";
+	public static final String ACCENT_REGEX = "(?iu:(\\b\\w*[àâçéèêëìîïòôœùû]\\w*\\b))";
 	public static final String ACCENT_REPLACE = "<span brl:accents=\""
 			+ PLACEHOLDER + "\">$1</span>";
 
