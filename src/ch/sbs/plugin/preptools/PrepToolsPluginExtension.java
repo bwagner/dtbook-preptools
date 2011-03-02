@@ -530,11 +530,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 	private JTextArea getJTextArea() {
 		final Object tc = getPage(getWsEditor()).getTextComponent();
-		if (!(tc instanceof JTextArea)) {
-			return null;
-		}
-		final JTextArea ta = (JTextArea) tc;
-		return ta;
+		return tc instanceof JTextArea ? (JTextArea) tc : null;
 	}
 
 	/**
