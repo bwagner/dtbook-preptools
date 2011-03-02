@@ -130,6 +130,24 @@ public class AccentRegexTest {
 	}
 
 	@Test
+	public void testCapitalLettersUnicode_twice() {
+		final String string = "Er verkehrt im Élysée-Palast.";
+		final String exp = "Er verkehrt im <span brl:accents=\"_____\">Élysée</span>-Palast.";
+		assertEquals("two unicode characters in one word", exp, Pattern
+				.compile(PrepToolLoader.ACCENT_REGEX).matcher(string)
+				.replaceAll(PrepToolLoader.ACCENT_REPLACE));
+	}
+
+	@Test
+	public void testCapitalLettersUnicode_twiceTilde() {
+		final String string = "Er verkehrt im Éspaña-Palast.";
+		final String exp = "Er verkehrt im <span brl:accents=\"_____\">Éspaña</span>-Palast.";
+		assertEquals("two unicode characters in one word", exp, Pattern
+				.compile(PrepToolLoader.ACCENT_REGEX).matcher(string)
+				.replaceAll(PrepToolLoader.ACCENT_REPLACE));
+	}
+
+	@Test
 	public void testCapitalLettersUnicode_no2() {
 		final String string = "Frau Évora ist kompetent.";
 		assertEquals(

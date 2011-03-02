@@ -262,6 +262,13 @@ public class RegexTest {
 	}
 
 	@Test
+	public void testMeasureAngstrom() {
+		final String regex = PrepToolLoader.MEASURE_REGEX;
+		final Pattern pattern = Pattern.compile(regex);
+		assertTrue(pattern.matcher("Die Länge beträgt 50 Å.").find());
+	}
+
+	@Test
 	public void testAbbrevPeriod() {
 		// (?i:[A-ZÄÖÜ]\.\s?[A-ZÄÖÜ]\.)
 		final String regex = PrepToolLoader.ABBREV_PERIOD_REGEX;
@@ -271,6 +278,13 @@ public class RegexTest {
 		assertTrue(pattern.matcher("dipl. Inf.").find());
 		assertTrue(pattern.matcher("a.\n          b.").find());
 		assertFalse(pattern.matcher("Z").find());
+	}
+
+	@Test
+	public void testAbbrevPeriodMoreChars() {
+		final String regex = PrepToolLoader.ABBREV_PERIOD_REGEX;
+		final Pattern pattern = Pattern.compile(regex);
+		assertTrue(pattern.matcher("z.Å.").find());
 	}
 
 	@Test
@@ -288,6 +302,13 @@ public class RegexTest {
 	}
 
 	@Test
+	public void testAbbrevCapitalMoreChars() {
+		final String regex = PrepToolLoader.ABBREV_CAPITAL_REGEX;
+		final Pattern pattern = Pattern.compile(regex);
+		assertTrue(pattern.matcher("bloss É4 brauchen").find());
+	}
+
+	@Test
 	public void testAbbrevAcronym() {
 		// \b\w*[a-z]+[A-Z]+\w*\b
 		final String regex = PrepToolLoader.ABBREV_ACRONYM_REGEX;
@@ -295,6 +316,15 @@ public class RegexTest {
 		assertTrue(pattern.matcher("Die GSoA ist").find());
 		assertTrue(pattern.matcher("ein mE guter").find());
 		assertFalse(pattern.matcher("ein Arbeiten").find());
+	}
+
+	@Test
+	public void testAbbrevAcronymMoreChars() {
+		// \b\w*[a-z]+[A-Z]+\w*\b
+		final String regex = PrepToolLoader.ABBREV_ACRONYM_REGEX;
+		final Pattern pattern = Pattern.compile(regex);
+		assertTrue(pattern.matcher("Die GSöA ist").find());
+		assertTrue(pattern.matcher("ein mÉ guter").find());
 	}
 
 	@Test
