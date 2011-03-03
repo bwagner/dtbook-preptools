@@ -78,8 +78,11 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	private void setAllActions(final DocumentMetaInfo theDocumentMetaInfo,
 			final boolean enabled) {
 		if (theDocumentMetaInfo != null) {
-			theDocumentMetaInfo.getCurrentPrepTool().setAllActionsEnabled(
-					enabled);
+			final PrepTool currentPrepTool = theDocumentMetaInfo
+					.getCurrentPrepTool();
+			if (currentPrepTool != null) {
+				currentPrepTool.setAllActionsEnabled(enabled);
+			}
 		}
 	}
 
