@@ -320,15 +320,13 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 		final WSTextEditorPage aWSTextEditorPage = prepToolsPluginExtension
 				.getPage();
 
-		final String selText = aWSTextEditorPage.getSelectedText();
-
-		if (veto(selText))
+		if (veto(aWSTextEditorPage.getSelectedText()))
 			return;
 
 		handleManualCursorMovement();
 
 		final int continueAt = handleText(aWSTextEditorPage.getDocument(),
-				selText);
+				aWSTextEditorPage.getSelectedText());
 
 		searchOn(aWSTextEditorPage, prepToolsPluginExtension.getWsEditor(),
 				continueAt);
@@ -354,8 +352,9 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 			if (prepToolsPluginExtension.showConfirmDialog(getProcessName()
 					+ ": Cursor", "Cursor position has changed!\n",
 					"Take up where we left off last time", "continue anyway")) {
-				prepToolsPluginExtension.select(pm.startOffset.getOffset(),
-						pm.endOffset.getOffset());
+				prepToolsPluginExtension.select(
+						lastMatchStart = pm.startOffset.getOffset(),
+						lastMatchEnd = pm.endOffset.getOffset());
 			}
 		}
 	}
