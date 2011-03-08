@@ -29,7 +29,7 @@ public class MetaUtilsTest {
 				""));
 		MetaUtils.insertPrepToolInfo(document, VFormActionHelper.VFORM_TAG);
 		sb.setLength(0);
-		sb.append("<meta name=\"prod:");
+		sb.append("<meta name=\"prod:PrepTool:");
 		sb.append(VFormActionHelper.VFORM_TAG);
 		sb.append("\" content=\"done\"/>");
 		assertEquals(TEMPLATE.replace(PLACE_HOLDER, sb.toString()),
@@ -51,8 +51,9 @@ public class MetaUtilsTest {
 		final Document document = makeDocument(TEMPLATE.replace(PLACE_HOLDER,
 				""));
 		MetaUtils.insertPrepToolInfo(document, VFormActionHelper.VFORM_TAG);
-		assertEquals(TEMPLATE.replace(PLACE_HOLDER,
-				"<meta name=\"prod:brl:v-form\" content=\"done\"/>\n"),
+		assertEquals(
+				TEMPLATE.replace(PLACE_HOLDER,
+						"<meta name=\"prod:PrepTool:brl:v-form\" content=\"done\"/>\n"),
 				document.getText(0, document.getLength()));
 	}
 
@@ -71,8 +72,9 @@ public class MetaUtilsTest {
 		final Document document = makeDocument(TEMPLATE.replace(PLACE_HOLDER,
 				""));
 		MetaUtils.insertPrepToolInfo(document, VFormActionHelper.VFORM_TAG);
-		assertEquals(TEMPLATE.replace(PLACE_HOLDER,
-				"		<meta name=\"prod:brl:v-form\" content=\"done\"/>\n"),
+		assertEquals(
+				TEMPLATE.replace(PLACE_HOLDER,
+						"		<meta name=\"prod:PrepTool:brl:v-form\" content=\"done\"/>\n"),
 				document.getText(0, document.getLength()));
 	}
 
