@@ -323,7 +323,9 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 		if (veto(aWSTextEditorPage.getSelectedText()))
 			return;
 
-		handleManualCursorMovement();
+		if (handleManualCursorMovement()) {
+			return;
+		}
 
 		final int continueAt = handleText(aWSTextEditorPage.getDocument(),
 				aWSTextEditorPage.getSelectedText());
@@ -338,7 +340,7 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 	 * @param aWSTextEditorPage
 	 * @param dmi
 	 */
-	private void handleManualCursorMovement() {
+	private boolean handleManualCursorMovement() {
 		final DocumentMetaInfo dmi = prepToolsPluginExtension
 				.getDocumentMetaInfo();
 		final WSTextEditorPage aWSTextEditorPage = prepToolsPluginExtension
@@ -355,8 +357,17 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 				prepToolsPluginExtension.select(
 						lastMatchStart = pm.startOffset.getOffset(),
 						lastMatchEnd = pm.endOffset.getOffset());
+				return breakIfManualEditOccurred();
 			}
 		}
+		return false;
+	}
+
+	/**
+	 * Optional hook to abort process when manual edit occurred.
+	 */
+	protected boolean breakIfManualEditOccurred() {
+		return false;
 	}
 
 	protected int lastMatchStart;
@@ -581,6 +592,11 @@ abstract class AccentChangeAction extends FullRegexChangeAction {
 	protected void doSomething() throws BadLocationException {
 		super.doSomething();
 		incrementCounter();
+	}
+
+	@Override
+	protected boolean breakIfManualEditOccurred() {
+		return true;
 	}
 
 	// override veto behaviour from intermediate superclasses.
