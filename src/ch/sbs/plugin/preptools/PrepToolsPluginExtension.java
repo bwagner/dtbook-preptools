@@ -4,13 +4,17 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
@@ -44,6 +48,7 @@ import ch.sbs.utils.preptools.FileUtils;
 import ch.sbs.utils.preptools.Match.PositionMatch;
 import ch.sbs.utils.preptools.PropsUtils;
 import ch.sbs.utils.preptools.RegionSkipper;
+import ch.sbs.utils.swing.MenuPlugger;
 
 /**
  * Plugin extension - workspace access extension.
@@ -194,8 +199,86 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 			/**
 			 * @see ro.sync.exml.workspace.api.standalone.MenuBarCustomizer#customizeMainMenu(javax.swing.JMenuBar)
 			 */
+			@SuppressWarnings("serial")
 			@Override
 			public void customizeMainMenu(final JMenuBar mainMenuBar) {
+				final String[] revertLabel = { "Revert...", "Rückgängig..." };
+				boolean plug = MenuPlugger.plug(mainMenuBar, revertLabel,
+						new MenuPlugger.ActionWrapper() {
+
+							@Override
+							protected boolean pre(
+									final Action theWrappedAction,
+									final ActionEvent theActionEvent) {
+								final DocumentMetaInfo dmi = getDocumentMetaInfo();
+								if (dmi.isProcessing()) {
+									return showConfirmDialog(
+											"PrepTools: Revert",
+											"Document is being processed. Sure you want to Revert?");
+								}
+								return true;
+							}
+
+							@Override
+							protected void post(final Action theWrappedAction,
+									final ActionEvent theActionEvent) {
+								// Recreate the state like before starting to
+								// use the current tool.
+								// Unfortunately, we don't know whether the user
+								// canceled the Revert action. But we'll
+								// restart anyway. No big deal.
+								final MetaInfo mi = getDocumentMetaInfo()
+										.getCurrentToolSpecificMetaInfo();
+								if (mi.hasStarted()) {
+									mi.setHasStarted(false);
+									mi.setDone(false);
+									getDocumentMetaInfo().getCurrentPrepTool()
+											.setCurrentState(
+													getDocumentMetaInfo());
+								}
+
+							}
+
+						});
+				if (!plug) {
+					pluginWorkspaceAccess.showErrorMessage("plugging \""
+							+ join(", ", revertLabel) + "\" failed.");
+				}
+				final String[] saveAsLabel = { "Save As...",
+						"Datei speichern unter..." };
+				plug = MenuPlugger.plug(mainMenuBar, saveAsLabel,
+						new MenuPlugger.ActionWrapper() {
+
+							private DocumentMetaInfo dmi;
+							private boolean wasProcessing;
+
+							@Override
+							protected boolean pre(
+									final Action theWrappedAction,
+									final ActionEvent theActionEvent) {
+								dmi = getDocumentMetaInfo();
+								if (wasProcessing = dmi.isProcessing()) {
+									return showConfirmDialog(
+											"PrepTools: Save As",
+											"Document is being processed. Sure you want to Save As?");
+								}
+								return true;
+							}
+
+							@Override
+							protected void post(final Action theWrappedAction,
+									final ActionEvent theActionEvent) {
+								if (wasProcessing) {
+									removeDocumentMetaInfo(dmi);
+									consolidatePrepTools(getEditorLocation());
+								}
+							}
+
+						});
+				if (!plug) {
+					pluginWorkspaceAccess.showErrorMessage("plugging \""
+							+ join(", ", saveAsLabel) + "\" failed.");
+				}
 				// PrepTools menu
 				menuPrepTools = createPrepToolsMenu();
 				menuPrepTools.setMnemonic(KeyEvent.VK_R);
@@ -286,15 +369,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 					@Override
 					public void editorSelected(URL editorLocation) {
-						final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
-						if (dmi != null) {
-							PrepTool currentPrepTool = dmi.getCurrentPrepTool();
-							if (currentPrepTool == null) {
-								currentPrepTool = getDefaultPrepTool();
-							}
-							updatePrepToolItems();
-							currentPrepTool.activate();
-						}
+						consolidatePrepTools(editorLocation);
 					};
 				}, StandalonePluginWorkspace.MAIN_EDITING_AREA);
 
@@ -551,6 +626,51 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		final Rectangle r = getPage().modelToViewRectangle(end);
 		textArea.scrollRectToVisible(new java.awt.Rectangle(r.x, r.y - OFFSET
 				/ 2, r.width, r.height + OFFSET));
+	}
+
+	private void consolidatePrepTools(URL editorLocation) {
+		final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
+		if (dmi != null) {
+			PrepTool currentPrepTool = dmi.getCurrentPrepTool();
+			if (currentPrepTool == null) {
+				currentPrepTool = getDefaultPrepTool();
+			}
+			updatePrepToolItems();
+			currentPrepTool.activate();
+		}
+	}
+
+	/**
+	 * Utility method to join a collection of Strings with the given delimiter.
+	 * 
+	 * @param delimiter
+	 * @param strings
+	 * @return concatenation of all strings with the delimiter in between
+	 *         strings.
+	 */
+	public static String join(final String delimiter,
+			final Collection<String> strings) {
+		final StringBuffer buffer = new StringBuffer();
+		final Iterator<String> iter = strings.iterator();
+		while (iter.hasNext()) {
+			buffer.append(iter.next());
+			if (iter.hasNext()) {
+				buffer.append(delimiter);
+			}
+		}
+		return buffer.toString();
+	}
+
+	/**
+	 * Utility method to join an array of Strings with the given delimiter.
+	 * 
+	 * @param delimiter
+	 * @param strings
+	 * @return concatenation of all strings with the delimiter in between
+	 *         strings.
+	 */
+	public static String join(final String delimiter, final String[] strings) {
+		return join(delimiter, Arrays.asList(strings));
 	}
 
 	/*
