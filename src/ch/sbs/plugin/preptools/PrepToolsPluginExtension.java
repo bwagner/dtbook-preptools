@@ -4,11 +4,8 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +45,7 @@ import ch.sbs.utils.preptools.FileUtils;
 import ch.sbs.utils.preptools.Match.PositionMatch;
 import ch.sbs.utils.preptools.PropsUtils;
 import ch.sbs.utils.preptools.RegionSkipper;
+import ch.sbs.utils.string.StringUtils;
 import ch.sbs.utils.swing.MenuPlugger;
 
 /**
@@ -242,7 +240,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 						});
 				if (!plug) {
 					pluginWorkspaceAccess.showErrorMessage("plugging \""
-							+ join(", ", revertLabel) + "\" failed.");
+							+ StringUtils.join(revertLabel) + "\" failed.");
 				}
 				final String[] saveAsLabel = { "Save As...",
 						"Datei speichern unter..." };
@@ -277,7 +275,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 						});
 				if (!plug) {
 					pluginWorkspaceAccess.showErrorMessage("plugging \""
-							+ join(", ", saveAsLabel) + "\" failed.");
+							+ StringUtils.join(saveAsLabel) + "\" failed.");
 				}
 				// PrepTools menu
 				menuPrepTools = createPrepToolsMenu();
@@ -638,39 +636,6 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 			updatePrepToolItems();
 			currentPrepTool.activate();
 		}
-	}
-
-	/**
-	 * Utility method to join a collection of Strings with the given delimiter.
-	 * 
-	 * @param delimiter
-	 * @param strings
-	 * @return concatenation of all strings with the delimiter in between
-	 *         strings.
-	 */
-	public static String join(final String delimiter,
-			final Collection<String> strings) {
-		final StringBuffer buffer = new StringBuffer();
-		final Iterator<String> iter = strings.iterator();
-		while (iter.hasNext()) {
-			buffer.append(iter.next());
-			if (iter.hasNext()) {
-				buffer.append(delimiter);
-			}
-		}
-		return buffer.toString();
-	}
-
-	/**
-	 * Utility method to join an array of Strings with the given delimiter.
-	 * 
-	 * @param delimiter
-	 * @param strings
-	 * @return concatenation of all strings with the delimiter in between
-	 *         strings.
-	 */
-	public static String join(final String delimiter, final String[] strings) {
-		return join(delimiter, Arrays.asList(strings));
 	}
 
 	/*

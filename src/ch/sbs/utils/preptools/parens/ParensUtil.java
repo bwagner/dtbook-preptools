@@ -2,7 +2,9 @@ package ch.sbs.utils.preptools.parens;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,18 +43,14 @@ public class ParensUtil {
 			theRegionSkipper.findRegionsToSkip(theText);
 			final List<Match> orphans = new ArrayList<Match>();
 			final String[][] patternPairs = getPatternPairs();
-			for (final String[] patPair : patternPairs) {
-				final StringBuilder sb = new StringBuilder();
-				sb.append(escape(patPair[0]));
-				sb.append("|");
-				sb.append(escape(patPair[1]));
-				final Pattern pattern = Pattern.compile(sb.toString());
+			for (final String[] patternPair : patternPairs) {
+				final Pattern pattern = getPairPattern(patternPair);
 				final Matcher matcher = pattern.matcher(theText);
 
 				// must be called before closingChar!
-				final char openingChar = getOpeningChar(matcher, patPair);
+				final char openingChar = getOpeningChar(matcher, patternPair);
 
-				final char closingChar = getClosingChar(matcher, patPair);
+				final char closingChar = getClosingChar(matcher, patternPair);
 				boolean expectOpening = true;
 				Match match = null;
 				Match previousMatch = null;
@@ -96,49 +94,91 @@ public class ParensUtil {
 			return orphans;
 		}
 
+		private Pattern getPairPattern(final String[] patPair) {
+			final StringBuilder sb = new StringBuilder();
+			sb.append(escape(patPair[0]));
+			sb.append("|");
+			sb.append(escape(patPair[1]));
+			final Pattern pattern = Pattern.compile(sb.toString());
+			return pattern;
+		}
+
+		/**
+		 * Hook to provide the opening character.
+		 * 
+		 * @param matcher
+		 * @param patPair
+		 * @return
+		 */
 		protected abstract char getOpeningChar(final Matcher matcher,
 				final String[] patPair);
 
+		/**
+		 * Hook to provide the closing character.
+		 * 
+		 * @param matcher
+		 * @param patPair
+		 * @return
+		 */
 		protected abstract char getClosingChar(final Matcher matcher,
 				final String[] patPair);
 
 		protected abstract String[][] getPatternPairs();
 
-		protected String escape(final String str) {
-			return str;
+		/**
+		 * Optional hook to escape the given String
+		 * 
+		 * @param theString
+		 * @return escaped string
+		 */
+		protected String escape(final String theString) {
+			return theString;
 		}
 	}
 
 	static class QuoteOrphanMatcher extends OrphanMatcher {
 
 		private static final char UNSET_CHAR = 0;
-		private char openingChar = UNSET_CHAR;
-		private char closingChar = UNSET_CHAR;
+		static final String[] AQUO_PAIR = new String[] { "«", "»" };
+		static final String[] SAQUO_PAIR = new String[] { "‹", "›" };
+		static final String[] ANG_PAIR = new String[] { "〈", "〉" };
+		static final String[][] PAIRS = new String[][] { AQUO_PAIR, SAQUO_PAIR,
+				ANG_PAIR, };
+		private final Map<String[], Character> openingChar;
+		private final Map<String[], Character> closingChar;
+
+		public QuoteOrphanMatcher() {
+			openingChar = new HashMap<String[], Character>();
+			closingChar = new HashMap<String[], Character>();
+		}
 
 		@Override
 		protected String[][] getPatternPairs() {
-			return new String[][] { { "«", "»" }, { "‹", "›" }, { "〈", "〉" }, };
+			return PAIRS;
 		}
 
 		@Override
 		protected char getOpeningChar(final Matcher matcher,
 				final String[] patPair) {
-			if (openingChar != UNSET_CHAR) {
-				return openingChar;
+			if (openingChar.containsKey(patPair)) {
+				return openingChar.get(patPair);
 			}
 			if (!matcher.find()) {
-				return openingChar;
+				return UNSET_CHAR;
 			}
-			openingChar = matcher.group().charAt(0);
-			closingChar = patPair[patPair[0].charAt(0) == openingChar ? 1 : 0]
-					.charAt(0);
-			return openingChar;
+			final char foundOpeningChar = matcher.group().charAt(0);
+			openingChar.put(patPair, foundOpeningChar);
+			closingChar.put(patPair,
+					patPair[patPair[0].charAt(0) == foundOpeningChar ? 1 : 0]
+							.charAt(0));
+			return foundOpeningChar;
 		}
 
 		@Override
 		protected char getClosingChar(final Matcher matcher,
 				final String[] patPair) {
-			return closingChar;
+			final Character character = closingChar.get(patPair);
+			return character == null ? 0 : character;
 		}
 	}
 
@@ -162,8 +202,8 @@ public class ParensUtil {
 		}
 
 		@Override
-		protected String escape(final String str) {
-			return "\\" + str;
+		protected String escape(final String theString) {
+			return "\\" + theString;
 		}
 	}
 

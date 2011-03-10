@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import ch.sbs.utils.preptools.Match;
 import ch.sbs.utils.preptools.RegionSkipper;
+import ch.sbs.utils.preptools.parens.ParensUtil.QuoteOrphanMatcher;
 
 public class ParensUtilTest {
 
@@ -432,5 +433,72 @@ public class ParensUtilTest {
 		match = orphans.get(i++);
 		assertEquals((head + middle).length() + 16, match.startOffset);
 		assertEquals((head + middle).length() + 17, match.endOffset);
+	}
+
+	@Test
+	public void testBug1246QuoteOrphan() {
+		// ------------------------------1---------2
+		// --------------------012345678901234567890123456789
+		final String sample = "›a‹ b‹ »c« ›d‹";
+		final QuoteOrphanMatcher quoteOrphanMatcher = new QuoteOrphanMatcher();
+		final List<Match> orphans = quoteOrphanMatcher.findOrphans(sample, 0,
+				RegionSkipper.getLiteralAndCommentSkipper());
+		assertEquals(1, orphans.size());
+		int i = 0;
+		final Match match = orphans.get(i++);
+		assertEquals(5, match.startOffset);
+	}
+
+	@Test
+	public void testBug1246QuoteOrphan2() {
+		// ------------------------------1---------2
+		// --------------------012345678901234567890123456789
+		final String sample = "〉a〈 b〈 »c« 〉d〈";
+		final QuoteOrphanMatcher quoteOrphanMatcher = new QuoteOrphanMatcher();
+		final List<Match> orphans = quoteOrphanMatcher.findOrphans(sample, 0,
+				RegionSkipper.getLiteralAndCommentSkipper());
+		assertEquals(1, orphans.size());
+		int i = 0;
+		final Match match = orphans.get(i++);
+		assertEquals(5, match.startOffset);
+	}
+
+	@Test
+	public void testBug1246QuoteOrphanSwappedQuotes() {
+		// ------------------------------1---------2
+		// --------------------012345678901234567890123456789
+		final String sample = "»a« b« ›c‹ »d«";
+		final List<Match> orphans = new QuoteOrphanMatcher().findOrphans(
+				sample, 0, RegionSkipper.getLiteralAndCommentSkipper());
+		assertEquals(1, orphans.size());
+		int i = 0;
+		final Match match = orphans.get(i++);
+		assertEquals(5, match.startOffset);
+	}
+
+	@Test
+	public void testBug1246() {
+		// ------------------------------1---------2
+		// --------------------012345678901234567890123456789
+		final String sample = "›a‹ b‹ »c« ›d‹";
+		final List<Match> orphans = ParensUtil.findOrphans(sample,
+				RegionSkipper.getLiteralAndCommentSkipper());
+		assertEquals(1, orphans.size());
+		int i = 0;
+		final Match match = orphans.get(i++);
+		assertEquals(5, match.startOffset);
+	}
+
+	@Test
+	public void testBug1246swappedQuotes() {
+		// ------------------------------1---------2
+		// --------------------012345678901234567890123456789
+		final String sample = "»a« b« ›c‹ »d«";
+		final List<Match> orphans = ParensUtil.findOrphans(sample,
+				RegionSkipper.getLiteralAndCommentSkipper());
+		assertEquals(1, orphans.size());
+		int i = 0;
+		final Match match = orphans.get(i++);
+		assertEquals(5, match.startOffset);
 	}
 }
