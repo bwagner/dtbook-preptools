@@ -14,7 +14,7 @@ public class PrepToolLoader {
 
 	// Zahl mit Masseinheit
 	// ignore case
-	public static final String MEASURE_REGEX = "(?i:\\d*['.,]*\\d+\\s*[A-ZÅ]{1,2}\\b)";
+	public static final String MEASURE_REGEX = "(?i:[\\-]*\\b\\d*[0-9.,']*\\d\\s*[abcdghijklmnopstuvwμ]{0,3}[abcdghijklmnopstuvwμ/]{0,3}[abcdghijklmnopstuvwÅ]\\b)";
 
 	// Grossbuchstaben(folgen) des Typs A, A-Z, MM, USA, A4
 	// case sensitive

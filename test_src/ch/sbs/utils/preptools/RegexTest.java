@@ -227,9 +227,7 @@ public class RegexTest {
 
 	@Test
 	public void testOrdinal() {
-		// \b\d+\.
-		final String regex = PrepToolLoader.ORDINAL_REGEX;
-		final Pattern pattern = Pattern.compile(regex);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.ORDINAL_REGEX);
 		assertTrue(pattern.matcher("5.").find());
 		assertFalse(pattern.matcher("a5.").find());
 		assertTrue(pattern.matcher("23423.").find());
@@ -238,9 +236,7 @@ public class RegexTest {
 
 	@Test
 	public void testRoman() {
-		// \b[IVXCMLD]+\.?
-		final String regex = PrepToolLoader.ROMAN_REGEX;
-		final Pattern pattern = Pattern.compile(regex);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.ROMAN_REGEX);
 		assertTrue(pattern.matcher("IXII.").find());
 		assertTrue(pattern.matcher("IXII").find());
 		assertFalse(pattern.matcher("ixviv.").find());
@@ -249,12 +245,7 @@ public class RegexTest {
 
 	@Test
 	public void testMeasure() {
-		// TODO: possibly need to improve this regex, e.g.
-		// it now accepts e.g.: '.,,,..'4
-
-		// (?i:\d*['.,]*\d+\s?[A-Z]{1,2}\b)
-		final String regex = PrepToolLoader.MEASURE_REGEX;
-		final Pattern pattern = Pattern.compile(regex);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.MEASURE_REGEX);
 		assertTrue(pattern.matcher("5.6km weg").find());
 		assertTrue(pattern.matcher("5.6\nkm weg").find());
 		assertTrue(pattern.matcher("5'300.62 k dabei").find());
@@ -263,16 +254,133 @@ public class RegexTest {
 
 	@Test
 	public void testMeasureAngstrom() {
-		final String regex = PrepToolLoader.MEASURE_REGEX;
-		final Pattern pattern = Pattern.compile(regex);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.MEASURE_REGEX);
 		assertTrue(pattern.matcher("Die Länge beträgt 50 Å.").find());
 	}
 
 	@Test
+	public void testMeasureKmh() {
+		final Pattern pattern = Pattern.compile("("
+				+ PrepToolLoader.MEASURE_REGEX + ")");
+		final String focus = "4 km/h";
+		final String input = "bla " + focus + " blu";
+		assertEquals("bla _" + focus + "_ blu", pattern.matcher(input)
+				.replaceAll("_$1_"));
+	}
+
+	@Test
+	public void testMeasurekwH() {
+		final Pattern pattern = Pattern.compile("("
+				+ PrepToolLoader.MEASURE_REGEX + ")");
+		final String focus = "4.5 kwH";
+		final String input = "bla " + focus + " blu";
+		assertEquals("bla _" + focus + "_ blu", pattern.matcher(input)
+				.replaceAll("_$1_"));
+	}
+
+	@Test
+	public void testMeasureCm() {
+		final Pattern pattern = Pattern.compile("("
+				+ PrepToolLoader.MEASURE_REGEX + ")");
+		final String focus = "4'555'555.00 cm";
+		final String input = "bla " + focus + " blu";
+		assertEquals("bla _" + focus + "_ blu", pattern.matcher(input)
+				.replaceAll("_$1_"));
+	}
+
+	@Test
+	public void testMeasureMW() {
+		final Pattern pattern = Pattern.compile("("
+				+ PrepToolLoader.MEASURE_REGEX + ")");
+		final String focus = "1 MW";
+		final String input = "bla " + focus + " blu";
+		assertEquals("bla _" + focus + "_ blu", pattern.matcher(input)
+				.replaceAll("_$1_"));
+	}
+
+	@Test
+	public void testMeasurekN() {
+		final Pattern pattern = Pattern.compile("("
+				+ PrepToolLoader.MEASURE_REGEX + ")");
+		final String focus = "-3,4kN";
+		final String input = "bla " + focus + " blu";
+		assertEquals("bla _" + focus + "_ blu", pattern.matcher(input)
+				.replaceAll("_$1_"));
+	}
+
+	@Test
+	public void testMeasurekWh() {
+		final Pattern pattern = Pattern.compile("("
+				+ PrepToolLoader.MEASURE_REGEX + ")");
+		final String focus = "10000 kWh";
+		final String input = "bla " + focus + " blu";
+		assertEquals("bla _" + focus + "_ blu", pattern.matcher(input)
+				.replaceAll("_$1_"));
+	}
+
+	@Test
+	public void testMeasureAngstroem() {
+		final Pattern pattern = Pattern.compile("("
+				+ PrepToolLoader.MEASURE_REGEX + ")");
+		final String focus = "1 Å";
+		final String input = "bla " + focus + " blu";
+		assertEquals("bla _" + focus + "_ blu", pattern.matcher(input)
+				.replaceAll("_$1_"));
+	}
+
+	@Test
+	public void testMeasureL() {
+		final Pattern pattern = Pattern.compile("("
+				+ PrepToolLoader.MEASURE_REGEX + ")");
+		final String focus = "45 l";
+		final String input = "bla " + focus + " blu";
+		assertEquals("bla _" + focus + "_ blu", pattern.matcher(input)
+				.replaceAll("_$1_"));
+	}
+
+	@Test
+	public void testMeasureMg() {
+		final Pattern pattern = Pattern.compile("("
+				+ PrepToolLoader.MEASURE_REGEX + ")");
+		final String focus = "34.46 mg";
+		final String input = "bla " + focus + " blu";
+		assertEquals("bla _" + focus + "_ blu", pattern.matcher(input)
+				.replaceAll("_$1_"));
+	}
+
+	@Test
+	public void testMeasuremol() {
+		final Pattern pattern = Pattern.compile("("
+				+ PrepToolLoader.MEASURE_REGEX + ")");
+		final String focus = "400.000.000 mol";
+		final String input = "bla " + focus + " blu";
+		assertEquals("bla _" + focus + "_ blu", pattern.matcher(input)
+				.replaceAll("_$1_"));
+	}
+
+	@Test
+	public void testMeasuremikrom() {
+		final Pattern pattern = Pattern.compile("("
+				+ PrepToolLoader.MEASURE_REGEX + ")");
+		final String focus = "345 μm";
+		final String input = "bla " + focus + " blu";
+		assertEquals("bla _" + focus + "_ blu", pattern.matcher(input)
+				.replaceAll("_$1_"));
+	}
+
+	@Test
+	public void testMeasureDontMatch() {
+		final Pattern pattern = Pattern.compile("("
+				+ PrepToolLoader.MEASURE_REGEX + ")");
+		final String focus = "fggfdfg 5 sdsf sdfsdsdfsf4szfd 4. September 1/2\n34 μ";
+		final String input = "bla " + focus + " blu";
+		assertEquals(input, pattern.matcher(input).replaceAll("_$1_"));
+	}
+
+	@Test
 	public void testAbbrevPeriod() {
-		// (?i:[A-ZÄÖÜ]\.\s?[A-ZÄÖÜ]\.)
-		final String regex = PrepToolLoader.ABBREV_PERIOD_REGEX;
-		final Pattern pattern = Pattern.compile(regex);
+		final Pattern pattern = Pattern
+				.compile(PrepToolLoader.ABBREV_PERIOD_REGEX);
 		assertTrue(pattern.matcher("z.B.").find());
 		assertTrue(pattern.matcher("z. B.").find());
 		assertTrue(pattern.matcher("dipl. Inf.").find());
@@ -282,16 +390,15 @@ public class RegexTest {
 
 	@Test
 	public void testAbbrevPeriodMoreChars() {
-		final String regex = PrepToolLoader.ABBREV_PERIOD_REGEX;
-		final Pattern pattern = Pattern.compile(regex);
+		final Pattern pattern = Pattern
+				.compile(PrepToolLoader.ABBREV_PERIOD_REGEX);
 		assertTrue(pattern.matcher("z.Å.").find());
 	}
 
 	@Test
 	public void testAbbrevCapital() {
-		// (\b[A-ZÄÖÜ]+)(\d*\\b).
-		final String regex = PrepToolLoader.ABBREV_CAPITAL_REGEX;
-		final Pattern pattern = Pattern.compile(regex);
+		final Pattern pattern = Pattern
+				.compile(PrepToolLoader.ABBREV_CAPITAL_REGEX);
 		assertTrue(pattern.matcher("bloss A4 brauchen").find());
 		assertEquals(
 				"bloss <abbr>A</abbr>4 brauchen",
@@ -303,16 +410,15 @@ public class RegexTest {
 
 	@Test
 	public void testAbbrevCapitalMoreChars() {
-		final String regex = PrepToolLoader.ABBREV_CAPITAL_REGEX;
-		final Pattern pattern = Pattern.compile(regex);
+		final Pattern pattern = Pattern
+				.compile(PrepToolLoader.ABBREV_CAPITAL_REGEX);
 		assertTrue(pattern.matcher("bloss É4 brauchen").find());
 	}
 
 	@Test
 	public void testAbbrevAcronym() {
-		// \b\w*[a-z]+[A-Z]+\w*\b
-		final String regex = PrepToolLoader.ABBREV_ACRONYM_REGEX;
-		final Pattern pattern = Pattern.compile(regex);
+		final Pattern pattern = Pattern
+				.compile(PrepToolLoader.ABBREV_ACRONYM_REGEX);
 		assertTrue(pattern.matcher("Die GSoA ist").find());
 		assertTrue(pattern.matcher("ein mE guter").find());
 		assertFalse(pattern.matcher("ein Arbeiten").find());
@@ -320,9 +426,8 @@ public class RegexTest {
 
 	@Test
 	public void testAbbrevAcronymMoreChars() {
-		// \b\w*[a-z]+[A-Z]+\w*\b
-		final String regex = PrepToolLoader.ABBREV_ACRONYM_REGEX;
-		final Pattern pattern = Pattern.compile(regex);
+		final Pattern pattern = Pattern
+				.compile(PrepToolLoader.ABBREV_ACRONYM_REGEX);
 		assertTrue(pattern.matcher("Die GSöA ist").find());
 		assertTrue(pattern.matcher("ein mÉ guter").find());
 	}
@@ -357,8 +462,7 @@ public class RegexTest {
 	// "</p>\\s*(<pagenum.*?</pagenum\\s*>)\\s*<p>";
 	@Test
 	public void testPagebreak1() {
-		final String regex = PrepToolLoader.PAGEBREAK_REGEX;
-		final Pattern pattern = Pattern.compile(regex);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.PAGEBREAK_REGEX);
 		final String inner = "<pagenum id=\"page-20\" page=\"normal\">20</pagenum>";
 		final String input = "</p>\n\t" + inner + "\n\t<p>";
 		assertTrue(pattern.matcher(input).find());
@@ -370,8 +474,7 @@ public class RegexTest {
 
 	@Test
 	public void testPagebreak2() {
-		final String regex = PrepToolLoader.PAGEBREAK_REGEX;
-		final Pattern pattern = Pattern.compile(regex);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.PAGEBREAK_REGEX);
 		final String input = "</p>\n\t<pagenum id=\"page-20\" page=\"normal\">20</pagenum>\n\t<p>";
 		assertTrue(pattern.matcher(input).find());
 		assertEquals(
@@ -379,5 +482,4 @@ public class RegexTest {
 				pattern.matcher(input).replaceAll(
 						PrepToolLoader.PAGEBREAK_REPLACE));
 	}
-
 }
