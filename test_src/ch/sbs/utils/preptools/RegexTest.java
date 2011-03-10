@@ -482,4 +482,50 @@ public class RegexTest {
 				pattern.matcher(input).replaceAll(
 						PrepToolLoader.PAGEBREAK_REPLACE));
 	}
+
+	@Test
+	public void testPi1() {
+		final Pattern pattern = Pattern.compile("(\\p{Pi})");
+		final String input = "bla ‹ bla";
+		assertTrue(pattern.matcher(input).find());
+		assertEquals("bla _‹_ bla", pattern.matcher(input).replaceAll("_$1_"));
+	}
+
+	@Test
+	public void testPf1() {
+		final Pattern pattern = Pattern.compile("(\\p{Pf})");
+		final String input = "bla › bla";
+		assertTrue(pattern.matcher(input).find());
+		assertEquals("bla _›_ bla", pattern.matcher(input).replaceAll("_$1_"));
+	}
+
+	@Test
+	public void testPi2() {
+		final Pattern pattern = Pattern.compile("(\\p{Pi})");
+		final String input = "bla « bla";
+		assertTrue(pattern.matcher(input).find());
+		assertEquals("bla _«_ bla", pattern.matcher(input).replaceAll("_$1_"));
+	}
+
+	@Test
+	public void testPf2() {
+		final Pattern pattern = Pattern.compile("(\\p{Pf})");
+		final String input = "bla » bla";
+		assertTrue(pattern.matcher(input).find());
+		assertEquals("bla _»_ bla", pattern.matcher(input).replaceAll("_$1_"));
+	}
+
+	@Test
+	public void testPi3() {
+		final Pattern pattern = Pattern.compile("(\\p{Pi})");
+		final String input = "bla 〈 bla";
+		assertFalse(pattern.matcher(input).find());
+	}
+
+	@Test
+	public void testPf3() {
+		final Pattern pattern = Pattern.compile("(\\p{Pf})");
+		final String input = "bla 〉 bla";
+		assertFalse(pattern.matcher(input).find());
+	}
 }
