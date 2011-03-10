@@ -248,14 +248,13 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 						new MenuPlugger.ActionWrapper() {
 
 							private DocumentMetaInfo dmi;
-							private boolean wasProcessing;
 
 							@Override
 							protected boolean pre(
 									final Action theWrappedAction,
 									final ActionEvent theActionEvent) {
 								dmi = getDocumentMetaInfo();
-								if (wasProcessing = dmi.isProcessing()) {
+								if (dmi.isProcessing()) {
 									return showConfirmDialog(
 											"PrepTools: Save As",
 											"Document is being processed. Sure you want to Save As?");
@@ -266,10 +265,8 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 							@Override
 							protected void post(final Action theWrappedAction,
 									final ActionEvent theActionEvent) {
-								if (wasProcessing) {
-									removeDocumentMetaInfo(dmi);
-									consolidatePrepTools(getEditorLocation());
-								}
+								removeDocumentMetaInfo(dmi);
+								consolidatePrepTools(getEditorLocation());
 							}
 
 						});
