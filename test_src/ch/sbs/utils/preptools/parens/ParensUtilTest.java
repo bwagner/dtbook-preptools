@@ -514,4 +514,25 @@ public class ParensUtilTest {
 		final Match match = orphans.get(i++);
 		assertEquals(5, match.startOffset);
 	}
+
+	@Test
+	public void testBug1255() {
+		// ------------------------------1---------2
+		// --------------------012345678901234567890123456789
+		final String sample = "<!--»-->«a»";
+		final List<Match> orphans = ParensUtil.findOrphans(sample,
+				RegionSkipper.getLiteralAndCommentSkipper());
+		assertEquals(0, orphans.size());
+	}
+
+	@Test
+	public void testBug1255QuoteOrphan() {
+		// ------------------------------1---------2
+		// --------------------012345678901234567890123456789
+		final String sample = "<!--»-->«a»";
+		final QuoteOrphanMatcher quoteOrphanMatcher = new QuoteOrphanMatcher();
+		final List<Match> orphans = quoteOrphanMatcher.findOrphans(sample, 0,
+				RegionSkipper.getLiteralAndCommentSkipper());
+		assertEquals(0, orphans.size());
+	}
 }

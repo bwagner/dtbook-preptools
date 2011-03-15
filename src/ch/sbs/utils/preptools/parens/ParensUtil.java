@@ -48,9 +48,11 @@ public class ParensUtil {
 				final Matcher matcher = pattern.matcher(theText);
 
 				// must be called before closingChar!
-				final char openingChar = getOpeningChar(matcher, patternPair);
+				final char openingChar = getOpeningChar(matcher, patternPair,
+						theRegionSkipper, offset);
 
-				final char closingChar = getClosingChar(matcher, patternPair);
+				final char closingChar = getClosingChar(matcher, patternPair,
+						theRegionSkipper, offset);
 				boolean expectOpening = true;
 				Match match = null;
 				Match previousMatch = null;
@@ -108,20 +110,30 @@ public class ParensUtil {
 		 * 
 		 * @param matcher
 		 * @param patPair
+		 * @param theRegionSkipper
+		 *            RegionSkipper to consider
+		 * @param offset
+		 *            offset from where to start searching
 		 * @return
 		 */
 		protected abstract char getOpeningChar(final Matcher matcher,
-				final String[] patPair);
+				final String[] patPair, final RegionSkipper theRegionSkipper,
+				int offset);
 
 		/**
 		 * Hook to provide the closing character.
 		 * 
 		 * @param matcher
 		 * @param patPair
+		 * @param theRegionSkipper
+		 *            RegionSkipper to consider
+		 * @param offset
+		 *            offset from where to start searching
 		 * @return
 		 */
 		protected abstract char getClosingChar(final Matcher matcher,
-				final String[] patPair);
+				final String[] patPair, final RegionSkipper theRegionSkipper,
+				int offset);
 
 		protected abstract String[][] getPatternPairs();
 
@@ -159,11 +171,20 @@ public class ParensUtil {
 
 		@Override
 		protected char getOpeningChar(final Matcher matcher,
-				final String[] patPair) {
+				final String[] patPair, final RegionSkipper theRegionSkipper,
+				int offset) {
 			if (openingChar.containsKey(patPair)) {
 				return openingChar.get(patPair);
 			}
-			if (!matcher.find()) {
+			boolean found = false;
+
+			do {
+				found = matcher.find()
+						&& !theRegionSkipper.inSkipRegion(matcher)
+						&& matcher.start() >= offset;
+			} while (!found && !matcher.hitEnd());
+
+			if (!found) {
 				return UNSET_CHAR;
 			}
 			final char foundOpeningChar = matcher.group().charAt(0);
@@ -176,7 +197,8 @@ public class ParensUtil {
 
 		@Override
 		protected char getClosingChar(final Matcher matcher,
-				final String[] patPair) {
+				final String[] patPair, final RegionSkipper theRegionSkipper,
+				int offset) {
 			final Character character = closingChar.get(patPair);
 			return character == null ? 0 : character;
 		}
@@ -191,13 +213,15 @@ public class ParensUtil {
 
 		@Override
 		protected char getOpeningChar(final Matcher matcher,
-				final String[] patPair) {
+				final String[] patPair, final RegionSkipper theRegionSkipper,
+				int offset) {
 			return patPair[0].charAt(0);
 		}
 
 		@Override
 		protected char getClosingChar(final Matcher matcher,
-				final String[] patPair) {
+				final String[] patPair, final RegionSkipper theRegionSkipper,
+				int offset) {
 			return patPair[1].charAt(0);
 		}
 
