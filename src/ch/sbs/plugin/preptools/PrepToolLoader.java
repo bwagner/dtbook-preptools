@@ -14,7 +14,11 @@ public class PrepToolLoader {
 
 	// Zahl mit Masseinheit
 	// ignore case
-	public static final String MEASURE_REGEX = "(?i:[\\-]*\\b\\d*[0-9.,']*\\d\\s*[abcdghijklmnopstuvwμ]{0,3}[abcdghijklmnopstuvwμ/]{0,3}[abcdghijklmnopstuvwÅ]\\b)";
+	// Achtung: µμ das sind zwei verschiedene Zeichen!
+	// Siehe
+	// http://de.selfhtml.org/html/referenz/zeichen.htm#benannte_griechisch
+	// Eines ist das Mikro-Zeichen &micro; das andere ist das kleine mü &mu;
+	public static final String MEASURE_REGEX = "\\b\\d*[.,'0-9]*\\d+\\s*(?iu:(([a-dg-hj-np-tv-zÅµμΩ²³]{1,4}|min|se[ck]|[km]*mol)\\s*/\\s*([a-dg-hj-np-tv-zÅµμΩ²³]{1,4}|min|se[ck]|[km]*mol)|([a-dg-hj-np-tv-zÅµμΩ²³]{1,4}|min|se[ck]|[km]*mol)))(?!\\p{L})";
 
 	// Grossbuchstaben(folgen) des Typs A, A-Z, MM, USA, A4
 	// case sensitive
