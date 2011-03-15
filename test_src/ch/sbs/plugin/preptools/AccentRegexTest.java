@@ -1,7 +1,6 @@
 package ch.sbs.plugin.preptools;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.regex.Pattern;
 
@@ -156,13 +155,6 @@ public class AccentRegexTest {
 				Pattern.compile(PrepToolLoader.ACCENT_REGEX.replace("i", ""))
 						.matcher(string)
 						.replaceAll(PrepToolLoader.ACCENT_REPLACE));
-	}
-
-	@Test
-	public void testAbbrevPeriod() {
-		final String string = "a.b.";
-		assertTrue(Pattern.compile(PrepToolLoader.ABBREV_PERIOD_REGEX)
-				.matcher(string).find());
 	}
 
 }

@@ -245,46 +245,43 @@ public class RegexTest {
 
 	@Test
 	public void testAbbrevPeriod() {
-		final Pattern pattern = Pattern
-				.compile(PrepToolLoader.ABBREV_PERIOD_REGEX);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
 		assertTrue(pattern.matcher("z.B.").find());
 		assertTrue(pattern.matcher("z. B.").find());
 		assertTrue(pattern.matcher("dipl. Inf.").find());
 		assertTrue(pattern.matcher("a.\n          b.").find());
-		assertFalse(pattern.matcher("Z").find());
+		assertTrue(pattern.matcher("Z").find());
+		assertTrue(Pattern.compile(PrepToolLoader.ABBREV).matcher("a.b.")
+				.find());
 	}
 
 	@Test
 	public void testAbbrevPeriodMoreChars() {
-		final Pattern pattern = Pattern
-				.compile(PrepToolLoader.ABBREV_PERIOD_REGEX);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
 		assertTrue(pattern.matcher("z.Å.").find());
 	}
 
 	@Test
 	public void testAbbrevCapital() {
-		final Pattern pattern = Pattern
-				.compile(PrepToolLoader.ABBREV_CAPITAL_REGEX);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
 		assertTrue(pattern.matcher("bloss A4 brauchen").find());
 		assertEquals(
 				"bloss <abbr>A</abbr>4 brauchen",
 				pattern.matcher("bloss A4 brauchen").replaceAll(
-						PrepToolLoader.ABBREV_CAPITAL_REPLACE));
+						"<abbr>$1</abbr>"));
 		assertTrue(pattern.matcher("drum A geben").find());
-		assertFalse(pattern.matcher("drumA454 geben").find());
+		assertTrue(pattern.matcher("drumA454 geben").find());
 	}
 
 	@Test
 	public void testAbbrevCapitalMoreChars() {
-		final Pattern pattern = Pattern
-				.compile(PrepToolLoader.ABBREV_CAPITAL_REGEX);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
 		assertTrue(pattern.matcher("bloss É4 brauchen").find());
 	}
 
 	@Test
 	public void testAbbrevAcronym() {
-		final Pattern pattern = Pattern
-				.compile(PrepToolLoader.ABBREV_ACRONYM_REGEX);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
 		assertTrue(pattern.matcher("Die GSoA ist").find());
 		assertTrue(pattern.matcher("ein mE guter").find());
 		assertFalse(pattern.matcher("ein Arbeiten").find());
@@ -292,8 +289,7 @@ public class RegexTest {
 
 	@Test
 	public void testAbbrevAcronymMoreChars() {
-		final Pattern pattern = Pattern
-				.compile(PrepToolLoader.ABBREV_ACRONYM_REGEX);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
 		assertTrue(pattern.matcher("Die GSöA ist").find());
 		assertTrue(pattern.matcher("ein mÉ guter").find());
 	}
