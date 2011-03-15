@@ -98,7 +98,7 @@ public class RegionSkipper {
 	}
 
 	static String makeCommentRegex() {
-		return "(?s:<!--.*-->)";
+		return "(?s:<!--(?:.*?)-->)";
 	}
 
 	/**

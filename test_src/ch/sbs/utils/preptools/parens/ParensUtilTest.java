@@ -490,6 +490,19 @@ public class ParensUtilTest {
 	}
 
 	@Test
+	public void testBug1246extra() {
+		// ------------------------------1---------2
+		// --------------------012345678901234567890123456789
+		final String sample = "<!----><p> «a»  b» ‹c› «d» </p><!---->";
+		final List<Match> orphans = ParensUtil.findOrphans(sample,
+				RegionSkipper.getLiteralAndCommentSkipper());
+		assertEquals(1, orphans.size());
+		int i = 0;
+		final Match match = orphans.get(i++);
+		assertEquals(17, match.startOffset);
+	}
+
+	@Test
 	public void testBug1246swappedQuotes() {
 		// ------------------------------1---------2
 		// --------------------012345678901234567890123456789
