@@ -437,7 +437,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 							final String label = currentPrepTool.getLabel();
 							if (preptool != currentPrepTool
 									&& (!metaInfo.isProcessing() || showConfirmDialog(
-											"PrepTools",
+											"Switching:",
 											"Not Yet Done Processing " + label
 													+ "!", "Switch Anyway",
 											"Cancel"))) {
