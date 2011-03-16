@@ -397,10 +397,18 @@ abstract class AbstractMarkupChangeVetoAction extends
 abstract class AbstractMarkupChangeAction extends
 		AbstractMarkupChangeVetoAction {
 
+	private final String FULL_OPENING_TAG;
+	private final String FULL_CLOSING_TAG;
+
 	AbstractMarkupChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String tag) {
 		super(thePrepToolsPluginExtension, tag);
+		// moved initialization of these up here, to "cache" the result, since
+		// getClosingTag is potentially costly (see Bug
+		// http://redmine.sbszh.ch/issues/show/1259)
+		FULL_OPENING_TAG = "<" + tag + ">";
+		FULL_CLOSING_TAG = "</" + MarkupUtil.getClosingTag(tag) + ">";
 	}
 
 	/* (non-Javadoc)
@@ -409,9 +417,6 @@ abstract class AbstractMarkupChangeAction extends
 	@Override
 	protected int handleText(final Document document, final String selText)
 			throws BadLocationException {
-		final String FULL_OPENING_TAG = "<" + getTag() + ">";
-		final String FULL_CLOSING_TAG = "</"
-				+ MarkupUtil.getClosingTag(getTag()) + ">";
 		// starting with the end, so the start position doesn't shift
 		document.insertString(lastMatchEnd, FULL_CLOSING_TAG, null);
 		document.insertString(lastMatchStart, FULL_OPENING_TAG, null);
