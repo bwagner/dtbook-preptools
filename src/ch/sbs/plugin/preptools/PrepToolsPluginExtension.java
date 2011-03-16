@@ -210,8 +210,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 									final ActionEvent theActionEvent) {
 								final DocumentMetaInfo dmi = getDocumentMetaInfo();
 								if (dmi.isProcessing()) {
-									return showConfirmDialog(
-											"PrepTools: Revert",
+									return showConfirmDialog("Revert",
 											"Document is being processed. Sure you want to Revert?");
 								}
 								return true;
@@ -255,8 +254,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 									final ActionEvent theActionEvent) {
 								dmi = getDocumentMetaInfo();
 								if (dmi.isProcessing()) {
-									return showConfirmDialog(
-											"PrepTools: Save As",
+									return showConfirmDialog("Save As",
 											"Document is being processed. Sure you want to Save As?");
 								}
 								return true;
@@ -323,7 +321,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 						if (dmi.isProcessing() && !applicationClosing) {
 							// we can't veto closing!
 							if (showConfirmDialog(
-									"PrepTools: Reopen and Continue?",
+									"Reopen and Continue?",
 									"Document "
 											+ FileUtils
 													.basename(editorLocation)
@@ -528,8 +526,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		if (showDialog) {
 			sb.insert(0, "The following documents are still being processed:");
 			sb.append("\n\nProceed with closing anyway?");
-			applicationClosing = showConfirmDialog("PrepTools: Close?",
-					sb.toString());
+			applicationClosing = showConfirmDialog("Close?", sb.toString());
 			return applicationClosing;
 		}
 		applicationClosing = true;
@@ -548,8 +545,11 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		}
 	}
 
+	final String DIALOG_HEADER = "PrepTools: ";
+
 	void showDialog(final String msg) {
-		pluginWorkspaceAccess.showInformationMessage(msg);
+		pluginWorkspaceAccess.showConfirmDialog(DIALOG_HEADER, msg,
+				new String[] { "OK" }, new int[] { 0 });
 		pluginWorkspaceAccess.showView(ViewComponentCustomizer.CUSTOM, true);
 	}
 
@@ -566,8 +566,8 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	 */
 	boolean showConfirmDialog(final String title, final String msg,
 			final String confirm, final String deny) {
-		return pluginWorkspaceAccess.showConfirmDialog(title, msg,
-				new String[] { confirm, deny }, new int[] { 0, 1 }) == 0;
+		return pluginWorkspaceAccess.showConfirmDialog(DIALOG_HEADER + title,
+				msg, new String[] { confirm, deny }, new int[] { 0, 1 }) == 0;
 	}
 
 	public static WSTextEditorPage getPage(final WSEditor editorAccess) {
