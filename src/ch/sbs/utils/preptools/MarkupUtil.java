@@ -67,8 +67,7 @@ public class MarkupUtil {
 	}
 
 	public static String getClosingTag(final String openingTag) {
-		return Pattern.compile("([A-Za-z:]+).*").matcher(openingTag)
-				.replaceAll("$1");
+		return openingTag.split("\\\\|\\s+")[0];
 	}
 
 }
