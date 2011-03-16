@@ -10,7 +10,6 @@ import java.util.regex.Pattern;
 import org.junit.Test;
 
 import ch.sbs.plugin.preptools.VFormActionHelper;
-import ch.sbs.utils.preptools.vform.MarkupUtil;
 import ch.sbs.utils.preptools.vform.VFormUtil;
 
 public class RegionSkipperTest {

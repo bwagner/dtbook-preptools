@@ -1,10 +1,7 @@
-package ch.sbs.utils.preptools.vform;
+package ch.sbs.utils.preptools;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import ch.sbs.utils.preptools.Match;
-import ch.sbs.utils.preptools.RegionSkipper;
 
 public class MarkupUtil {
 	private final RegionSkipper skipper;
@@ -70,8 +67,8 @@ public class MarkupUtil {
 	}
 
 	public static String getClosingTag(final String openingTag) {
-		return Pattern.compile("([A-Za-z:]+)(?:\\s+\\S+\\s*)")
-				.matcher(openingTag).replaceAll("$1");
+		return Pattern.compile("([A-Za-z:]+).*").matcher(openingTag)
+				.replaceAll("$1");
 	}
 
 }

@@ -5,7 +5,6 @@ import java.util.regex.Pattern;
 
 import ch.sbs.utils.intervaltree.Interval;
 import ch.sbs.utils.intervaltree.IntervalTree;
-import ch.sbs.utils.preptools.vform.MarkupUtil;
 
 public class RegionSkipper {
 	private final IntervalTree tree;

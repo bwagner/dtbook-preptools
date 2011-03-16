@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import ch.sbs.plugin.preptools.VFormActionHelper;
+import ch.sbs.utils.preptools.MarkupUtil;
 import ch.sbs.utils.preptools.Match;
 import ch.sbs.utils.preptools.RegionSkipper;
 

@@ -2,6 +2,8 @@ package ch.sbs.utils.preptools.vform;
 
 import java.util.regex.Pattern;
 
+import ch.sbs.utils.preptools.MarkupUtil;
+
 public class VFormUtil {
 	// Mail von Mischa Kuenzle 12.1.2011 15:09
 	// 3. Person PL (obligatorische Abfrage)

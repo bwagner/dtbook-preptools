@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
@@ -261,5 +262,37 @@ public class RegexMeasureTest {
 		final String focus = "4. September 1923 in Zürich geboren 4 34 dsdsfsf 4 /g und 1/2 Jogurt level2 g 34 Seifen 138f. sfsde44";
 		final String input = "bla " + focus + " blu";
 		assertEquals(input, pattern.matcher(input).replaceAll("_$1_"));
+	}
+
+	@Test
+	public void testBug1256no() {
+		final RegionSkipper theRegionSkipper = RegionSkipper
+				.makeMarkupRegionSkipper(PrepToolLoader.MEASURE_TAG);
+		final MarkupUtil mu = new MarkupUtil(theRegionSkipper);
+		final String focus = "<brl:num role=\"measure\">1 MW</brl:num>";
+		final String input = "bla " + focus + " blu";
+		theRegionSkipper.findRegionsToSkip(input);
+		assertTrue(theRegionSkipper.inSkipRegion(makeMatcher("1 MW", input)));
+		assertFalse(theRegionSkipper.inSkipRegion(makeMatcher("bla", input)));
+	}
+
+	@Test
+	public void testBug1256() {
+		final RegionSkipper theRegionSkipper = RegionSkipper
+				.makeMarkupRegionSkipper(PrepToolLoader.MEASURE_TAG);
+		System.out.println(RegionSkipper
+				.makeMarkupRegex(PrepToolLoader.MEASURE_TAG));
+		final String focus = "<brl:num\nrole=\"measure\">1 MW</brl:num>";
+		final String input = "bla " + focus + " blu";
+		theRegionSkipper.findRegionsToSkip(input);
+		assertTrue(theRegionSkipper.inSkipRegion(makeMatcher("1 MW", input)));
+		assertFalse(theRegionSkipper.inSkipRegion(makeMatcher("bla", input)));
+	}
+
+	private static Matcher makeMatcher(final String thePattern,
+			final String theText) {
+		final Matcher matcher = Pattern.compile(thePattern).matcher(theText);
+		matcher.find();
+		return matcher;
 	}
 }
