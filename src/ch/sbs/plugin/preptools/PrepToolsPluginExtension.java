@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -163,6 +164,34 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		return prepTools.get(0);
 	}
 
+	PrepTool getCurrentPrepTool() {
+		final DocumentMetaInfo documentMetaInfo = getDocumentMetaInfo();
+		return documentMetaInfo != null ? documentMetaInfo.getCurrentPrepTool()
+				: null;
+	}
+
+	public void chooseNextUncompletedPrepTool() {
+		boolean found = false;
+		final Iterator<PrepTool> iter = prepTools.iterator();
+		int i = 0;
+		PrepTool preptool = null;
+		while (!found && iter.hasNext()) {
+			preptool = iter.next();
+			final MetaInfo mi = getDocumentMetaInfo().getToolSpecificMetaInfo(
+					preptool.getLabel());
+			if (!(found = !mi.isDone())) {
+				++i;
+			}
+		}
+		if (found) {
+			selectPrepToolItem(i);
+			preptool.activate();
+		}
+		else {
+			showDialog("All PrepTools done.");
+		}
+	}
+
 	JPanel toolbarPanel;
 
 	/**
@@ -229,9 +258,8 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 								if (mi.hasStarted()) {
 									mi.setHasStarted(false);
 									mi.setDone(false);
-									getDocumentMetaInfo().getCurrentPrepTool()
-											.setCurrentState(
-													getDocumentMetaInfo());
+									getCurrentPrepTool().setCurrentState(
+											getDocumentMetaInfo());
 								}
 
 							}
@@ -432,8 +460,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 						public void actionPerformed(ActionEvent e) {
 							final MetaInfo metaInfo = getDocumentMetaInfo()
 									.getCurrentToolSpecificMetaInfo();
-							final PrepTool currentPrepTool = getDocumentMetaInfo()
-									.getCurrentPrepTool();
+							final PrepTool currentPrepTool = getCurrentPrepTool();
 							final String label = currentPrepTool.getLabel();
 							if (preptool != currentPrepTool
 									&& (!metaInfo.isProcessing() || showConfirmDialog(
@@ -623,7 +650,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 				/ 2, r.width, r.height + OFFSET));
 	}
 
-	private void consolidatePrepTools(URL editorLocation) {
+	private void consolidatePrepTools(final URL editorLocation) {
 		final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
 		if (dmi != null) {
 			PrepTool currentPrepTool = dmi.getCurrentPrepTool();

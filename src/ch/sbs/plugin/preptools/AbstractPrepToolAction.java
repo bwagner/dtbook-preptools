@@ -63,29 +63,32 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 				}
 			});
 			dmi.setCurrentState();
-			if (dmi.isDone() && !dmi.isCancelled()) {
-				wrapUp(document);
-				prepToolsPluginExtension.showDialog("You're done with "
-						+ getProcessName() + "!");
+			if (dmi.isDone()) {
+				if (!dmi.isCancelled()) {
+					wrapUp(document);
+					prepToolsPluginExtension.showDialog("You're done with "
+							+ getProcessName() + "!");
 
-				// TODO: once the schema has been upgraded, set this flag to
-				// true (or remove the if)
-				final boolean FEATURE_1205 = false;
-				if (FEATURE_1205) {
-					OxygenEditGrouper.perform(document,
-							new OxygenEditGrouper.Edit() {
-								@Override
-								public void edit() {
+					// TODO: once the schema has been upgraded, set this flag to
+					// true (or remove the if)
+					final boolean FEATURE_1205 = false;
+					if (FEATURE_1205) {
+						OxygenEditGrouper.perform(document,
+								new OxygenEditGrouper.Edit() {
+									@Override
+									public void edit() {
 
-									MetaUtils.insertPrepToolInfo(
-											prepToolsPluginExtension
-													.getDocumentMetaInfo()
-													.getDocument(),
-											getProcessName());
+										MetaUtils.insertPrepToolInfo(
+												prepToolsPluginExtension
+														.getDocumentMetaInfo()
+														.getDocument(),
+												getProcessName());
 
-								}
-							});
+									}
+								});
+					}
 				}
+				prepToolsPluginExtension.chooseNextUncompletedPrepTool();
 			}
 		}
 	}
