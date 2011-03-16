@@ -63,7 +63,7 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 				}
 			});
 			dmi.setCurrentState();
-			if (dmi.isDone()) {
+			if (dmi.isDone() && !dmi.isCancelled()) {
 				wrapUp(document);
 				prepToolsPluginExtension.showDialog("You're done with "
 						+ getProcessName() + "!");
@@ -250,9 +250,11 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 							+ "ed.\n Do you want to start over?")
 
 			) {
+				metaInfo.setCancelled(false);
 				metaInfo.setDone(false);
 			}
 			else {
+				metaInfo.setCancelled(true);
 				return;
 			}
 		}

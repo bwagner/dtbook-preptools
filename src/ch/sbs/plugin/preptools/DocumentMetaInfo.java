@@ -21,6 +21,7 @@ class DocumentMetaInfo {
 	static class MetaInfo {
 		private boolean hasStarted;
 		private boolean isDone;
+		private boolean cancelled;
 
 		/**
 		 * True when started processing but isn't done yet.
@@ -59,6 +60,14 @@ class DocumentMetaInfo {
 		 */
 		public boolean isDone() {
 			return isDone;
+		}
+
+		public boolean isCancelled() {
+			return cancelled;
+		}
+
+		public void setCancelled(boolean theCancelled) {
+			cancelled = theCancelled;
 		}
 
 	}
@@ -294,6 +303,19 @@ class DocumentMetaInfo {
 		final MetaInfo currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
 		if (currentToolSpecificMetaInfo != null) {
 			getCurrentToolSpecificMetaInfo().setDone(theIsDone);
+		}
+	}
+
+	public boolean isCancelled() {
+		final MetaInfo currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
+		return currentToolSpecificMetaInfo != null
+				&& getCurrentToolSpecificMetaInfo().isCancelled();
+	}
+
+	public void setDCancelled(boolean theIsCancelled) {
+		final MetaInfo currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
+		if (currentToolSpecificMetaInfo != null) {
+			getCurrentToolSpecificMetaInfo().setCancelled(theIsCancelled);
 		}
 	}
 }
