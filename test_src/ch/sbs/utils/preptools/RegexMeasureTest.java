@@ -268,7 +268,6 @@ public class RegexMeasureTest {
 	public void testBug1256no() {
 		final RegionSkipper theRegionSkipper = RegionSkipper
 				.makeMarkupRegionSkipper(PrepToolLoader.MEASURE_TAG);
-		final MarkupUtil mu = new MarkupUtil(theRegionSkipper);
 		final String focus = "<brl:num role=\"measure\">1 MW</brl:num>";
 		final String input = "bla " + focus + " blu";
 		theRegionSkipper.findRegionsToSkip(input);
@@ -280,8 +279,6 @@ public class RegexMeasureTest {
 	public void testBug1256() {
 		final RegionSkipper theRegionSkipper = RegionSkipper
 				.makeMarkupRegionSkipper(PrepToolLoader.MEASURE_TAG);
-		System.out.println(RegionSkipper
-				.makeMarkupRegex(PrepToolLoader.MEASURE_TAG));
 		final String focus = "<brl:num\nrole=\"measure\">1 MW</brl:num>";
 		final String input = "bla " + focus + " blu";
 		theRegionSkipper.findRegionsToSkip(input);
