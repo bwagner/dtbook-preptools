@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.PlainDocument;
 
 import org.junit.Test;
 
@@ -25,7 +24,7 @@ public class MetaUtilsTest {
 		sb.append("<book>\n");
 		sb.append("</book></dtbook>\n");
 		final String TEMPLATE = sb.toString();
-		final Document document = makeDocument(TEMPLATE.replace(PLACE_HOLDER,
+		final Document document = DocumentTestUtil.makeDocument(TEMPLATE.replace(PLACE_HOLDER,
 				""));
 		MetaUtils.insertPrepToolInfo(document, VFormActionHelper.VFORM_TAG);
 		sb.setLength(0);
@@ -48,7 +47,7 @@ public class MetaUtilsTest {
 		sb.append("<book>\n");
 		sb.append("</book></dtbook>\n");
 		final String TEMPLATE = sb.toString();
-		final Document document = makeDocument(TEMPLATE.replace(PLACE_HOLDER,
+		final Document document = DocumentTestUtil.makeDocument(TEMPLATE.replace(PLACE_HOLDER,
 				""));
 		MetaUtils.insertPrepToolInfo(document, VFormActionHelper.VFORM_TAG);
 		assertEquals(
@@ -69,19 +68,12 @@ public class MetaUtilsTest {
 		sb.append("<book>\n");
 		sb.append("</book></dtbook>\n");
 		final String TEMPLATE = sb.toString();
-		final Document document = makeDocument(TEMPLATE.replace(PLACE_HOLDER,
+		final Document document = DocumentTestUtil.makeDocument(TEMPLATE.replace(PLACE_HOLDER,
 				""));
 		MetaUtils.insertPrepToolInfo(document, VFormActionHelper.VFORM_TAG);
 		assertEquals(
 				TEMPLATE.replace(PLACE_HOLDER,
 						"		<meta name=\"prod:PrepTool:brl:v-form\" content=\"done\"/>\n"),
 				document.getText(0, document.getLength()));
-	}
-
-	private Document makeDocument(final String content)
-			throws BadLocationException {
-		final Document pd = new PlainDocument();
-		pd.insertString(0, content, null);
-		return pd;
 	}
 }

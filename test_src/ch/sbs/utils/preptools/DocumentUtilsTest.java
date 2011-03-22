@@ -1,8 +1,9 @@
 package ch.sbs.utils.preptools;
 
+import static org.junit.Assert.assertEquals;
+
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.PlainDocument;
 
 import org.junit.Test;
 
@@ -31,10 +32,11 @@ public class DocumentUtilsTest {
 		sb2.append("</book>\n");
 		sb.append("</dtbook>\n");
 		sb2.append("</dtbook>\n");
-		final Document document = makeDocument(sb.toString());
+		final Document document = DocumentTestUtil.makeDocument(sb.toString());
 		sb.setLength(0);
 		DocumentUtils
 				.performReplacement(document, "<span.*?>(.*)</span>", "$1");
+		assertEquals(sb2.toString(), document.getText(0, document.getLength()));
 
 	}
 
@@ -62,10 +64,11 @@ public class DocumentUtilsTest {
 		sb2.append("</book>\n");
 		sb.append("</dtbook>\n");
 		sb2.append("</dtbook>\n");
-		final Document document = makeDocument(sb.toString());
+		final Document document = DocumentTestUtil.makeDocument(sb.toString());
 		sb.setLength(0);
 		DocumentUtils.performReplacement(document,
 				"<span\\s+brl:accents=\"reduced\">(.*)</span>", "$1");
+		assertEquals(sb2.toString(), document.getText(0, document.getLength()));
 
 	}
 
@@ -84,26 +87,23 @@ public class DocumentUtilsTest {
 		sb.append("<book>\n");
 		sb2.append("<book>\n");
 		sb.append("<span brl:accents=\"reduced\">Térezia</span>\n");
+		sb2.append("Térezia\n");
 		sb.append("<span brl:accents=\"reduced\">Térezia</span>\n");
+		sb2.append("Térezia\n");
 		sb.append("<span brl:accents=\"reduced\">València</span>\n");
+		sb2.append("València\n");
 		sb.append("<span brl:accents=\"reduced\">València</span>\n");
+		sb2.append("València\n");
 		sb.append("<span brl:accents=\"detailed\">Café</span>\n");
 		sb2.append("Café\n");
 		sb.append("</book>\n");
 		sb2.append("</book>\n");
 		sb.append("</dtbook>\n");
 		sb2.append("</dtbook>\n");
-		final Document document = makeDocument(sb.toString());
+		final Document document = DocumentTestUtil.makeDocument(sb.toString());
 		sb.setLength(0);
 		DocumentUtils
 				.performReplacement(document, "<span.*?>(.*)</span>", "$1");
-
-	}
-
-	private static Document makeDocument(final String content)
-			throws BadLocationException {
-		final Document pd = new PlainDocument();
-		pd.insertString(0, content, null);
-		return pd;
+		assertEquals(sb2.toString(), document.getText(0, document.getLength()));
 	}
 }
