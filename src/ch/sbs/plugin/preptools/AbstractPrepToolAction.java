@@ -450,6 +450,10 @@ abstract class AbstractMarkupFullRegexChangeAction extends
 		replaceString = theReplaceString;
 	}
 
+	protected String getReplaceString() {
+		return replaceString;
+	}
+
 	/* (non-Javadoc)
 	 * @see ch.sbs.plugin.preptools.ProceedAction#handleText(javax.swing.text.Document, java.lang.String)
 	 */
@@ -599,9 +603,18 @@ abstract class AccentChangeAction extends FullRegexChangeAction {
 	}
 
 	@Override
-	protected void doSomething() throws BadLocationException {
-		super.doSomething();
-		incrementCounter();
+	protected int handleText(final Document document, final String selText)
+			throws BadLocationException {
+		if (selText == null) {
+			return lastMatchStart;
+		}
+		final String newText = getPattern().matcher(selText).replaceAll(
+				getReplaceString());
+
+		incrementCounter(DocumentUtils.performReplacement(document, selText,
+				newText));
+
+		return lastMatchStart + newText.length();
 	}
 
 	@Override
@@ -615,7 +628,13 @@ abstract class AccentChangeAction extends FullRegexChangeAction {
 		return false;
 	}
 
-	protected abstract void incrementCounter();
+	/**
+	 * Hook for subclasses to specify which counter shall be incremented.
+	 * 
+	 * @param theBy
+	 *            Amount by which counter shall be incremented.
+	 */
+	protected abstract void incrementCounter(int theBy);
 
 	@Override
 	protected void doWrapUp() {
@@ -682,8 +701,8 @@ class SwissAccentChangeAction extends AccentChangeAction {
 	}
 
 	@Override
-	protected void incrementCounter() {
-		getMetaInfo().incrementSwissCount();
+	protected void incrementCounter(int theBy) {
+		getMetaInfo().incrementSwissCount(theBy);
 	}
 }
 
@@ -701,8 +720,8 @@ class ForeignAccentChangeAction extends AccentChangeAction {
 	}
 
 	@Override
-	protected void incrementCounter() {
-		getMetaInfo().incrementForeignCount();
+	protected void incrementCounter(int theBy) {
+		getMetaInfo().incrementForeignCount(theBy);
 	}
 
 }

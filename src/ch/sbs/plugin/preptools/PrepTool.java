@@ -280,8 +280,7 @@ abstract class AbstractMarkupPrepTool extends PrepTool {
 	@Override
 	protected JComponent[] getComponents() {
 		getAllActions();
-		return new JComponent[] {
-				makeButton(startAction, KeyEvent.VK_7),
+		return new JComponent[] { makeButton(startAction, KeyEvent.VK_7),
 				makeButton(findAction, KeyEvent.VK_8),
 				makeButton(changeAction, KeyEvent.VK_9), };
 	}
@@ -449,16 +448,16 @@ class AccentPrepTool extends RegexPrepTool {
 			return swissCount;
 		}
 
-		public void incrementSwissCount() {
-			swissCount++;
+		public void incrementSwissCount(int theBy) {
+			swissCount += theBy;
 		}
 
 		public int getForeignCount() {
 			return foreignCount;
 		}
 
-		public void incrementForeignCount() {
-			foreignCount++;
+		public void incrementForeignCount(int theBy) {
+			foreignCount += theBy;
 		}
 
 		public void resetCounts() {
@@ -700,8 +699,7 @@ class ParensPrepTool extends PrepTool {
 
 	@Override
 	protected JComponent[] getComponents() {
-		return new JComponent[] {
-				makeButton(startAction, KeyEvent.VK_7),
+		return new JComponent[] { makeButton(startAction, KeyEvent.VK_7),
 				makeButton(findNextAction, KeyEvent.VK_8) };
 	}
 

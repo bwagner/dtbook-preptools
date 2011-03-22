@@ -34,10 +34,10 @@ public class DocumentUtilsTest {
 		sb2.append("</dtbook>\n");
 		final Document document = DocumentTestUtil.makeDocument(sb.toString());
 		sb.setLength(0);
-		DocumentUtils
-				.performReplacement(document, "<span.*?>(.*)</span>", "$1");
+		final int count = DocumentUtils.performReplacement(document,
+				"<span.*?>(.*)</span>", "$1");
 		assertEquals(sb2.toString(), document.getText(0, document.getLength()));
-
+		assertEquals(3, count);
 	}
 
 	@Test
@@ -66,9 +66,10 @@ public class DocumentUtilsTest {
 		sb2.append("</dtbook>\n");
 		final Document document = DocumentTestUtil.makeDocument(sb.toString());
 		sb.setLength(0);
-		DocumentUtils.performReplacement(document,
+		final int count = DocumentUtils.performReplacement(document,
 				"<span\\s+brl:accents=\"reduced\">(.*)</span>", "$1");
 		assertEquals(sb2.toString(), document.getText(0, document.getLength()));
+		assertEquals(2, count);
 
 	}
 
@@ -102,8 +103,9 @@ public class DocumentUtilsTest {
 		sb2.append("</dtbook>\n");
 		final Document document = DocumentTestUtil.makeDocument(sb.toString());
 		sb.setLength(0);
-		DocumentUtils
-				.performReplacement(document, "<span.*?>(.*)</span>", "$1");
+		final int count = DocumentUtils.performReplacement(document,
+				"<span.*?>(.*)</span>", "$1");
 		assertEquals(sb2.toString(), document.getText(0, document.getLength()));
+		assertEquals(5, count);
 	}
 }
