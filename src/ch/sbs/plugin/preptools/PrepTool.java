@@ -346,7 +346,7 @@ abstract class MarkupPrepTool extends PrepTool {
  */
 class RegexPrepTool extends MarkupPrepTool {
 
-	final String LABEL;
+	private final String LABEL;
 	private final String TAG_REGEX_TO_SKIP;
 	final String PATTERN_TO_SEARCH;
 	private final String TAG_TO_INSERT;
@@ -424,14 +424,13 @@ class FullRegexPrepTool extends RegexPrepTool {
 	@Override
 	protected Action makeChangeAction() {
 		return new FullRegexChangeAction(prepToolsPluginExtension,
-				PATTERN_TO_SEARCH, LABEL, replaceString);
+				PATTERN_TO_SEARCH, getLabel(), replaceString);
 	}
 
 }
 
 class AccentPrepTool extends RegexPrepTool {
 
-	// TODO: Label here, label in the constuctor: clean this stuff up!
 	static final String LABEL = "Accent";
 
 	@Override
@@ -471,11 +470,11 @@ class AccentPrepTool extends RegexPrepTool {
 	private static final String TAG_TO_INSERT = null;
 
 	AccentPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			int theMenuItemNr, int theMnemonic, final String theLabel,
+			int theMenuItemNr, int theMnemonic,
 			final String thePatternToSearch, final String tagRegexToSkip,
 			final String theReplaceString) {
-		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic,
-				theLabel, thePatternToSearch, TAG_TO_INSERT, tagRegexToSkip);
+		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic, LABEL,
+				thePatternToSearch, TAG_TO_INSERT, tagRegexToSkip);
 		replaceString = theReplaceString;
 	}
 

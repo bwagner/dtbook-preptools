@@ -72,7 +72,7 @@ public class PrepToolLoader {
 		prepTools.add(new FullRegexPrepTool(thePrepToolsPluginExtension, i++,
 				'k', "Pagebreak", PAGEBREAK_SEARCH_REGEX, PAGEBREAK_REPLACE));
 		prepTools.add(new AccentPrepTool(thePrepToolsPluginExtension, i++, 'a',
-				"Accent", ACCENT_SEARCH_REGEX, ACCENT_SKIP_REGEX, ACCENT_REPLACE));
+				ACCENT_SEARCH_REGEX, ACCENT_SKIP_REGEX, ACCENT_REPLACE));
 		return prepTools;
 	}
 
