@@ -240,11 +240,11 @@ abstract class PrepTool {
 	}
 
 	/**
-	 * Optional hook for PrepTools to provide the tag they insert.
+	 * Optional hook for PrepTools to provide the regex they need to skip.
 	 * 
-	 * @return Tag
+	 * @return Tag regex to skip
 	 */
-	public String getTag() {
+	public String getTagRegexToSkip() {
 		return null;
 	}
 
@@ -337,25 +337,41 @@ abstract class MarkupPrepTool extends PrepTool {
  * RegexPrepTool is not supposed to be subclassed.
  * It should be seen as a blackbox class that can be configured with
  * a regex, a mnemonic, a pattern, and a label.
+ * 
+ * Why do we implement getTagRegexToSkip here when it's called in the
+ * topmost class of the hierarchy?
+ * Because it's something tunneled through all intermediate classes.
+ * The skipping functionality is only relevant to RegexPrepTool, i.e. the
+ * document needs to be protected from inserted tags only for RegexPrepTool.
  */
 class RegexPrepTool extends MarkupPrepTool {
 
 	final String LABEL;
-	final String TAG;
-	final String PATTERN;
+	private final String TAG_REGEX_TO_SKIP;
+	final String PATTERN_TO_SEARCH;
+	private final String TAG_TO_INSERT;
 
 	RegexPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			int theMenuItemNr, int theMnemonic, final String theLabel,
-			final String thePattern, final String theTag) {
+			final String thePatternToSearch, final String theTagToInsert,
+			final String tagRegexToSkip) {
 		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic);
 		LABEL = theLabel;
-		PATTERN = thePattern;
-		TAG = theTag;
+		PATTERN_TO_SEARCH = thePatternToSearch;
+		TAG_TO_INSERT = theTagToInsert;
+		TAG_REGEX_TO_SKIP = tagRegexToSkip;
+	}
+
+	RegexPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			int theMenuItemNr, int theMnemonic, final String theLabel,
+			final String thePatternToSearch, final String theTag) {
+		this(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic, theLabel,
+				thePatternToSearch, theTag, theTag);
 	}
 
 	@Override
-	public String getTag() {
-		return TAG;
+	public String getTagRegexToSkip() {
+		return TAG_REGEX_TO_SKIP;
 	}
 
 	@Override
@@ -365,20 +381,20 @@ class RegexPrepTool extends MarkupPrepTool {
 
 	@Override
 	protected Action makeStartAction() {
-		return new RegexStartAction(prepToolsPluginExtension, PATTERN, LABEL,
-				TAG);
+		return new RegexStartAction(prepToolsPluginExtension,
+				PATTERN_TO_SEARCH, LABEL);
 	}
 
 	@Override
 	protected Action makeFindAction() {
-		return new RegexFindAction(prepToolsPluginExtension, PATTERN, LABEL,
-				TAG);
+		return new RegexFindAction(prepToolsPluginExtension, PATTERN_TO_SEARCH,
+				LABEL);
 	}
 
 	@Override
 	protected Action makeChangeAction() {
-		return new RegexChangeAction(prepToolsPluginExtension, PATTERN, LABEL,
-				TAG);
+		return new RegexChangeAction(prepToolsPluginExtension,
+				PATTERN_TO_SEARCH, LABEL, TAG_TO_INSERT);
 	}
 
 }
@@ -387,20 +403,28 @@ class FullRegexPrepTool extends RegexPrepTool {
 
 	private final String replaceString;
 
+	// null: we don't want the functionality provided by the superclass.
+	// We provide our own replace string.
+	private static final String TAG_TO_INSERT = null;
+
+	// null: we don't want the functionality provided by the superclass.
+	// This probably could be improved: Why not protect this class from
+	// its own insertions?
+	private static final String TAG_REGEX_TO_SKIP = null;
+
 	FullRegexPrepTool(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			int theMenuItemNr, int theMnemonic, final String theLabel,
-			final String theRegex, final String theTag,
-			final String theReplaceString) {
+			final String thePatternToSearch, final String theReplaceString) {
 		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic,
-				theLabel, theRegex, theTag);
+				theLabel, thePatternToSearch, TAG_TO_INSERT, TAG_REGEX_TO_SKIP);
 		replaceString = theReplaceString;
 	}
 
 	@Override
 	protected Action makeChangeAction() {
-		return new FullRegexChangeAction(prepToolsPluginExtension, PATTERN,
-				LABEL, TAG, replaceString);
+		return new FullRegexChangeAction(prepToolsPluginExtension,
+				PATTERN_TO_SEARCH, LABEL, replaceString);
 	}
 
 }
@@ -443,12 +467,15 @@ class AccentPrepTool extends RegexPrepTool {
 
 	private final String replaceString;
 
+	// null: We have our own
+	private static final String TAG_TO_INSERT = null;
+
 	AccentPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			int theMenuItemNr, int theMnemonic, final String theLabel,
-			final String theRegex, final String theTag,
+			final String thePatternToSearch, final String tagRegexToSkip,
 			final String theReplaceString) {
 		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic,
-				theLabel, theRegex, theTag);
+				theLabel, thePatternToSearch, TAG_TO_INSERT, tagRegexToSkip);
 		replaceString = theReplaceString;
 	}
 
@@ -468,24 +495,24 @@ class AccentPrepTool extends RegexPrepTool {
 
 	@Override
 	protected Action makeStartAction() {
-		return new AccentStartAction(prepToolsPluginExtension, PATTERN, LABEL,
-				TAG);
+		return new AccentStartAction(prepToolsPluginExtension,
+				PATTERN_TO_SEARCH, LABEL);
 	}
 
 	@Override
 	protected Action makeFindAction() {
-		return new SwissAccentChangeAction(prepToolsPluginExtension, PATTERN,
-				LABEL, TAG, replaceString.replace(PrepToolLoader.PLACEHOLDER,
-						"detailed")); // TODO "detailed" belongs in
-										// SwissAccentChangeAction
+		return new SwissAccentChangeAction(prepToolsPluginExtension,
+				PATTERN_TO_SEARCH, LABEL, replaceString.replace(
+						PrepToolLoader.PLACEHOLDER, "detailed"));
+		// TODO: "detailed" belongs in SwissAccentChangeAction
 	}
 
 	@Override
 	protected Action makeChangeAction() {
-		return new ForeignAccentChangeAction(prepToolsPluginExtension, PATTERN,
-				LABEL, TAG, replaceString.replace(PrepToolLoader.PLACEHOLDER,
-						"reduced")); // TODO "reduced" belongs in
-										// ForeignAccentChangeAction
+		return new ForeignAccentChangeAction(prepToolsPluginExtension,
+				PATTERN_TO_SEARCH, LABEL, replaceString.replace(
+						PrepToolLoader.PLACEHOLDER, "reduced"));
+		// TODO: "reduced" belongs in ForeignAccentChangeAction
 	}
 
 }
@@ -551,7 +578,7 @@ class VFormPrepTool extends MarkupPrepTool {
 	}
 
 	@Override
-	public String getTag() {
+	public String getTagRegexToSkip() {
 		return VFormActionHelper.VFORM_TAG;
 	}
 

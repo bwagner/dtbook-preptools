@@ -75,7 +75,7 @@ public class AccentRegexTest {
 		assertEquals(
 				"Pattern PrepToolLoader.ACCENT_REGEX works on accented chars.",
 				exp,
-				Pattern.compile(PrepToolLoader.ACCENT_REGEX).matcher(string)
+				Pattern.compile(PrepToolLoader.ACCENT_SEARCH_REGEX).matcher(string)
 						.replaceAll(PrepToolLoader.ACCENT_REPLACE));
 	}
 
@@ -86,7 +86,7 @@ public class AccentRegexTest {
 		assertEquals(
 				"Pattern.UNICODE_CASE can be set via flag to compile, too.",
 				exp,
-				Pattern.compile(PrepToolLoader.ACCENT_REGEX.replace("u", ""),
+				Pattern.compile(PrepToolLoader.ACCENT_SEARCH_REGEX.replace("u", ""),
 						Pattern.UNICODE_CASE).matcher(string)
 						.replaceAll(PrepToolLoader.ACCENT_REPLACE));
 	}
@@ -99,7 +99,7 @@ public class AccentRegexTest {
 				"Pattern.UNICODE_CASE can surround the regex, too, using (?u: <regex> )",
 				exp,
 				Pattern.compile(
-						"(?u:" + PrepToolLoader.ACCENT_REGEX.replace("u", "")
+						"(?u:" + PrepToolLoader.ACCENT_SEARCH_REGEX.replace("u", "")
 								+ ")").matcher(string)
 						.replaceAll(PrepToolLoader.ACCENT_REPLACE));
 	}
@@ -112,7 +112,7 @@ public class AccentRegexTest {
 				"Pattern.UNICODE_CASE can be prepended, too, using (?u)",
 				exp,
 				Pattern.compile(
-						"(?u)" + PrepToolLoader.ACCENT_REGEX.replace("u", ""))
+						"(?u)" + PrepToolLoader.ACCENT_SEARCH_REGEX.replace("u", ""))
 						.matcher(string)
 						.replaceAll(PrepToolLoader.ACCENT_REPLACE));
 	}
@@ -123,7 +123,7 @@ public class AccentRegexTest {
 		assertEquals(
 				"Pattern.CASE_INSENSITIVE flag without Pattern.UNICODE_CASE doesn't work on É",
 				string,
-				Pattern.compile(PrepToolLoader.ACCENT_REGEX.replace("u", ""))
+				Pattern.compile(PrepToolLoader.ACCENT_SEARCH_REGEX.replace("u", ""))
 						.matcher(string)
 						.replaceAll(PrepToolLoader.ACCENT_REPLACE));
 	}
@@ -133,7 +133,7 @@ public class AccentRegexTest {
 		final String string = "Er verkehrt im Élysée-Palast.";
 		final String exp = "Er verkehrt im <span brl:accents=\"_____\">Élysée</span>-Palast.";
 		assertEquals("two unicode characters in one word", exp, Pattern
-				.compile(PrepToolLoader.ACCENT_REGEX).matcher(string)
+				.compile(PrepToolLoader.ACCENT_SEARCH_REGEX).matcher(string)
 				.replaceAll(PrepToolLoader.ACCENT_REPLACE));
 	}
 
@@ -142,7 +142,7 @@ public class AccentRegexTest {
 		final String string = "Er verkehrt im Éspaña-Palast.";
 		final String exp = "Er verkehrt im <span brl:accents=\"_____\">Éspaña</span>-Palast.";
 		assertEquals("two unicode characters in one word", exp, Pattern
-				.compile(PrepToolLoader.ACCENT_REGEX).matcher(string)
+				.compile(PrepToolLoader.ACCENT_SEARCH_REGEX).matcher(string)
 				.replaceAll(PrepToolLoader.ACCENT_REPLACE));
 	}
 
@@ -152,7 +152,7 @@ public class AccentRegexTest {
 		assertEquals(
 				"Pattern.UNICODE_CASE flag without Pattern.CASE_INSENSITIVE does nothing",
 				string,
-				Pattern.compile(PrepToolLoader.ACCENT_REGEX.replace("i", ""))
+				Pattern.compile(PrepToolLoader.ACCENT_SEARCH_REGEX.replace("i", ""))
 						.matcher(string)
 						.replaceAll(PrepToolLoader.ACCENT_REPLACE));
 	}

@@ -227,7 +227,7 @@ public class RegexTest {
 
 	@Test
 	public void testOrdinal() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.ORDINAL_REGEX);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.ORDINAL_SEARCH_REGEX);
 		assertTrue(pattern.matcher("5.").find());
 		assertFalse(pattern.matcher("a5.").find());
 		assertTrue(pattern.matcher("23423.").find());
@@ -236,7 +236,7 @@ public class RegexTest {
 
 	@Test
 	public void testRoman() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.ROMAN_REGEX);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.ROMAN_SEARCH_REGEX);
 		assertTrue(pattern.matcher("IXII.").find());
 		assertTrue(pattern.matcher("IXII").find());
 		assertFalse(pattern.matcher("ixviv.").find());
@@ -245,25 +245,25 @@ public class RegexTest {
 
 	@Test
 	public void testAbbrevPeriod() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV_SEARCH_REGEX);
 		assertTrue(pattern.matcher("z.B.").find());
 		assertTrue(pattern.matcher("z. B.").find());
 		assertTrue(pattern.matcher("dipl. Inf.").find());
 		assertTrue(pattern.matcher("a.\n          b.").find());
 		assertTrue(pattern.matcher("Z").find());
-		assertTrue(Pattern.compile(PrepToolLoader.ABBREV).matcher("a.b.")
+		assertTrue(Pattern.compile(PrepToolLoader.ABBREV_SEARCH_REGEX).matcher("a.b.")
 				.find());
 	}
 
 	@Test
 	public void testAbbrevPeriodMoreChars() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV_SEARCH_REGEX);
 		assertTrue(pattern.matcher("z.Å.").find());
 	}
 
 	@Test
 	public void testAbbrevCapital() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV_SEARCH_REGEX);
 		assertTrue(pattern.matcher("bloss A4 brauchen").find());
 		assertEquals(
 				"bloss <abbr>A</abbr>4 brauchen",
@@ -275,13 +275,13 @@ public class RegexTest {
 
 	@Test
 	public void testAbbrevCapitalMoreChars() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV_SEARCH_REGEX);
 		assertTrue(pattern.matcher("bloss É4 brauchen").find());
 	}
 
 	@Test
 	public void testAbbrevAcronym() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV_SEARCH_REGEX);
 		assertTrue(pattern.matcher("Die GSoA ist").find());
 		assertTrue(pattern.matcher("ein mE guter").find());
 		assertFalse(pattern.matcher("ein Arbeiten").find());
@@ -289,7 +289,7 @@ public class RegexTest {
 
 	@Test
 	public void testAbbrevAcronymMoreChars() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV_SEARCH_REGEX);
 		assertTrue(pattern.matcher("Die GSöA ist").find());
 		assertTrue(pattern.matcher("ein mÉ guter").find());
 	}
@@ -324,7 +324,7 @@ public class RegexTest {
 	// "</p>\\s*(<pagenum.*?</pagenum\\s*>)\\s*<p>";
 	@Test
 	public void testPagebreak1() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.PAGEBREAK_REGEX);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.PAGEBREAK_SEARCH_REGEX);
 		final String inner = "<pagenum id=\"page-20\" page=\"normal\">20</pagenum>";
 		final String input = "</p>\n\t" + inner + "\n\t<p>";
 		assertTrue(pattern.matcher(input).find());
@@ -336,7 +336,7 @@ public class RegexTest {
 
 	@Test
 	public void testPagebreak2() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.PAGEBREAK_REGEX);
+		final Pattern pattern = Pattern.compile(PrepToolLoader.PAGEBREAK_SEARCH_REGEX);
 		final String input = "</p>\n\t<pagenum id=\"page-20\" page=\"normal\">20</pagenum>\n\t<p>";
 		assertTrue(pattern.matcher(input).find());
 		assertEquals(
