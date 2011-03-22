@@ -400,7 +400,8 @@ abstract class AbstractMarkupChangeAction extends
 		// getClosingTag is potentially costly (see Bug
 		// http://redmine.sbszh.ch/issues/show/1259)
 		FULL_OPENING_TAG = "<" + theTagToInsert + ">";
-		FULL_CLOSING_TAG = "</" + MarkupUtil.getClosingTag(theTagToInsert) + ">";
+		FULL_CLOSING_TAG = "</" + MarkupUtil.getClosingTag(theTagToInsert)
+				+ ">";
 	}
 
 	/* (non-Javadoc)
@@ -654,7 +655,8 @@ class SwissAccentChangeAction extends AccentChangeAction {
 			final String thePattern, final String theProcessName,
 			final String theReplaceString) {
 		super(thePrepToolsPluginExtension, thePattern, theProcessName,
-				theReplaceString);
+				theReplaceString
+						.replace(PrepToolLoader.PLACEHOLDER, "detailed"));
 	}
 
 	@Override
@@ -671,7 +673,7 @@ class ForeignAccentChangeAction extends AccentChangeAction {
 			final String thePattern, final String theProcessName,
 			final String theReplaceString) {
 		super(thePrepToolsPluginExtension, thePattern, theProcessName,
-				theReplaceString);
+				theReplaceString.replace(PrepToolLoader.PLACEHOLDER, "reduced"));
 	}
 
 	@Override

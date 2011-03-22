@@ -502,17 +502,13 @@ class AccentPrepTool extends RegexPrepTool {
 	@Override
 	protected Action makeFindAction() {
 		return new SwissAccentChangeAction(prepToolsPluginExtension,
-				PATTERN_TO_SEARCH, LABEL, replaceString.replace(
-						PrepToolLoader.PLACEHOLDER, "detailed"));
-		// TODO: "detailed" belongs in SwissAccentChangeAction
+				PATTERN_TO_SEARCH, LABEL, replaceString);
 	}
 
 	@Override
 	protected Action makeChangeAction() {
 		return new ForeignAccentChangeAction(prepToolsPluginExtension,
-				PATTERN_TO_SEARCH, LABEL, replaceString.replace(
-						PrepToolLoader.PLACEHOLDER, "reduced"));
-		// TODO: "reduced" belongs in ForeignAccentChangeAction
+				PATTERN_TO_SEARCH, LABEL, replaceString);
 	}
 
 }
