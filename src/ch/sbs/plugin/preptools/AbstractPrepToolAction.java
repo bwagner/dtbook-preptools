@@ -638,19 +638,9 @@ abstract class AccentChangeAction extends FullRegexChangeAction {
 
 	@Override
 	protected void doWrapUp() {
-		final AccentPrepTool.MetaInfo metaInfo = getMetaInfo();
-		final int foreignCount = metaInfo.getForeignCount();
-		final int swissCount = metaInfo.getSwissCount();
-		if (foreignCount > swissCount) {
-			DocumentUtils.performReplacement(prepToolsPluginExtension
-					.getDocumentMetaInfo().getDocument(), REGEX_SPAN_REDUCED,
-					REPLACE);
-		}
-		else {
-			DocumentUtils.performReplacement(prepToolsPluginExtension
-					.getDocumentMetaInfo().getDocument(), REGEX_SPAN_DETAILED,
-					REPLACE);
-		}
+		DocumentUtils.performReplacement(prepToolsPluginExtension
+				.getDocumentMetaInfo().getDocument(), REGEX_SPAN_DETAILED,
+				REPLACE);
 	}
 
 	/**
