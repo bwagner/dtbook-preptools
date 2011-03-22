@@ -57,7 +57,7 @@ import ch.sbs.utils.swing.MenuPlugger;
 public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension {
 
 	private List<PrepTool> prepTools;
-	private Set<String> tags;
+	private Set<String> tagRegexesToSkip;
 
 	/**
 	 * A method to support DocumentMetaInfo's independence of specific
@@ -92,11 +92,11 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 	private void populatePrepTools() {
 		prepTools = PrepToolLoader.loadPrepTools(this);
-		tags = new HashSet<String>();
+		tagRegexesToSkip = new HashSet<String>();
 		for (final PrepTool prepTool : prepTools) {
-			final String tag = prepTool.getTag();
-			if (tag != null) {
-				tags.add(tag);
+			final String tagRegexToSkip = prepTool.getTagRegexToSkip();
+			if (tagRegexToSkip != null) {
+				tagRegexesToSkip.add(tagRegexToSkip);
 			}
 		}
 	}
@@ -104,8 +104,8 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	public RegionSkipper makeSkipper() {
 		final RegionSkipper compositeSkipper = RegionSkipper
 				.getLiteralAndCommentSkipper();
-		for (final String tag : tags) {
-			compositeSkipper.addPattern(RegionSkipper.makeMarkupRegex(tag));
+		for (final String tagRegexToSkip : tagRegexesToSkip) {
+			compositeSkipper.addPattern(RegionSkipper.makeMarkupRegex(tagRegexToSkip));
 		}
 		return compositeSkipper;
 	}
