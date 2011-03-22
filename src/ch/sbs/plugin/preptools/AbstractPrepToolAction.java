@@ -581,7 +581,7 @@ class FullRegexChangeAction extends AbstractMarkupFullRegexChangeAction {
 }
 
 @SuppressWarnings("serial")
-abstract class AccentChangeAction extends FullRegexChangeAction {
+class AccentChangeAction extends FullRegexChangeAction {
 
 	private static final String PLACE_HOLDER = "_";
 	private static final String REGEX_SPAN_TEMPLATE = "<span\\s+brl:accents\\s*=\\s*\""
@@ -611,8 +611,7 @@ abstract class AccentChangeAction extends FullRegexChangeAction {
 		final String newText = getPattern().matcher(selText).replaceAll(
 				getReplaceString());
 
-		incrementCounter(DocumentUtils.performReplacement(document, selText,
-				newText));
+		DocumentUtils.performReplacement(document, selText, newText);
 
 		return lastMatchStart + newText.length();
 	}
@@ -628,90 +627,11 @@ abstract class AccentChangeAction extends FullRegexChangeAction {
 		return false;
 	}
 
-	/**
-	 * Hook for subclasses to specify which counter shall be incremented.
-	 * 
-	 * @param theBy
-	 *            Amount by which counter shall be incremented.
-	 */
-	protected abstract void incrementCounter(int theBy);
-
 	@Override
 	protected void doWrapUp() {
 		DocumentUtils.performReplacement(prepToolsPluginExtension
 				.getDocumentMetaInfo().getDocument(), REGEX_SPAN_DETAILED,
 				REPLACE);
-	}
-
-	/**
-	 * Utility (not hook!) method to get tool specific metainfo.
-	 * 
-	 * @return tool specific metainfo.
-	 */
-	@Override
-	protected final AccentPrepTool.MetaInfo getMetaInfo() {
-		final DocumentMetaInfo dmi = prepToolsPluginExtension
-				.getDocumentMetaInfo(prepToolsPluginExtension.getWsEditor()
-						.getEditorLocation());
-		return (AccentPrepTool.MetaInfo) dmi
-				.getToolSpecificMetaInfo(AccentPrepTool.LABEL);
-	}
-
-}
-
-@SuppressWarnings("serial")
-class AccentStartAction extends RegexStartAction {
-
-	AccentStartAction(
-			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String thePattern, String theProcessName) {
-		super(thePrepToolsPluginExtension, START, thePattern, theProcessName);
-	}
-
-	@Override
-	protected void doSomething() throws BadLocationException {
-		((AccentPrepTool.MetaInfo) getMetaInfo()).resetCounts();
-		super.doSomething();
-	}
-
-}
-
-@SuppressWarnings("serial")
-class SwissAccentChangeAction extends AccentChangeAction {
-
-	public static final String NAME = "Swiss";
-
-	SwissAccentChangeAction(
-			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String thePattern, final String theProcessName,
-			final String theReplaceString) {
-		super(thePrepToolsPluginExtension, NAME, thePattern, theProcessName,
-				theReplaceString
-						.replace(PrepToolLoader.PLACEHOLDER, "detailed"));
-	}
-
-	@Override
-	protected void incrementCounter(int theBy) {
-		getMetaInfo().incrementSwissCount(theBy);
-	}
-}
-
-@SuppressWarnings("serial")
-class ForeignAccentChangeAction extends AccentChangeAction {
-
-	public static final String NAME = "Foreign";
-
-	ForeignAccentChangeAction(
-			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String thePattern, final String theProcessName,
-			final String theReplaceString) {
-		super(thePrepToolsPluginExtension, NAME, thePattern, theProcessName,
-				theReplaceString.replace(PrepToolLoader.PLACEHOLDER, "reduced"));
-	}
-
-	@Override
-	protected void incrementCounter(int theBy) {
-		getMetaInfo().incrementForeignCount(theBy);
 	}
 
 }

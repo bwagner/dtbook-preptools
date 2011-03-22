@@ -434,37 +434,6 @@ class AccentPrepTool extends RegexPrepTool {
 
 	static final String LABEL = "Accent";
 
-	@Override
-	public DocumentMetaInfo.MetaInfo makeMetaInfo(final Document document) {
-		return new MetaInfo();
-	}
-
-	static class MetaInfo extends DocumentMetaInfo.MetaInfo {
-
-		private int swissCount;
-		private int foreignCount;
-
-		public int getSwissCount() {
-			return swissCount;
-		}
-
-		public void incrementSwissCount(int theBy) {
-			swissCount += theBy;
-		}
-
-		public int getForeignCount() {
-			return foreignCount;
-		}
-
-		public void incrementForeignCount(int theBy) {
-			foreignCount += theBy;
-		}
-
-		public void resetCounts() {
-			foreignCount = swissCount = 0;
-		}
-	}
-
 	private final String replaceString;
 
 	// null: We have our own
@@ -481,20 +450,22 @@ class AccentPrepTool extends RegexPrepTool {
 
 	@Override
 	protected AbstractPrepToolAction makeStartAction() {
-		return new AccentStartAction(prepToolsPluginExtension,
-				PATTERN_TO_SEARCH, LABEL);
+		return new RegexStartAction(prepToolsPluginExtension,
+				AbstractPrepToolAction.START, PATTERN_TO_SEARCH, LABEL);
 	}
 
 	@Override
 	protected AbstractPrepToolAction makeFindAction() {
-		return new SwissAccentChangeAction(prepToolsPluginExtension,
-				PATTERN_TO_SEARCH, LABEL, replaceString);
+		return new AccentChangeAction(prepToolsPluginExtension, "Swiss",
+				PATTERN_TO_SEARCH, LABEL, replaceString.replace(
+						PrepToolLoader.PLACEHOLDER, "detailed"));
 	}
 
 	@Override
 	protected AbstractPrepToolAction makeChangeAction() {
-		return new ForeignAccentChangeAction(prepToolsPluginExtension,
-				PATTERN_TO_SEARCH, LABEL, replaceString);
+		return new AccentChangeAction(prepToolsPluginExtension, "Foreign",
+				PATTERN_TO_SEARCH, LABEL, replaceString.replace(
+						PrepToolLoader.PLACEHOLDER, "reduced"));
 	}
 
 }
