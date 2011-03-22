@@ -103,17 +103,16 @@ abstract class PrepTool {
 	 * 
 	 * @param theAction
 	 *            The action associated with the button
-	 * @param theLabel
-	 *            The label for the button.
 	 * @return the newly created button.
 	 */
-	protected JButton makeButton(final Action theAction, final String theLabel,
+	protected JButton makeButton(final AbstractPrepToolAction theAction,
 			int theKeyEvent) {
 		// assign accelerator key to JButton
 		// http://www.stratulat.com/assign_accelerator_key_to_a_JButton.html
 		final JButton jButton = new JButton(theAction);
-		jButton.setText(theLabel);
-		assignAcceleratorKey(theAction, theLabel, theKeyEvent, jButton);
+		jButton.setText(theAction.getName());
+		assignAcceleratorKey(theAction, theAction.getName(), theKeyEvent,
+				jButton);
 		return jButton;
 	}
 
@@ -254,19 +253,19 @@ abstract class PrepTool {
 /**
  * Common superclass for RegexPrepTool and VFormPrepTool
  */
-abstract class MarkupPrepTool extends PrepTool {
+abstract class AbstractMarkupPrepTool extends PrepTool {
 
-	protected Action startAction;
+	protected AbstractPrepToolAction startAction;
 
-	protected Action findAction;
+	protected AbstractPrepToolAction findAction;
 
-	protected Action changeAction;
+	protected AbstractPrepToolAction changeAction;
 
-	protected abstract Action makeStartAction();
+	protected abstract AbstractPrepToolAction makeStartAction();
 
-	protected abstract Action makeFindAction();
+	protected abstract AbstractPrepToolAction makeFindAction();
 
-	protected abstract Action makeChangeAction();
+	protected abstract AbstractPrepToolAction makeChangeAction();
 
 	@Override
 	protected Action[] getAllActions() {
@@ -282,12 +281,13 @@ abstract class MarkupPrepTool extends PrepTool {
 	protected JComponent[] getComponents() {
 		getAllActions();
 		return new JComponent[] {
-				makeButton(startAction, "Start", KeyEvent.VK_7),
-				makeButton(findAction, "Find", KeyEvent.VK_8),
-				makeButton(changeAction, "Change", KeyEvent.VK_9), };
+				makeButton(startAction, KeyEvent.VK_7),
+				makeButton(findAction, KeyEvent.VK_8),
+				makeButton(changeAction, KeyEvent.VK_9), };
 	}
 
-	MarkupPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
+	AbstractMarkupPrepTool(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			int theMenuItemNr, int theMnemonic) {
 		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic);
 	}
@@ -344,7 +344,7 @@ abstract class MarkupPrepTool extends PrepTool {
  * The skipping functionality is only relevant to RegexPrepTool, i.e. the
  * document needs to be protected from inserted tags only for RegexPrepTool.
  */
-class RegexPrepTool extends MarkupPrepTool {
+class RegexPrepTool extends AbstractMarkupPrepTool {
 
 	private final String LABEL;
 	private final String TAG_REGEX_TO_SKIP;
@@ -380,21 +380,22 @@ class RegexPrepTool extends MarkupPrepTool {
 	}
 
 	@Override
-	protected Action makeStartAction() {
+	protected AbstractPrepToolAction makeStartAction() {
 		return new RegexStartAction(prepToolsPluginExtension,
-				PATTERN_TO_SEARCH, LABEL);
+				AbstractPrepToolAction.START, PATTERN_TO_SEARCH, LABEL);
 	}
 
 	@Override
-	protected Action makeFindAction() {
-		return new RegexFindAction(prepToolsPluginExtension, PATTERN_TO_SEARCH,
-				LABEL);
+	protected AbstractPrepToolAction makeFindAction() {
+		return new RegexFindAction(prepToolsPluginExtension,
+				AbstractPrepToolAction.FIND, PATTERN_TO_SEARCH, LABEL);
 	}
 
 	@Override
-	protected Action makeChangeAction() {
+	protected AbstractPrepToolAction makeChangeAction() {
 		return new RegexChangeAction(prepToolsPluginExtension,
-				PATTERN_TO_SEARCH, LABEL, TAG_TO_INSERT);
+				AbstractPrepToolAction.CHANGE, PATTERN_TO_SEARCH, LABEL,
+				TAG_TO_INSERT);
 	}
 
 }
@@ -422,9 +423,10 @@ class FullRegexPrepTool extends RegexPrepTool {
 	}
 
 	@Override
-	protected Action makeChangeAction() {
+	protected AbstractPrepToolAction makeChangeAction() {
 		return new FullRegexChangeAction(prepToolsPluginExtension,
-				PATTERN_TO_SEARCH, getLabel(), replaceString);
+				AbstractPrepToolAction.CHANGE, PATTERN_TO_SEARCH, getLabel(),
+				replaceString);
 	}
 
 }
@@ -479,40 +481,26 @@ class AccentPrepTool extends RegexPrepTool {
 	}
 
 	@Override
-	protected JComponent[] getComponents() {
-		getAllActions();
-		return new JComponent[] {
-				// TODO: if our action provided the label, we could keep this
-				// stuff in the superclass.
-				// e.g. by saying:
-				// makeButton(startAction, startAction.getLabel(),
-				// KeyEvent.VK_7),
-				makeButton(startAction, "Start", KeyEvent.VK_7),
-				makeButton(findAction, "Swiss", KeyEvent.VK_8),
-				makeButton(changeAction, "Foreign", KeyEvent.VK_9), };
-	}
-
-	@Override
-	protected Action makeStartAction() {
+	protected AbstractPrepToolAction makeStartAction() {
 		return new AccentStartAction(prepToolsPluginExtension,
 				PATTERN_TO_SEARCH, LABEL);
 	}
 
 	@Override
-	protected Action makeFindAction() {
+	protected AbstractPrepToolAction makeFindAction() {
 		return new SwissAccentChangeAction(prepToolsPluginExtension,
 				PATTERN_TO_SEARCH, LABEL, replaceString);
 	}
 
 	@Override
-	protected Action makeChangeAction() {
+	protected AbstractPrepToolAction makeChangeAction() {
 		return new ForeignAccentChangeAction(prepToolsPluginExtension,
 				PATTERN_TO_SEARCH, LABEL, replaceString);
 	}
 
 }
 
-class VFormPrepTool extends MarkupPrepTool {
+class VFormPrepTool extends AbstractMarkupPrepTool {
 
 	@Override
 	public DocumentMetaInfo.MetaInfo makeMetaInfo(final Document document) {
@@ -628,18 +616,18 @@ class VFormPrepTool extends MarkupPrepTool {
 	}
 
 	@Override
-	protected Action makeStartAction() {
-		return new VFormStartAction(prepToolsPluginExtension);
+	protected AbstractPrepToolAction makeStartAction() {
+		return new VFormStartAction(prepToolsPluginExtension, null);
 	}
 
 	@Override
-	protected Action makeFindAction() {
-		return new VFormFindAction(prepToolsPluginExtension);
+	protected AbstractPrepToolAction makeFindAction() {
+		return new VFormFindAction(prepToolsPluginExtension, null);
 	}
 
 	@Override
-	protected Action makeChangeAction() {
-		return new VFormChangeAction(prepToolsPluginExtension);
+	protected AbstractPrepToolAction makeChangeAction() {
+		return new VFormChangeAction(prepToolsPluginExtension, null);
 	}
 }
 
@@ -700,9 +688,9 @@ class ParensPrepTool extends PrepTool {
 		super(prepToolsPluginExtension, theMenuItemNr, theMnemonic);
 	}
 
-	private final Action startAction = new OrphanParenStartAction(
+	private final AbstractPrepToolAction startAction = new OrphanParenStartAction(
 			prepToolsPluginExtension);
-	private final Action findNextAction = new OrphanParenFindNextAction(
+	private final AbstractPrepToolAction findNextAction = new OrphanParenFindNextAction(
 			prepToolsPluginExtension);
 
 	@Override
@@ -713,8 +701,8 @@ class ParensPrepTool extends PrepTool {
 	@Override
 	protected JComponent[] getComponents() {
 		return new JComponent[] {
-				makeButton(startAction, "Start", KeyEvent.VK_7),
-				makeButton(findNextAction, "Find", KeyEvent.VK_8) };
+				makeButton(startAction, KeyEvent.VK_7),
+				makeButton(findNextAction, KeyEvent.VK_8) };
 	}
 
 	@Override

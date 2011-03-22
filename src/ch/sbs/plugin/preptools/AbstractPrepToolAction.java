@@ -24,17 +24,24 @@ import ch.sbs.utils.preptools.parens.ParensUtil;
 
 @SuppressWarnings("serial")
 abstract class AbstractPrepToolAction extends AbstractAction {
-	/**
-	 * 
-	 */
+
+	// common names for actions:
+	public static final String START = "Start";
+	public static final String FIND = "Find";
+	public static final String CHANGE = "Change";
+
 	protected final PrepToolsPluginExtension prepToolsPluginExtension;
 
 	/**
 	 * @param thePrepToolsPluginExtension
+	 * @param theName
+	 *            the name of this action.
 	 */
 	AbstractPrepToolAction(
-			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			String theName) {
 		prepToolsPluginExtension = thePrepToolsPluginExtension;
+		NAME = theName;
 	}
 
 	@Override
@@ -169,14 +176,21 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	}
 
 	protected abstract String getProcessName();
+
+	public String getName() {
+		return NAME;
+	}
+
+	private final String NAME;
 }
 
 @SuppressWarnings("serial")
 abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 
 	AbstractMarkupAction(
-			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension);
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName) {
+		super(thePrepToolsPluginExtension, theName);
 	}
 
 	/**
@@ -225,8 +239,9 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 
 	AbstractMarkupStartAction(
-			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension);
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName) {
+		super(thePrepToolsPluginExtension, theName);
 	}
 
 	@Override
@@ -278,8 +293,9 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 
 	AbstractMarkupProceedAction(
-			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension);
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName) {
+		super(thePrepToolsPluginExtension, theName);
 	}
 
 	/**
@@ -375,8 +391,9 @@ abstract class AbstractMarkupChangeVetoAction extends
 		AbstractMarkupProceedAction {
 
 	AbstractMarkupChangeVetoAction(
-			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension);
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName) {
+		super(thePrepToolsPluginExtension, theName);
 	}
 
 	@Override
@@ -394,8 +411,8 @@ abstract class AbstractMarkupChangeAction extends
 
 	AbstractMarkupChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String theTagToInsert) {
-		super(thePrepToolsPluginExtension);
+			final String theName, final String theTagToInsert) {
+		super(thePrepToolsPluginExtension, theName);
 		// moved initialization of these up here, to "cache" the result, since
 		// getClosingTag is potentially costly (see Bug
 		// http://redmine.sbszh.ch/issues/show/1259)
@@ -428,8 +445,8 @@ abstract class AbstractMarkupFullRegexChangeAction extends
 
 	AbstractMarkupFullRegexChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String theReplaceString) {
-		super(thePrepToolsPluginExtension);
+			final String theName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName);
 		replaceString = theReplaceString;
 	}
 
@@ -455,8 +472,9 @@ abstract class AbstractMarkupFullRegexChangeAction extends
 abstract class AbstractMarkupFindAction extends AbstractMarkupProceedAction {
 
 	AbstractMarkupFindAction(
-			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension);
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName) {
+		super(thePrepToolsPluginExtension, theName);
 	}
 
 	/* (non-Javadoc)
@@ -495,8 +513,9 @@ class RegexStartAction extends AbstractMarkupStartAction {
 
 	RegexStartAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String thePattern, final String theProcessName) {
-		super(thePrepToolsPluginExtension);
+			final String theName, final String thePattern,
+			final String theProcessName) {
+		super(thePrepToolsPluginExtension, theName);
 		helper = new RegexHelper(thePattern, theProcessName);
 	}
 
@@ -517,9 +536,9 @@ class RegexChangeAction extends AbstractMarkupChangeAction {
 
 	RegexChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String thePattern, final String theProcessName,
-			final String theTagToInsert) {
-		super(thePrepToolsPluginExtension, theTagToInsert);
+			final String theName, final String thePattern,
+			final String theProcessName, final String theTagToInsert) {
+		super(thePrepToolsPluginExtension, theName, theTagToInsert);
 		helper = new RegexHelper(thePattern, theProcessName);
 	}
 
@@ -540,9 +559,9 @@ class FullRegexChangeAction extends AbstractMarkupFullRegexChangeAction {
 
 	FullRegexChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String thePattern, final String theProcessName,
-			final String theReplaceString) {
-		super(thePrepToolsPluginExtension, theReplaceString);
+			final String theName, final String thePattern,
+			final String theProcessName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName, theReplaceString);
 		helper = new RegexHelper(thePattern, theProcessName);
 	}
 
@@ -573,9 +592,9 @@ abstract class AccentChangeAction extends FullRegexChangeAction {
 
 	AccentChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String thePattern, final String theProcessName,
-			final String theReplaceString) {
-		super(thePrepToolsPluginExtension, thePattern, theProcessName,
+			final String theName, final String thePattern,
+			final String theProcessName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName, thePattern, theProcessName,
 				theReplaceString);
 	}
 
@@ -634,9 +653,10 @@ abstract class AccentChangeAction extends FullRegexChangeAction {
 @SuppressWarnings("serial")
 class AccentStartAction extends RegexStartAction {
 
-	AccentStartAction(PrepToolsPluginExtension thePrepToolsPluginExtension,
-			String thePattern, String theProcessName) {
-		super(thePrepToolsPluginExtension, thePattern, theProcessName);
+	AccentStartAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String thePattern, String theProcessName) {
+		super(thePrepToolsPluginExtension, START, thePattern, theProcessName);
 	}
 
 	@Override
@@ -650,11 +670,13 @@ class AccentStartAction extends RegexStartAction {
 @SuppressWarnings("serial")
 class SwissAccentChangeAction extends AccentChangeAction {
 
+	public static final String NAME = "Swiss";
+
 	SwissAccentChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String thePattern, final String theProcessName,
 			final String theReplaceString) {
-		super(thePrepToolsPluginExtension, thePattern, theProcessName,
+		super(thePrepToolsPluginExtension, NAME, thePattern, theProcessName,
 				theReplaceString
 						.replace(PrepToolLoader.PLACEHOLDER, "detailed"));
 	}
@@ -668,11 +690,13 @@ class SwissAccentChangeAction extends AccentChangeAction {
 @SuppressWarnings("serial")
 class ForeignAccentChangeAction extends AccentChangeAction {
 
+	public static final String NAME = "Foreign";
+
 	ForeignAccentChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String thePattern, final String theProcessName,
 			final String theReplaceString) {
-		super(thePrepToolsPluginExtension, thePattern, theProcessName,
+		super(thePrepToolsPluginExtension, NAME, thePattern, theProcessName,
 				theReplaceString.replace(PrepToolLoader.PLACEHOLDER, "reduced"));
 	}
 
@@ -688,8 +712,9 @@ class RegexFindAction extends AbstractMarkupFindAction {
 	private final RegexHelper helper;
 
 	RegexFindAction(final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String thePattern, final String theProcessName) {
-		super(thePrepToolsPluginExtension);
+			final String theName, final String thePattern,
+			final String theProcessName) {
+		super(thePrepToolsPluginExtension, theName);
 		helper = new RegexHelper(thePattern, theProcessName);
 	}
 
@@ -708,8 +733,10 @@ class RegexFindAction extends AbstractMarkupFindAction {
 class VFormStartAction extends AbstractMarkupStartAction {
 	private final VFormActionHelper helper;
 
-	VFormStartAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension);
+	VFormStartAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName) {
+		super(thePrepToolsPluginExtension, START);
 		helper = new VFormActionHelper(thePrepToolsPluginExtension);
 	}
 
@@ -728,8 +755,10 @@ class VFormStartAction extends AbstractMarkupStartAction {
 class VFormChangeAction extends AbstractMarkupChangeAction {
 	private final VFormActionHelper helper;
 
-	VFormChangeAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension, VFormActionHelper.VFORM_TAG);
+	VFormChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName) {
+		super(thePrepToolsPluginExtension, CHANGE, VFormActionHelper.VFORM_TAG);
 		helper = new VFormActionHelper(thePrepToolsPluginExtension);
 	}
 
@@ -748,8 +777,9 @@ class VFormChangeAction extends AbstractMarkupChangeAction {
 class VFormFindAction extends AbstractMarkupFindAction {
 	private final VFormActionHelper helper;
 
-	VFormFindAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension);
+	VFormFindAction(final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName) {
+		super(thePrepToolsPluginExtension, FIND);
 		helper = new VFormActionHelper(thePrepToolsPluginExtension);
 	}
 
@@ -811,8 +841,9 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 	}
 
 	AbstractOrphanParenAction(
-			PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension);
+			PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName) {
+		super(thePrepToolsPluginExtension, theName);
 	}
 
 	@Override
@@ -826,7 +857,7 @@ class OrphanParenStartAction extends AbstractOrphanParenAction {
 
 	OrphanParenStartAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension);
+		super(thePrepToolsPluginExtension, START);
 	}
 
 	@Override
@@ -855,6 +886,6 @@ class OrphanParenFindNextAction extends AbstractOrphanParenAction {
 
 	OrphanParenFindNextAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension);
+		super(thePrepToolsPluginExtension, FIND);
 	}
 }
