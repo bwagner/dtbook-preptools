@@ -121,7 +121,7 @@ abstract class PrepTool {
 		final InputMap keyMap = new ComponentInputMap(jComponent);
 		keyMap.put(
 				KeyStroke.getKeyStroke(theKeyEvent, InputEvent.CTRL_DOWN_MASK
-						| InputEvent.ALT_DOWN_MASK), theLabel);
+						| InputEvent.SHIFT_DOWN_MASK), theLabel);
 		final ActionMap actionMap = new ActionMapUIResource();
 		actionMap.put(theLabel, theAction);
 		SwingUtilities.replaceUIActionMap(jComponent, actionMap);
@@ -280,9 +280,9 @@ abstract class AbstractMarkupPrepTool extends PrepTool {
 	@Override
 	protected JComponent[] getComponents() {
 		getAllActions();
-		return new JComponent[] { makeButton(startAction, KeyEvent.VK_7),
-				makeButton(findAction, KeyEvent.VK_8),
-				makeButton(changeAction, KeyEvent.VK_9), };
+		return new JComponent[] { makeButton(startAction, KeyEvent.VK_F5),
+				makeButton(findAction, KeyEvent.VK_F6),
+				makeButton(changeAction, KeyEvent.VK_F7), };
 	}
 
 	AbstractMarkupPrepTool(
@@ -670,8 +670,8 @@ class ParensPrepTool extends PrepTool {
 
 	@Override
 	protected JComponent[] getComponents() {
-		return new JComponent[] { makeButton(startAction, KeyEvent.VK_7),
-				makeButton(findNextAction, KeyEvent.VK_8) };
+		return new JComponent[] { makeButton(startAction, KeyEvent.VK_F5),
+				makeButton(findNextAction, KeyEvent.VK_F6) };
 	}
 
 	@Override
