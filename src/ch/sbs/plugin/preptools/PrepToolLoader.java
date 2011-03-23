@@ -75,11 +75,10 @@ public class PrepToolLoader {
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'v',
 				"Abbreviation", ABBREV_SEARCH_REGEX, ABBREV_TAG));
 
-		prepTools.add(new FullRegexPrepTool(thePrepToolsPluginExtension, i++,
-				'k', "Pagebreak", PAGEBREAK_SEARCH_REGEX, PAGEBREAK_REPLACE));
+		prepTools.add(new PageBreakPrepTool(thePrepToolsPluginExtension, i++,
+				'k'));
 
-		prepTools.add(new AccentPrepTool(thePrepToolsPluginExtension, i++, 'a',
-				ACCENT_SEARCH_REGEX, ACCENT_SKIP_REGEX, ACCENT_REPLACE));
+		prepTools.add(new AccentPrepTool(thePrepToolsPluginExtension, i++, 'a'));
 
 		return prepTools;
 	}
