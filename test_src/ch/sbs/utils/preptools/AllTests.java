@@ -14,9 +14,9 @@ import ch.sbs.utils.string.StringUtilsTest;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({ FileUtilsTest.class, PropsUtilsTest.class,
 		RegexTest.class, RegexMeasureTest.class, RegexOrdinalTest.class,
-		ParensUtilTest.class, VFormUtilTest.class, WordHierarchyTest.class,
-		TestRbTree.class, TestIntervalTree.class, AccentRegexTest.class,
-		StringUtilsTest.class, DocumentUtilsTest.class })
+		RegexPageBreakTest.class, ParensUtilTest.class, VFormUtilTest.class,
+		WordHierarchyTest.class, TestRbTree.class, TestIntervalTree.class,
+		AccentRegexTest.class, StringUtilsTest.class, DocumentUtilsTest.class })
 public class AllTests {
 	// the class remains completely empty,
 	// being used only as a holder for the above annotations
