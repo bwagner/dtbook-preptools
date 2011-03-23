@@ -105,7 +105,8 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		final RegionSkipper compositeSkipper = RegionSkipper
 				.getLiteralAndCommentSkipper();
 		for (final String tagRegexToSkip : tagRegexesToSkip) {
-			compositeSkipper.addPattern(RegionSkipper.makeMarkupRegex(tagRegexToSkip));
+			compositeSkipper.addPattern(RegionSkipper
+					.makeMarkupRegex(tagRegexToSkip));
 		}
 		return compositeSkipper;
 	}
@@ -118,7 +119,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		item.setFont(item.getFont().deriveFont(Font.PLAIN));
 	}
 
-	void setPrepToolItemDone(final JMenuItem item) {
+	private void setPrepToolItemDone(final JMenuItem item) {
 		setPlain(item);
 	}
 
@@ -138,11 +139,11 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		setBold(item);
 	}
 
-	void setPrepToolItemNormal(int i) {
+	private void setPrepToolItemNormal(int i) {
 		setPrepToolItemNormal(menuPrepTools.getItem(i));
 	}
 
-	void updatePrepToolItems() {
+	private void updatePrepToolItems() {
 		int i = 0;
 		for (final PrepTool preptool : prepTools) {
 			if (getDocumentMetaInfo().getToolSpecificMetaInfo(
@@ -164,7 +165,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		return prepTools.get(0);
 	}
 
-	PrepTool getCurrentPrepTool() {
+	private PrepTool getCurrentPrepTool() {
 		final DocumentMetaInfo documentMetaInfo = getDocumentMetaInfo();
 		return documentMetaInfo != null ? documentMetaInfo.getCurrentPrepTool()
 				: null;
