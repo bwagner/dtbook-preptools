@@ -14,7 +14,7 @@ public class RegexPageBreakTest {
 	// public static final String PAGEBREAK_REGEX =
 	// "</p>\\s*(<pagenum.*?</pagenum\\s*>)\\s*<p>";
 	@Test
-	public void testPagebreak1() {
+	public void test1() {
 		final Pattern pattern = Pattern
 				.compile(PrepToolLoader.PAGEBREAK_SEARCH_REGEX);
 		final String inner = "<pagenum id=\"page-20\" page=\"normal\">20</pagenum>";
@@ -27,7 +27,7 @@ public class RegexPageBreakTest {
 	}
 
 	@Test
-	public void testPagebreak2() {
+	public void test2() {
 		final Pattern pattern = Pattern
 				.compile(PrepToolLoader.PAGEBREAK_SEARCH_REGEX);
 		final String input = "</p>\n\t<pagenum id=\"page-20\" page=\"normal\">20</pagenum>\n\t<p>";
@@ -36,6 +36,18 @@ public class RegexPageBreakTest {
 				" <pagenum id=\"page-20\" page=\"normal\">20</pagenum> ",
 				pattern.matcher(input).replaceAll(
 						PrepToolLoader.PAGEBREAK_REPLACE));
+	}
+
+	@Test
+	public void testFeature1272() {
+		final Pattern pattern = Pattern
+				.compile(PrepToolLoader.PAGEBREAK_SEARCH_REGEX);
+		final String input = "</p>\n\t<pagenum id=\"page-20\" page=\"normal\">20</pagenum>\n\t<p>";
+		assertTrue(pattern.matcher(input).find());
+		assertEquals(
+				"</p>\n\t<pagenum id=\"page-20\" page=\"normal\">20</pagenum>\n\t<p class=\"precedingemptyline\">",
+				pattern.matcher(input).replaceAll(
+						PrepToolLoader.PAGEBREAK_REPLACE2));
 	}
 
 }

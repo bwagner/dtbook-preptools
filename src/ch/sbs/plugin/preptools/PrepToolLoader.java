@@ -36,8 +36,10 @@ public class PrepToolLoader {
 	public static final String ABBREV_TAG = "abbr";
 
 	// http://redmine.sbszh.ch/issues/show/1203
-	public static final String PAGEBREAK_SEARCH_REGEX = "</p\\s*>\\s*(<pagenum\\s+id\\s*=\\s*\"page-\\d+\" page\\s*=\\s*\"normal\"\\s*>\\s*\\d+\\s*</pagenum\\s*>)\\s*<p\\s*>";
-	public static final String PAGEBREAK_REPLACE = " $1 ";
+	public static final String PAGEBREAK_SEARCH_REGEX = "(</p\\s*>\\s*(<pagenum\\s+id\\s*=\\s*\"page-\\d+\" page\\s*=\\s*\"normal\"\\s*>\\s*\\d+\\s*</pagenum\\s*>))(\\s*)<p\\s*>";
+	public static final String PAGEBREAK_REPLACE = " $2 ";
+	// http://redmine.sbszh.ch/issues/show/1272
+	public static final String PAGEBREAK_REPLACE2 = "$1$3<p class=\"precedingemptyline\">";
 
 	// http://redmine.sbszh.ch/issues/show/1201
 
@@ -53,7 +55,9 @@ public class PrepToolLoader {
 			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
 		final List<PrepTool> prepTools = new ArrayList<PrepTool>();
 		int i = 0;
+
 		prepTools.add(new VFormPrepTool(thePrepToolsPluginExtension, i++, 'o'));
+
 		prepTools
 				.add(new ParensPrepTool(thePrepToolsPluginExtension, i++, 's'));
 
@@ -73,8 +77,10 @@ public class PrepToolLoader {
 
 		prepTools.add(new FullRegexPrepTool(thePrepToolsPluginExtension, i++,
 				'k', "Pagebreak", PAGEBREAK_SEARCH_REGEX, PAGEBREAK_REPLACE));
+
 		prepTools.add(new AccentPrepTool(thePrepToolsPluginExtension, i++, 'a',
 				ACCENT_SEARCH_REGEX, ACCENT_SKIP_REGEX, ACCENT_REPLACE));
+
 		return prepTools;
 	}
 
