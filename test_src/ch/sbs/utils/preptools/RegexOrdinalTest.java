@@ -21,4 +21,28 @@ public class RegexOrdinalTest {
 		assertFalse(pattern.matcher("2342").find());
 	}
 
+	@Test
+	public void testBug1275Match() {
+		final Pattern pattern = Pattern
+				.compile(PrepToolLoader.ORDINAL_SEARCH_REGEX);
+		assertTrue(pattern.matcher("bla 23. bla").find());
+		assertTrue(pattern.matcher("bla 345000. bla").find());
+		assertTrue(pattern.matcher("bla 1. bla").find());
+		assertTrue(pattern.matcher("bla 0. bla").find());
+		assertTrue(pattern.matcher("bla 1.-9. bla").find());
+	}
+
+	@Test
+	public void testBug1275NoMatch() {
+		final Pattern pattern = Pattern
+				.compile(PrepToolLoader.ORDINAL_SEARCH_REGEX);
+		assertFalse(pattern.matcher("bla 34,4.5 bla").find());
+		assertFalse(pattern.matcher("bla 2,4. bla").find());
+		assertFalse(pattern.matcher("bla 45'44. bla").find());
+		assertFalse(pattern.matcher("bla 345'000. bla").find());
+		assertFalse(pattern.matcher("bla 23.00 bla").find());
+		assertFalse(pattern.matcher("bla 45.0 bla").find());
+		assertFalse(pattern.matcher("bla 45.34,50 bla").find());
+		assertFalse(pattern.matcher("bla 100.000.000. bla").find());
+	}
 }
