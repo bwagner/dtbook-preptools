@@ -21,9 +21,9 @@ public class VFormUtil {
 			"Deinige", "Deinigem", "Deinigen", "Deiniger", "Deiniges", "Deins",
 			"Dich", "Dir", "Du", "Euch", "Euer", "Euere", "Euerem", "Euerer",
 			"Eueres", "Euers", "Euerseits", "Eure", "Eurem", "Euren", "Eurer",
-			"Eurerseits", "Eures", "Euresgleichen", "Eurethalben",
-			"Euretwegen", "Euretwillen", "Eurige", "Eurigem", "Eurigen",
-			"Euriger", "Euriges", };
+			"Euerem", "Euerm", "Euern", "Eurerseits", "Eures", "Euresgleichen",
+			"Eurethalben", "Euretwegen", "Euretwillen", "Eurige", "Eurigem",
+			"Eurigen", "Euriger", "Euriges", };
 
 	private static final String[] forms3rdPersonPlural = new String[] { WordHierarchyBuilder
 			.createWordTree(thirdPP).toRegex() };

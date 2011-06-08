@@ -21,6 +21,9 @@ public class VFormUtilTest {
 	@Test
 	public void testBug1383() {
 		assertTrue(VFormUtil.matches("Eurer"));
+		assertTrue(VFormUtil.matches("Euerem"));
+		assertTrue(VFormUtil.matches("Euerm"));
+		assertTrue(VFormUtil.matches("Euern"));
 	}
 
 	@Test
