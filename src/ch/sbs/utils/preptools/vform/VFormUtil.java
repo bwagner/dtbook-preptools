@@ -14,6 +14,7 @@ public class VFormUtil {
 			"Sie", };
 
 	// Mail von Mischa Kuenzle 12.1.2011 15:09
+	// Mail von Mischa Kuenzle 8.6.2011 10:53
 	// 2. Person (optionale Abfrage)
 	private static final String[] secondP = new String[] { "Dein", "Deine",
 			"Deinem", "Deinen", "Deiner", "Deinerseits", "Deines",
@@ -21,7 +22,7 @@ public class VFormUtil {
 			"Deinige", "Deinigem", "Deinigen", "Deiniger", "Deiniges", "Deins",
 			"Dich", "Dir", "Du", "Euch", "Euer", "Euere", "Euerem", "Euerer",
 			"Eueres", "Euers", "Euerseits", "Eure", "Eurem", "Euren", "Eurer",
-			"Euerem", "Euerm", "Euern", "Eurerseits", "Eures", "Euresgleichen",
+			"Euerm", "Euern", "Eurerseits", "Eures", "Euresgleichen",
 			"Eurethalben", "Euretwegen", "Euretwillen", "Eurige", "Eurigem",
 			"Eurigen", "Euriger", "Euriges", };
 
