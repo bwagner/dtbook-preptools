@@ -23,6 +23,7 @@ public class VFormUtilTest {
 		assertTrue(VFormUtil.matches("Eurer"));
 		assertTrue(VFormUtil.matches("Euerm"));
 		assertTrue(VFormUtil.matches("Euern"));
+		assertTrue(VFormUtil.matches("Eueren"));
 	}
 
 	@Test

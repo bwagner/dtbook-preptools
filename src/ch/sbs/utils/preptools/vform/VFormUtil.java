@@ -22,7 +22,7 @@ public class VFormUtil {
 			"Deinige", "Deinigem", "Deinigen", "Deiniger", "Deiniges", "Deins",
 			"Dich", "Dir", "Du", "Euch", "Euer", "Euere", "Euerem", "Euerer",
 			"Eueres", "Euers", "Euerseits", "Eure", "Eurem", "Euren", "Eurer",
-			"Euerm", "Euern", "Eurerseits", "Eures", "Euresgleichen",
+			"Euerm", "Euern", "Eueren", "Eurerseits", "Eures", "Euresgleichen",
 			"Eurethalben", "Euretwegen", "Euretwillen", "Eurige", "Eurigem",
 			"Eurigen", "Euriger", "Euriges", };
 
