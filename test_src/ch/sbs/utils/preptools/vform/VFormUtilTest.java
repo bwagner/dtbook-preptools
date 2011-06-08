@@ -19,6 +19,11 @@ public class VFormUtilTest {
 	}
 
 	@Test
+	public void testBug1383() {
+		assertTrue(VFormUtil.matches("Eurer"));
+	}
+
+	@Test
 	public void testReplaceMatches() {
 		assertTrue(VFormUtil.matches("Deine"));
 		assertFalse(VFormUtil.matches("Sieb"));
@@ -46,8 +51,7 @@ public class VFormUtilTest {
 	public void testMatch() {
 
 		final String text = "Das können Sie zu Ihren Akten legen.";
-		final MarkupUtil mu = new MarkupUtil(
-				RegionSkipper.getCommentSkipper());
+		final MarkupUtil mu = new MarkupUtil(RegionSkipper.getCommentSkipper());
 
 		Match match = mu.find(text, 0, VFormUtil.getAllPattern());
 
@@ -71,8 +75,7 @@ public class VFormUtilTest {
 	public void testMatchBoundary() {
 
 		final String text = "Dann können Sie's Ihrem Kollegen geben.";
-		final MarkupUtil mu = new MarkupUtil(
-				RegionSkipper.getCommentSkipper());
+		final MarkupUtil mu = new MarkupUtil(RegionSkipper.getCommentSkipper());
 
 		Match match = mu.find(text, 0, VFormUtil.getAllPattern());
 
@@ -95,8 +98,7 @@ public class VFormUtilTest {
 	@Test
 	public void testNoMatch() {
 
-		final MarkupUtil mu = new MarkupUtil(
-				RegionSkipper.getCommentSkipper());
+		final MarkupUtil mu = new MarkupUtil(RegionSkipper.getCommentSkipper());
 		final String text = "Dann kann Anna es ihrem Kollegen geben.";
 
 		final Match match = mu.find(text, 0, VFormUtil.getAllPattern());
@@ -108,8 +110,7 @@ public class VFormUtilTest {
 	@Test
 	public void testMatch1() {
 
-		final MarkupUtil mu = new MarkupUtil(
-				RegionSkipper.getCommentSkipper());
+		final MarkupUtil mu = new MarkupUtil(RegionSkipper.getCommentSkipper());
 		final String text = "Dann kann Anna es Ihrem Kollegen geben.";
 
 		final Match match = mu.find(text, 0, VFormUtil.getAllPattern());
