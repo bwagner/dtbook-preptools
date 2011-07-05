@@ -68,4 +68,28 @@ public class RegexAbbrevTest {
 		assertTrue(pattern.matcher("Die GSöA ist").find());
 		assertTrue(pattern.matcher("ein mÉ guter").find());
 	}
+
+	@Test
+	public void testFeature1414() {
+		final Pattern pattern = Pattern
+				.compile(PrepToolLoader.ABBREV_SEARCH_REGEX);
+
+		assertTrue(pattern.matcher("blabla Abb. 232 blabla").find());
+		assertEquals(
+				"blabla <abbr>Abb. </abbr>232 blabla",
+				pattern.matcher("blabla Abb. 232 blabla").replaceAll(
+						"<abbr>$1</abbr>"));
+
+		assertTrue(pattern.matcher("blabla Nr. 3 blabla").find());
+		assertEquals(
+				"blabla <abbr>Nr. </abbr>3 blabla",
+				pattern.matcher("blabla Nr. 3 blabla").replaceAll(
+						"<abbr>$1</abbr>"));
+
+		assertTrue(pattern.matcher("blabla Bd. 33 blabla").find());
+		assertEquals(
+				"blabla <abbr>Bd. </abbr>33 blabla",
+				pattern.matcher("blabla Bd. 33 blabla").replaceAll(
+						"<abbr>$1</abbr>"));
+	}
 }
