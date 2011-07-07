@@ -533,7 +533,10 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 			returnString = "'" + key + "' not found in props file " + filename;
 		}
 
-		return returnString;
+		final String oxygenVersion = "\nOxygen-Version:"
+				+ pluginWorkspaceAccess.getVersion() + "\n";
+
+		return returnString + oxygenVersion;
 	}
 
 	/**
