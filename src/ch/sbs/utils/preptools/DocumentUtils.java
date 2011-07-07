@@ -84,14 +84,15 @@ public class DocumentUtils {
 			final String regex, final String theReplacement, int theStart) {
 		final Pattern pattern = Pattern.compile(regex);
 		boolean performedReplacement = false;
+		Matcher matcher;
 		try {
-			final Matcher matcher = pattern.matcher(theDocument.getText(0,
+			matcher = pattern.matcher(theDocument.getText(0,
 					theDocument.getLength()));
-			if (performedReplacement = matcher.find(theStart)) {
-				doReplacements(theDocument, pattern, matcher, theReplacement);
-			}
 		} catch (final BadLocationException e) {
 			throw new RuntimeException(e);
+		}
+		if (performedReplacement = matcher.find(theStart)) {
+			doReplacements(theDocument, pattern, matcher, theReplacement);
 		}
 		return performedReplacement;
 	}
