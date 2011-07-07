@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
@@ -635,6 +636,76 @@ class AccentChangeAction extends FullRegexChangeAction {
 				REPLACE);
 	}
 
+}
+
+@SuppressWarnings("serial")
+class OrdinalChangeAction extends FullRegexChangeAction {
+
+	OrdinalChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName, final String thePattern,
+			final String theProcessName) {
+		this(thePrepToolsPluginExtension, theName, thePattern, theProcessName,
+				null);
+	}
+
+	OrdinalChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName, final String thePattern,
+			final String theProcessName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName, thePattern, theProcessName,
+				theReplaceString);
+	}
+
+	@Override
+	protected int handleText(final Document document, final String selText)
+			throws BadLocationException {
+		if (selText == null) {
+			return lastMatchStart;
+		}
+		final String newText = feature1416(getPattern(), selText);
+
+		DocumentUtils.performSingleReplacement(document, selText, newText,
+				lastMatchStart);
+
+		return lastMatchStart + newText.length();
+	}
+
+	@Override
+	protected boolean breakIfManualEditOccurred() {
+		return true;
+	}
+
+	/**
+	 * @param pattern
+	 * @param input
+	 * @return
+	 */
+	public static String feature1416(final Pattern pattern, final String input) {
+		final Matcher matcher = pattern.matcher(input);
+		matcher.find();
+		String replacement = "<brl:num role=\"ordinal\">$1</brl:num>";
+		// We check for group(2).length() because the second capturing group in
+		// PrepToolLoader.ORDINAL_SEARCH_REGEX (\s*) matches the empty string
+		// and thus can never be null, see
+		// http://download.oracle.com/javase/1.5.0/docs/api/java/util/regex/Matcher.html#group%28%29
+		if (matcher.group(2).length() != 0) {
+			if (matcher.group(3) == null) {
+				replacement += "&nbsp;";
+			}
+			else {
+				replacement += matcher.group(2);
+			}
+		}
+		// We check for group(3) != null because the third capturing group in
+		// PrepToolLoader.ORDINAL_SEARCH_REGEX ((</|&nbsp;)?) does not match the
+		// empty string and thus can be null, see
+		// http://download.oracle.com/javase/1.5.0/docs/api/java/util/regex/Matcher.html#group%28%29
+		if (matcher.group(3) != null) {
+			replacement += matcher.group(3);
+		}
+		return matcher.replaceAll(replacement);
+	}
 }
 
 @SuppressWarnings("serial")

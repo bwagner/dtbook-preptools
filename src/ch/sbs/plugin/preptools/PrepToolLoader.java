@@ -7,7 +7,7 @@ public class PrepToolLoader {
 
 	// Ordnungszahlen
 	public static final String ORDINAL_NUM_TYPE = "ordinal";
-	public static final String ORDINAL_SEARCH_REGEX = "(?<![,'.])\\b\\d+\\.(?!\\d)";
+	public static final String ORDINAL_SEARCH_REGEX = "((?<![,'.])\\b\\d+\\.(?!\\d))(\\s*)(</|&ndash;)?";
 	public static final String ORDINAL_TAG = makeNumTag(ORDINAL_NUM_TYPE);
 	public static final String ORDINAL_SKIP_REGEX = makeNumProtectRegex(ORDINAL_NUM_TYPE);
 
@@ -61,9 +61,11 @@ public class PrepToolLoader {
 		prepTools
 				.add(new ParensPrepTool(thePrepToolsPluginExtension, i++, 's'));
 
-		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'd',
-				"Ordinal", ORDINAL_SEARCH_REGEX, ORDINAL_TAG,
-				ORDINAL_SKIP_REGEX));
+		prepTools.add(new FullRegexPrepTool(thePrepToolsPluginExtension, i++,
+				'd', "Ordinal", ORDINAL_SEARCH_REGEX, ORDINAL_TAG,
+				ORDINAL_SKIP_REGEX, null, new OrdinalChangeAction(
+						thePrepToolsPluginExtension, "Ordinal",
+						ORDINAL_SEARCH_REGEX, "Ordinal")));
 
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'r',
 				"Roman", ROMAN_SEARCH_REGEX, ROMAN_TAG, ROMAN_SKIP_REGEX));

@@ -336,9 +336,14 @@ abstract class AbstractMarkupPrepTool extends PrepTool {
 
 /**
  * 
- * RegexPrepTool is not supposed to be subclassed.
- * It should be seen as a blackbox class that can be configured with
- * a regex, a mnemonic, a pattern, and a label.
+ * RegexPrepTool can be used as a blackbox class that can be configured
+ * with
+ * - a regex pattern to search,
+ * - a menu item number,
+ * - a mnemonic for the menu entry,
+ * - a label for the menu entry.
+ * - a tag to insert,
+ * - a regex pattern to skip during the search,
  * 
  * Why do we implement getTagRegexToSkip here when it's called in the
  * topmost class of the hierarchy?
@@ -353,6 +358,15 @@ class RegexPrepTool extends AbstractMarkupPrepTool {
 	final String PATTERN_TO_SEARCH;
 	private final String TAG_TO_INSERT;
 
+	/**
+	 * @param thePrepToolsPluginExtension
+	 * @param theMenuItemNr
+	 * @param theMnemonic
+	 * @param theLabel
+	 * @param thePatternToSearch
+	 * @param theTagToInsert
+	 * @param tagRegexToSkip
+	 */
 	RegexPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			int theMenuItemNr, int theMnemonic, final String theLabel,
 			final String thePatternToSearch, final String theTagToInsert,
@@ -364,6 +378,14 @@ class RegexPrepTool extends AbstractMarkupPrepTool {
 		TAG_REGEX_TO_SKIP = tagRegexToSkip;
 	}
 
+	/**
+	 * @param thePrepToolsPluginExtension
+	 * @param theMenuItemNr
+	 * @param theMnemonic
+	 * @param theLabel
+	 * @param thePatternToSearch
+	 * @param theTag
+	 */
 	RegexPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			int theMenuItemNr, int theMnemonic, final String theLabel,
 			final String thePatternToSearch, final String theTag) {
@@ -371,28 +393,43 @@ class RegexPrepTool extends AbstractMarkupPrepTool {
 				thePatternToSearch, theTag, theTag);
 	}
 
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.PrepTool#getTagRegexToSkip()
+	 */
 	@Override
 	public String getTagRegexToSkip() {
 		return TAG_REGEX_TO_SKIP;
 	}
 
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.PrepTool#getLabel()
+	 */
 	@Override
 	protected String getLabel() {
 		return LABEL;
 	}
 
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractMarkupPrepTool#makeStartAction()
+	 */
 	@Override
 	protected AbstractPrepToolAction makeStartAction() {
 		return new RegexStartAction(prepToolsPluginExtension,
 				AbstractPrepToolAction.START, PATTERN_TO_SEARCH, LABEL);
 	}
 
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractMarkupPrepTool#makeFindAction()
+	 */
 	@Override
 	protected AbstractPrepToolAction makeFindAction() {
 		return new RegexFindAction(prepToolsPluginExtension,
 				AbstractPrepToolAction.FIND, PATTERN_TO_SEARCH, LABEL);
 	}
 
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractMarkupPrepTool#makeChangeAction()
+	 */
 	@Override
 	protected AbstractPrepToolAction makeChangeAction() {
 		return new RegexChangeAction(prepToolsPluginExtension,
@@ -402,6 +439,18 @@ class RegexPrepTool extends AbstractMarkupPrepTool {
 
 }
 
+/**
+ * FullRegexPrepTool can be used as a blackbox class that can be configured
+ * with
+ * - a regex pattern to search,
+ * - a menu item number,
+ * - a mnemonic for the menu entry,
+ * - a label for the menu entry.
+ * - a replace string to insert, (note that this is more generic than the super
+ * class where you can simply add a tag)
+ * - a regex pattern to skip during the search,
+ * 
+ */
 class FullRegexPrepTool extends RegexPrepTool {
 
 	private final String REPLACE_STRING;
@@ -417,33 +466,91 @@ class FullRegexPrepTool extends RegexPrepTool {
 	// its own insertions?
 	private static final String TAG_REGEX_TO_SKIP = null;
 
-	FullRegexPrepTool(
-			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			int theMenuItemNr, int theMnemonic, final String theLabel,
-			final String thePatternToSearch, final String theReplaceString) {
-		this(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic, theLabel,
-				thePatternToSearch, theReplaceString,
-				AbstractPrepToolAction.CHANGE);
-	}
+	private AbstractPrepToolAction changeAction;
 
+	/**
+	 * @param thePrepToolsPluginExtension
+	 * @param theMenuItemNr
+	 * @param theMnemonic
+	 * @param theLabel
+	 * @param thePatternToSearch
+	 * @param theReplaceString
+	 * @param theChangeButtonLabel
+	 */
 	FullRegexPrepTool(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			int theMenuItemNr, int theMnemonic, final String theLabel,
 			final String thePatternToSearch, final String theReplaceString,
 			final String theChangeButtonLabel) {
+		this(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic, theLabel,
+				thePatternToSearch, theReplaceString, theChangeButtonLabel,
+				null);
+	}
+
+	/**
+	 * @param thePrepToolsPluginExtension
+	 * @param theMenuItemNr
+	 * @param theMnemonic
+	 * @param theLabel
+	 * @param thePatternToSearch
+	 * @param theReplaceString
+	 * @param theChangeButtonLabel
+	 * @param theChangeAction
+	 */
+	FullRegexPrepTool(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			int theMenuItemNr, int theMnemonic, final String theLabel,
+			final String thePatternToSearch, final String theReplaceString,
+			final String theChangeButtonLabel,
+			final AbstractPrepToolAction theChangeAction) {
 		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic,
 				theLabel, thePatternToSearch, TAG_TO_INSERT, TAG_REGEX_TO_SKIP);
 		REPLACE_STRING = theReplaceString;
 		CHANGE_BUTTON_LABEL = theChangeButtonLabel;
+		changeAction = theChangeAction;
+	}
+
+	/**
+	 * @param thePrepToolsPluginExtension
+	 * @param theMenuItemNr
+	 * @param theMnemonic
+	 * @param theLabel
+	 * @param thePatternToSearch
+	 * @param theReplaceString
+	 * @param thePatternToSkip
+	 * @param theChangeButtonLabel
+	 * @param theChangeAction
+	 */
+	FullRegexPrepTool(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			int theMenuItemNr, int theMnemonic, final String theLabel,
+			final String thePatternToSearch, final String theReplaceString,
+			final String thePatternToSkip, final String theChangeButtonLabel,
+			final AbstractPrepToolAction theChangeAction) {
+		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic,
+				theLabel, thePatternToSearch, TAG_TO_INSERT, thePatternToSkip);
+		REPLACE_STRING = theReplaceString;
+		if (theChangeButtonLabel != null) {
+			CHANGE_BUTTON_LABEL = theChangeButtonLabel;
+		}
+		else if (theChangeAction != null) {
+			CHANGE_BUTTON_LABEL = theChangeAction.getName();
+		}
+		else {
+			CHANGE_BUTTON_LABEL = "*ERR: either set label or action!";
+		}
+		changeAction = theChangeAction;
 	}
 
 	@Override
 	protected AbstractPrepToolAction makeChangeAction() {
-		return new FullRegexChangeAction(prepToolsPluginExtension,
-				CHANGE_BUTTON_LABEL, PATTERN_TO_SEARCH, getLabel(),
-				REPLACE_STRING);
+		if (changeAction == null) {
+			changeAction = new FullRegexChangeAction(prepToolsPluginExtension,
+					CHANGE_BUTTON_LABEL, PATTERN_TO_SEARCH, getLabel(),
+					REPLACE_STRING);
+		}
+		return changeAction;
 	}
-
 }
 
 class PageBreakPrepTool extends FullRegexPrepTool {
