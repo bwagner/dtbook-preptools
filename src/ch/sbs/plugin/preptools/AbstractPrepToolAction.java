@@ -45,6 +45,9 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 		NAME = theName;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
 	@Override
 	public void actionPerformed(final ActionEvent arg0) {
 		if ((prepToolsPluginExtension.getPage()) != null) {
@@ -117,7 +120,8 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 
 	/**
 	 * Hook thet gets called just before meta-information is inserted into the
-	 * document.
+	 * document. This code is executed as a single edit, so it can be undone by
+	 * the user as a single edit step.
 	 */
 	protected void doWrapUp() {
 
@@ -130,8 +134,8 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	}
 
 	/**
-	 * Hook that gets called only when editor, page, document, text have
-	 * successfully been retrieved.
+	 * Compulsory hook that gets called only when editor, page, document, text
+	 * have successfully been retrieved.
 	 * 
 	 * @throws BadLocationException
 	 */
@@ -149,6 +153,9 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 		return aWSTextEditorPage.getSelectionEnd();
 	}
 
+	/**
+	 * @return
+	 */
 	protected int getStartIndex() {
 		final Document document = prepToolsPluginExtension
 				.getDocumentMetaInfo().getDocument();
@@ -176,8 +183,16 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 		prepToolsPluginExtension.getDocumentMetaInfo().setDone(true);
 	}
 
+	/**
+	 * Compulsory hook for subclasses.
+	 * 
+	 * @return
+	 */
 	protected abstract String getProcessName();
 
+	/**
+	 * @return
+	 */
 	public String getName() {
 		return NAME;
 	}
@@ -228,6 +243,11 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
 	}
 
+	/**
+	 * Compulsory hook for subclasses.
+	 * 
+	 * @return pattern for which to search
+	 */
 	abstract protected Pattern getPattern();
 
 	protected DocumentMetaInfo.MetaInfo getMetaInfo() {
@@ -837,6 +857,10 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 		}
 	}
 
+	/**
+	 * Optional hook for subclasses: To perform something before general
+	 * processing.
+	 */
 	protected void init() {
 
 	}
