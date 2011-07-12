@@ -64,7 +64,7 @@ public class PrepToolLoader {
 		prepTools.add(new FullRegexPrepTool(thePrepToolsPluginExtension, i++,
 				'd', "Ordinal", ORDINAL_SEARCH_REGEX, ORDINAL_TAG,
 				ORDINAL_SKIP_REGEX, null, new OrdinalChangeAction(
-						thePrepToolsPluginExtension, "Ordinal",
+						thePrepToolsPluginExtension, "Change",
 						ORDINAL_SEARCH_REGEX, "Ordinal")));
 
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'r',
