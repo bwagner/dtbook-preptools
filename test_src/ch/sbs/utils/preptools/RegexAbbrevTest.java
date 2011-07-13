@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
@@ -37,10 +38,8 @@ public class RegexAbbrevTest {
 		final Pattern pattern = Pattern
 				.compile(PrepToolLoader.ABBREV_SEARCH_REGEX);
 		assertTrue(pattern.matcher("bloss A4 brauchen").find());
-		assertEquals(
-				"bloss <abbr>A</abbr>4 brauchen",
-				pattern.matcher("bloss A4 brauchen").replaceAll(
-						"<abbr>$1</abbr>"));
+		assertEquals("bloss <abbr>A</abbr>4 brauchen",
+				feature1414(pattern, "bloss A4 brauchen"));
 		assertTrue(pattern.matcher("drum A geben").find());
 		assertTrue(pattern.matcher("drumA454 geben").find());
 	}
@@ -75,21 +74,27 @@ public class RegexAbbrevTest {
 				.compile(PrepToolLoader.ABBREV_SEARCH_REGEX);
 
 		assertTrue(pattern.matcher("blabla Abb. 232 blabla").find());
-		assertEquals(
-				"blabla <abbr>Abb. </abbr>232 blabla",
-				pattern.matcher("blabla Abb. 232 blabla").replaceAll(
-						"<abbr>$1</abbr>"));
+		assertEquals("blabla <abbr>Abb. </abbr>232 blabla",
+				feature1414(pattern, "blabla Abb. 232 blabla"));
 
 		assertTrue(pattern.matcher("blabla Nr. 3 blabla").find());
-		assertEquals(
-				"blabla <abbr>Nr. </abbr>3 blabla",
-				pattern.matcher("blabla Nr. 3 blabla").replaceAll(
-						"<abbr>$1</abbr>"));
+		assertEquals("blabla <abbr>Nr. </abbr>3 blabla",
+				feature1414(pattern, "blabla Nr. 3 blabla"));
 
 		assertTrue(pattern.matcher("blabla Bd. 33 blabla").find());
-		assertEquals(
-				"blabla <abbr>Bd. </abbr>33 blabla",
-				pattern.matcher("blabla Bd. 33 blabla").replaceAll(
-						"<abbr>$1</abbr>"));
+		assertEquals("blabla <abbr>Bd. </abbr>33 blabla",
+				feature1414(pattern, "blabla Bd. 33 blabla"));
+	}
+
+	public static String feature1414(final Pattern pattern, final String input) {
+		final Matcher matcher = pattern.matcher(input);
+		matcher.find();
+		assertEquals(3, matcher.groupCount());
+		if (matcher.group(3) != null) {
+			return pattern.matcher(input).replaceAll("<abbr>$2</abbr>$3");
+		}
+		else {
+			return pattern.matcher(input).replaceAll("<abbr>$1</abbr>");
+		}
 	}
 }

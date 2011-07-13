@@ -32,7 +32,7 @@ public class PrepToolLoader {
 	// Akronyme des Typs GmbH, GSoA, etc.
 	// Abkürzungen des Typs x.y. oder x. y.
 	// Grossbuchstaben(folgen) des Typs A, A-Z, MM, USA, A4
-	public static final String ABBREV_SEARCH_REGEX = "(\\b\\p{L}*\\p{Ll}\\p{Lu}\\p{L}*\\b|\\b\\p{L}{1,4}\\.\\s*\\p{L}{1,4}\\.\\s*\\p{L}{1,4}\\.\\s*\\p{L}{1,4}\\.|\\b\\p{L}{1,4}\\.\\s*\\p{L}{1,4}\\.\\s*\\p{L}{1,4}\\.|\\b\\p{L}{1,4}\\.\\s*\\p{L}{1,4}\\.|\\b\\p{L}{1,4}\\.\\s+(?=\\d)|\\p{Lu}\\p{Lu}+|\\p{Lu}(?!\\p{Ll}))";
+	public static final String ABBREV_SEARCH_REGEX = "(\\b\\p{L}*\\p{Ll}\\p{Lu}\\p{L}*\\b|\\b\\p{L}{1,4}\\.\\s*\\p{L}{1,4}\\.\\s*\\p{L}{1,4}\\.\\s*\\p{L}{1,4}\\.|\\b\\p{L}{1,4}\\.\\s*\\p{L}{1,4}\\.\\s*\\p{L}{1,4}\\.|\\b\\p{L}{1,4}\\.\\s*\\p{L}{1,4}\\.|\\p{Lu}\\p{Lu}+|\\p{Lu}(?!\\p{Ll}))|(\\b\\p{L}{1,4}\\.\\s+)(\\d)";
 	public static final String ABBREV_TAG = "abbr";
 
 	// http://redmine.sbszh.ch/issues/show/1203
@@ -74,8 +74,15 @@ public class PrepToolLoader {
 				"Measure", MEASURE_SEARCH_REGEX, MEASURE_TAG,
 				MEASURE_SKIP_REGEX));
 
-		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'v',
-				"Abbreviation", ABBREV_SEARCH_REGEX, ABBREV_TAG));
+		// prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++,
+		// 'v',
+		// "Abbreviation", ABBREV_SEARCH_REGEX, ABBREV_TAG));
+
+		prepTools.add(new FullRegexPrepTool(thePrepToolsPluginExtension, i++,
+				'v', "Abbreviation", ABBREV_SEARCH_REGEX, ABBREV_TAG,
+				ABBREV_TAG, null, new AbbrevChangeAction(
+						thePrepToolsPluginExtension, "Change",
+						ABBREV_SEARCH_REGEX, "Abbreviation")));
 
 		prepTools.add(new PageBreakPrepTool(thePrepToolsPluginExtension, i++,
 				'k'));

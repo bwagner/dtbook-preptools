@@ -728,6 +728,63 @@ class OrdinalChangeAction extends FullRegexChangeAction {
 	}
 }
 
+// TODO: blatant code duplication from OrdinalChangeAction
+// Only difference is feature1414 vs. feature1416
+@SuppressWarnings("serial")
+class AbbrevChangeAction extends FullRegexChangeAction {
+
+	AbbrevChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName, final String thePattern,
+			final String theProcessName) {
+		this(thePrepToolsPluginExtension, theName, thePattern, theProcessName,
+				null);
+	}
+
+	AbbrevChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName, final String thePattern,
+			final String theProcessName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName, thePattern, theProcessName,
+				theReplaceString);
+	}
+
+	@Override
+	protected int handleText(final Document document, final String selText)
+			throws BadLocationException {
+		if (selText == null) {
+			return lastMatchStart;
+		}
+		final String newText = feature1416(getPattern(), selText);
+
+		DocumentUtils.performSingleReplacement(document, selText, newText,
+				lastMatchStart);
+
+		return lastMatchStart + newText.length();
+	}
+
+	@Override
+	protected boolean breakIfManualEditOccurred() {
+		return true;
+	}
+
+	/**
+	 * @param pattern
+	 * @param input
+	 * @return
+	 */
+	public static String feature1416(final Pattern pattern, final String input) {
+		final Matcher matcher = pattern.matcher(input);
+		matcher.find();
+		if (matcher.group(3) != null) {
+			return pattern.matcher(input).replaceAll("<abbr>$2</abbr>$3");
+		}
+		else {
+			return pattern.matcher(input).replaceAll("<abbr>$1</abbr>");
+		}
+	}
+}
+
 @SuppressWarnings("serial")
 class RegexFindAction extends AbstractMarkupFindAction {
 	private final RegexHelper helper;
