@@ -37,7 +37,7 @@ public class Match implements Comparable<Match> {
 
 	@Override
 	public int compareTo(final Match o) {
-		return startOffset - (o).startOffset;
+		return startOffset - o.startOffset;
 	}
 
 	@Override
