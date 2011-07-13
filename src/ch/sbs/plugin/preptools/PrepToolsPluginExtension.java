@@ -669,12 +669,17 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	/*
 	 * This is actually redundant to my own book-keeping in
 	 * ProceedAction.handleManualCursorMovement
+	 * 
+	 * Also: The caretUpdate will be called when moving the 
+	 * caret from my code, not only when the user moves the 
+	 * caret within the editor!
 	 */
 	class MyCaretListener implements CaretListener {
 
 		@Override
 		public void caretUpdate(CaretEvent e) {
-			getDocumentMetaInfo().setManualEdit();
+			// getDocumentMetaInfo().setManualEdit();
+			showMessage("caret moved! " + e);
 		}
 
 	}
