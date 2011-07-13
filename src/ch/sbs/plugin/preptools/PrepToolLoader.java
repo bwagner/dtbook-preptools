@@ -74,10 +74,6 @@ public class PrepToolLoader {
 				"Measure", MEASURE_SEARCH_REGEX, MEASURE_TAG,
 				MEASURE_SKIP_REGEX));
 
-		// prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++,
-		// 'v',
-		// "Abbreviation", ABBREV_SEARCH_REGEX, ABBREV_TAG));
-
 		prepTools.add(new FullRegexPrepTool(thePrepToolsPluginExtension, i++,
 				'v', "Abbreviation", ABBREV_SEARCH_REGEX, ABBREV_TAG,
 				ABBREV_TAG, null, new AbbrevChangeAction(
