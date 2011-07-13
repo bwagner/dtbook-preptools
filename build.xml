@@ -55,14 +55,18 @@
 		<mkdir dir="${build.dir}" />
 	</target>
 
+    <presetdef name="my.javac">
+        <javac includeantruntime="false" />
+    </presetdef>
+
 	<target name="compile" depends="init, boilerplate" description="compile project">
-		<javac destdir="${build.dir}" deprecation="on" debug="on">
+		<my.javac destdir="${build.dir}" deprecation="on" debug="on">
 			<src path="${src.dir}" />
 			<src path="${src.generated}" />
 			<classpath>
 				<path refid="classpath.path" />
 			</classpath>
-		</javac>
+		</my.javac>
 	</target>
 
 	<target name="deploy" description="install plugin in local oxygen and restart oxygen" >
