@@ -201,6 +201,31 @@ class DocumentMetaInfo {
 	 * oxygen, or rather Swing specific.
 	 * Sets current position match.
 	 * 
+	 * @param theMatch
+	 */
+	public void setCurrentPositionMatch(final Match theMatch) {
+		setCurrentPositionMatch(new Match.PositionMatch(document,
+				theMatch.startOffset, theMatch.endOffset));
+	}
+
+	/**
+	 * oxygen, or rather Swing specific.
+	 * Sets current position match.
+	 * 
+	 * @param theStart
+	 * @param theEnd
+	 * 
+	 * @param theCurrentPositionMatch
+	 */
+	public void setCurrentPositionMatch(int theStart, int theEnd) {
+		setCurrentPositionMatch(new Match.PositionMatch(document, theStart,
+				theEnd));
+	}
+
+	/**
+	 * oxygen, or rather Swing specific.
+	 * Sets current position match.
+	 * 
 	 * @param theCurrentPositionMatch
 	 */
 	public void setCurrentPositionMatch(
