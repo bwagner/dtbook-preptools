@@ -643,12 +643,16 @@ class AccentChangeAction extends FullRegexChangeAction {
 		return true;
 	}
 
-	// override veto behaviour from intermediate superclasses.
+	// override abortIfSelectionChanged behaviour from intermediate
+	// superclasses.
 	@Override
 	protected boolean abortIfSelectionChanged(final String selText) {
 		return false;
 	}
 
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractPrepToolAction#doWrapUp()
+	 */
 	@Override
 	protected void doWrapUp() {
 		DocumentUtils.performReplacement(prepToolsPluginExtension
@@ -696,6 +700,14 @@ abstract class AbstractChangeAction extends FullRegexChangeAction {
 		return lastMatchStart + newText.length();
 	}
 
+	/**
+	 * Compulsory hook for subclasses to perform replacement of thePattern on
+	 * selText.
+	 * 
+	 * @param thePattern
+	 * @param selText
+	 * @return
+	 */
 	protected abstract String performReplacement(final Pattern thePattern,
 			final String selText);
 
@@ -721,6 +733,9 @@ class OrdinalChangeAction extends AbstractChangeAction {
 	}
 
 	/**
+	 * Applies the given pattern to the given input and replaces the matches
+	 * according to http://redmine.sbszh.ch/issues/1416
+	 * 
 	 * @param pattern
 	 * @param input
 	 * @return
@@ -758,8 +773,6 @@ class OrdinalChangeAction extends AbstractChangeAction {
 	}
 }
 
-// TODO: blatant code duplication from OrdinalChangeAction
-// Only difference is feature1414 vs. feature1416
 @SuppressWarnings("serial")
 class AbbrevChangeAction extends AbstractChangeAction {
 
@@ -786,6 +799,9 @@ class AbbrevChangeAction extends AbstractChangeAction {
 	}
 
 	/**
+	 * Applies the given pattern to the given input and replaces the matches
+	 * according to http://redmine.sbszh.ch/issues/1414
+	 * 
 	 * @param pattern
 	 * @param input
 	 * @return
