@@ -4,6 +4,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 import ch.sbs.plugin.preptools.AccentRegexTest;
+import ch.sbs.plugin.preptools.RegexAbbrevTest;
 import ch.sbs.plugin.preptools.RegexOrdinalTest;
 import ch.sbs.utils.intervaltree.TestIntervalTree;
 import ch.sbs.utils.intervaltree.TestRbTree;

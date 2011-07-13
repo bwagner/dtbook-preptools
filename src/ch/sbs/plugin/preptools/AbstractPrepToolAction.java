@@ -659,7 +659,50 @@ class AccentChangeAction extends FullRegexChangeAction {
 }
 
 @SuppressWarnings("serial")
-class OrdinalChangeAction extends FullRegexChangeAction {
+abstract class AbstractChangeAction extends FullRegexChangeAction {
+
+	AbstractChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName, final String thePattern,
+			final String theProcessName) {
+		this(thePrepToolsPluginExtension, theName, thePattern, theProcessName,
+				null);
+	}
+
+	AbstractChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName, final String thePattern,
+			final String theProcessName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName, thePattern, theProcessName,
+				theReplaceString);
+	}
+
+	@Override
+	protected boolean breakIfManualEditOccurred() {
+		return true;
+	}
+
+	@Override
+	protected int handleText(final Document document, final String selText)
+			throws BadLocationException {
+		if (selText == null) {
+			return lastMatchStart;
+		}
+		final String newText = performReplacement(getPattern(), selText);
+
+		DocumentUtils.performSingleReplacement(document, selText, newText,
+				lastMatchStart);
+
+		return lastMatchStart + newText.length();
+	}
+
+	protected abstract String performReplacement(final Pattern thePattern,
+			final String selText);
+
+}
+
+@SuppressWarnings("serial")
+class OrdinalChangeAction extends AbstractChangeAction {
 
 	OrdinalChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
@@ -675,25 +718,6 @@ class OrdinalChangeAction extends FullRegexChangeAction {
 			final String theProcessName, final String theReplaceString) {
 		super(thePrepToolsPluginExtension, theName, thePattern, theProcessName,
 				theReplaceString);
-	}
-
-	@Override
-	protected int handleText(final Document document, final String selText)
-			throws BadLocationException {
-		if (selText == null) {
-			return lastMatchStart;
-		}
-		final String newText = feature1416(getPattern(), selText);
-
-		DocumentUtils.performSingleReplacement(document, selText, newText,
-				lastMatchStart);
-
-		return lastMatchStart + newText.length();
-	}
-
-	@Override
-	protected boolean breakIfManualEditOccurred() {
-		return true;
 	}
 
 	/**
@@ -726,12 +750,18 @@ class OrdinalChangeAction extends FullRegexChangeAction {
 		}
 		return matcher.replaceAll(replacement);
 	}
+
+	@Override
+	protected String performReplacement(final Pattern thePattern,
+			final String selText) {
+		return feature1416(thePattern, selText);
+	}
 }
 
 // TODO: blatant code duplication from OrdinalChangeAction
 // Only difference is feature1414 vs. feature1416
 @SuppressWarnings("serial")
-class AbbrevChangeAction extends FullRegexChangeAction {
+class AbbrevChangeAction extends AbstractChangeAction {
 
 	AbbrevChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
@@ -750,22 +780,9 @@ class AbbrevChangeAction extends FullRegexChangeAction {
 	}
 
 	@Override
-	protected int handleText(final Document document, final String selText)
-			throws BadLocationException {
-		if (selText == null) {
-			return lastMatchStart;
-		}
-		final String newText = feature1416(getPattern(), selText);
-
-		DocumentUtils.performSingleReplacement(document, selText, newText,
-				lastMatchStart);
-
-		return lastMatchStart + newText.length();
-	}
-
-	@Override
-	protected boolean breakIfManualEditOccurred() {
-		return true;
+	protected String performReplacement(final Pattern thePattern,
+			final String selText) {
+		return feature1414(thePattern, selText);
 	}
 
 	/**
@@ -773,7 +790,7 @@ class AbbrevChangeAction extends FullRegexChangeAction {
 	 * @param input
 	 * @return
 	 */
-	public static String feature1416(final Pattern pattern, final String input) {
+	public static String feature1414(final Pattern pattern, final String input) {
 		final Matcher matcher = pattern.matcher(input);
 		matcher.find();
 		if (matcher.group(3) != null) {
