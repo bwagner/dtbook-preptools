@@ -340,7 +340,7 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 	 * @param selText
 	 * @return True if the process is to be aborted.
 	 */
-	protected boolean veto(final String selText) {
+	protected boolean abortIfSelectionChanged(final String selText) {
 		return false;
 	}
 
@@ -352,7 +352,7 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 		final WSTextEditorPage aWSTextEditorPage = prepToolsPluginExtension
 				.getPage();
 
-		if (veto(aWSTextEditorPage.getSelectedText()))
+		if (abortIfSelectionChanged(aWSTextEditorPage.getSelectedText()))
 			return;
 
 		if (handleManualCursorMovement()) {
@@ -408,24 +408,24 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 }
 
 @SuppressWarnings("serial")
-abstract class AbstractMarkupChangeVetoAction extends
+abstract class AbstractMarkupChangeAbortIfSelectionChangedAction extends
 		AbstractMarkupProceedAction {
 
-	AbstractMarkupChangeVetoAction(
+	AbstractMarkupChangeAbortIfSelectionChangedAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String theName) {
 		super(thePrepToolsPluginExtension, theName);
 	}
 
 	@Override
-	protected boolean veto(final String selText) {
+	protected boolean abortIfSelectionChanged(final String selText) {
 		return (selText == null || !MarkupUtil.matches(selText, getPattern()));
 	}
 }
 
 @SuppressWarnings("serial")
 abstract class AbstractMarkupChangeAction extends
-		AbstractMarkupChangeVetoAction {
+		AbstractMarkupChangeAbortIfSelectionChangedAction {
 
 	private final String FULL_OPENING_TAG;
 	private final String FULL_CLOSING_TAG;
@@ -460,7 +460,7 @@ abstract class AbstractMarkupChangeAction extends
 
 @SuppressWarnings("serial")
 abstract class AbstractMarkupFullRegexChangeAction extends
-		AbstractMarkupChangeVetoAction {
+		AbstractMarkupChangeAbortIfSelectionChangedAction {
 
 	private final String replaceString;
 
@@ -645,7 +645,7 @@ class AccentChangeAction extends FullRegexChangeAction {
 
 	// override veto behaviour from intermediate superclasses.
 	@Override
-	protected boolean veto(final String selText) {
+	protected boolean abortIfSelectionChanged(final String selText) {
 		return false;
 	}
 
