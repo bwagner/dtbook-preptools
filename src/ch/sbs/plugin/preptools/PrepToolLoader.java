@@ -76,8 +76,12 @@ public class PrepToolLoader {
 
 		prepTools.add(new FullRegexPrepTool(thePrepToolsPluginExtension, i++,
 				'v', "Abbreviation", ABBREV_SEARCH_REGEX, ABBREV_TAG,
-				ABBREV_TAG, null, new AbbrevChangeAction(
-						thePrepToolsPluginExtension, "Change",
+				ABBREV_TAG, null, new AbbrevStartAction(
+						thePrepToolsPluginExtension, "Start",
+						ABBREV_SEARCH_REGEX, "Abbreviation"),
+				new AbbrevFindAction(thePrepToolsPluginExtension, "Find",
+						ABBREV_SEARCH_REGEX, "Abbreviation"),
+				new AbbrevChangeAction(thePrepToolsPluginExtension, "Change",
 						ABBREV_SEARCH_REGEX, "Abbreviation")));
 
 		prepTools.add(new PageBreakPrepTool(thePrepToolsPluginExtension, i++,

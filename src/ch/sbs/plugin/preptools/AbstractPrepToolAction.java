@@ -228,9 +228,13 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 		// Possibly improve this: don't create a skipper for every searchOn
 		// call.
 		// Instead save the skipper in DocumentMetaInfo. However, make sure
-		// it is properly synced with changes occurring in the text, also
+		// it is properly synced with changes occurring in the document, also
 		// via Undo!
 		final RegionSkipper skipper = prepToolsPluginExtension.makeSkipper();
+		final String customPattern = getCustomSkipPatternToAdd();
+		if (customPattern != null) {
+			skipper.addPattern(customPattern);
+		}
 		final Match match = new MarkupUtil(skipper).find(newText, startAt,
 				getPattern());
 		if (match.equals(Match.NULL_MATCH)) {
@@ -241,6 +245,15 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 		dmi.setCurrentState();
 		prepToolsPluginExtension.select(match.startOffset, match.endOffset);
 		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
+	}
+
+	/**
+	 * Optional hook for subclasses to add a skipper pattern.
+	 * 
+	 * @return the pattern to skip
+	 */
+	protected String getCustomSkipPatternToAdd() {
+		return null;
 	}
 
 	/**
@@ -780,6 +793,17 @@ class OrdinalChangeAction extends AbstractChangeAction {
 	}
 }
 
+/**
+ * (@see <a href="http://redmine.sbszh.ch/issues/1443">Bug 1443</a>)
+ * This pattern is used for the Abbrev-Start-, -Find-, and Change-Actions to
+ * allow them to plug in an additional pattern to skip, namely to avoid matching
+ * text within a p element, particularly:
+ * <p class="sourcePublisher">
+ */
+interface Bug1443 {
+	public static final String CUSTOM_PATTERN = "<p[^>]*>";
+}
+
 @SuppressWarnings("serial")
 class AbbrevChangeAction extends AbstractChangeAction {
 
@@ -823,6 +847,56 @@ class AbbrevChangeAction extends AbstractChangeAction {
 			return pattern.matcher(input).replaceAll("<abbr>$1</abbr>");
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractMarkupAction#createPattern()
+	 * (@see <a href="http://redmine.sbszh.ch/issues/1443">Bug 1443</a>)
+	 */
+	@Override
+	protected String getCustomSkipPatternToAdd() {
+		return Bug1443.CUSTOM_PATTERN;
+	}
+
+}
+
+@SuppressWarnings("serial")
+class AbbrevStartAction extends RegexStartAction {
+
+	AbbrevStartAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName, final String thePattern,
+			final String theProcessName) {
+		super(thePrepToolsPluginExtension, theName, thePattern, theProcessName);
+	}
+
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractMarkupAction#createPattern()
+	 * (@see <a href="http://redmine.sbszh.ch/issues/1443">Bug 1443</a>)
+	 */
+	@Override
+	protected String getCustomSkipPatternToAdd() {
+		return Bug1443.CUSTOM_PATTERN;
+	}
+
+}
+
+@SuppressWarnings("serial")
+class AbbrevFindAction extends RegexFindAction {
+
+	AbbrevFindAction(PrepToolsPluginExtension thePrepToolsPluginExtension,
+			String theName, String thePattern, String theProcessName) {
+		super(thePrepToolsPluginExtension, theName, thePattern, theProcessName);
+	}
+
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractMarkupAction#createPattern()
+	 * (@see <a href="http://redmine.sbszh.ch/issues/1443">Bug 1443</a>)
+	 */
+	@Override
+	protected String getCustomSkipPatternToAdd() {
+		return Bug1443.CUSTOM_PATTERN;
+	}
+
 }
 
 @SuppressWarnings("serial")
