@@ -321,7 +321,8 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 
 	/**
 	 * 
-	 * Hook to be implemented by subclasses. Handles selected text and returns
+	 * Compulsory hook to be implemented by subclasses. Handles selected text
+	 * and returns
 	 * position where to continue with search.
 	 * 
 	 * @param document
@@ -335,7 +336,8 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 			final String selText) throws BadLocationException;
 
 	/**
-	 * Hook to be implemented by subclasses. If true the process is aborted.
+	 * Optional hook to be implemented by subclasses. If true the process is
+	 * aborted.
 	 * 
 	 * @param selText
 	 * @return True if the process is to be aborted.
@@ -643,8 +645,13 @@ class AccentChangeAction extends FullRegexChangeAction {
 		return true;
 	}
 
-	// override abortIfSelectionChanged behaviour from intermediate
-	// superclasses.
+	// Override abortIfSelectionChanged behaviour from intermediate
+	// superclasses. We don't want to silently abort the process when the cursor
+	// has been manually moved, because we deal with that case by re-setting the
+	// cursor to the last position.
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractMarkupChangeAbortIfSelectionChangedAction#abortIfSelectionChanged(java.lang.String)
+	 */
 	@Override
 	protected boolean abortIfSelectionChanged(final String selText) {
 		return false;
