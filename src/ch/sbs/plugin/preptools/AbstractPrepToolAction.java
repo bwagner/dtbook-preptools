@@ -377,8 +377,10 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 		final int continueAt = handleText(aWSTextEditorPage.getDocument(),
 				aWSTextEditorPage.getSelectedText());
 
+		final int startIndex = Math.max(continueAt, getStartIndex());
+
 		searchOn(aWSTextEditorPage, prepToolsPluginExtension.getWsEditor(),
-				continueAt);
+				startIndex);
 	}
 
 	/**
