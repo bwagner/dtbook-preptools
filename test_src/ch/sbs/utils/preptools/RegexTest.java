@@ -12,7 +12,7 @@ import org.junit.Test;
 import ch.sbs.plugin.preptools.PrepToolLoader;
 
 /*
- * 
+ *             Lookarounds:
  *             +----------+----------+
  *             |     =    |     !    |
  *             | Positive | Negative |
@@ -21,6 +21,26 @@ import ch.sbs.plugin.preptools.PrepToolLoader;
  * +-----------+----------+----------+
  * | Behind ?< |   ?<=    |   ?<!    |
  * +-----------+----------+----------+
+ * 
+ * Non-capturing parentheses: (?: ___ )
+ * Switches/Groups with flags:
+ * (?f) ____ (?-f) # allows turning a flag on and off within a regex
+ * (?f ____ ) # keeps the flag on for the regex in parenthesis.
+ * (?-f ____ ) # keeps the flag off for the regex in parenthesis.
+ * Ignore-case  : i
+ * Unix lines   : d Only the '\n' line terminator is recognized in the behavior of ., ^, and $. 
+ * Multiline    : m expressions ^ and $ match just after (just before), a line terminator or the end of the input sequence.
+ * Ignore-case  : s expression . matches any character, including a line terminator. 
+ * Unicode-case : u Unicode-aware case folding
+ * Ignore-case  : x Whitespace is ignored, and embedded comments starting with # are ignored until the end of a line. 
+ *
+ * Capturing parentheses: ( ___ )
+ * 
+ * 
+ * See:
+ * http://download.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html
+ * http://download.oracle.com/javase/7/docs/api/java/util/regex/Matcher.html
+ * 
  */
 
 public class RegexTest {
