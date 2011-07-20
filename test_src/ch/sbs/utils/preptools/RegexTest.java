@@ -326,4 +326,61 @@ public class RegexTest {
 		final String input = "bla 〉 bla";
 		assertFalse(pattern.matcher(input).find());
 	}
+
+	@Test
+	public void testBackref() {
+		final Pattern pattern = Pattern.compile("(.)b\\1");
+		assertTrue(pattern.matcher("aba").find());
+		assertFalse(pattern.matcher("oba").find());
+	}
+
+	@Test
+	public void testBackref2() {
+		final Pattern pattern = Pattern.compile("(.)(.)b\\2\\1");
+		assertTrue(pattern.matcher("aoboa").find());
+		assertFalse(pattern.matcher("aobaa").find());
+	}
+
+	// named groups available only from Java 7 on
+	// http://download.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#groupname
+	// Java 6 doesn't support them:
+	// http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html#cg
+	@Test
+	public void testBackrefName() {
+		final boolean java7 = "1.7".equals(System
+				.getProperty("java.specification.version"));
+		final Pattern pattern = Pattern
+				.compile(java7 ? "(?<first>)(?<second>)b\\k<second>\\k<first>"
+						: "(.)(.)b\\2\\1");
+		assertTrue(pattern.matcher("aoboa").find());
+		assertFalse(pattern.matcher("aobaa").find());
+	}
+
+	// named groups available only from Java 7 on
+	// http://download.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#groupname
+	// Java 6 doesn't support them:
+	// http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html#cg
+	// http://blogs.oracle.com/xuemingshen/entry/named_capturing_group_in_jdk7
+	// http://stackoverflow.com/questions/415580/regex-named-groups-in-java
+	@Test
+	public void testReplaceBackrefName() {
+		final boolean java7 = "1.7".equals(System
+				.getProperty("java.specification.version"));
+		final Pattern pattern = Pattern
+				.compile(java7 ? "(?<first>)(?<second>)b\\k<second>\\k<first>"
+						: "(.)(.)b\\2\\1");
+		assertEquals(
+				"oBa aobaa",
+				pattern.matcher("aoboa aobaa").replaceAll(
+						java7 ? "${second}B${first}" : "$2B$1"));
+	}
+
+	// http://download.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#backref
+	@Test
+	public void testBackrefMoreThan10() {
+		final Pattern pattern = Pattern
+				.compile("(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)x\\1\\2\\3\\4\\5\\6\\7\\8\\9\\10\\11\\12");
+		assertTrue(pattern.matcher("123456789abcx123456789abc").find());
+		assertFalse(pattern.matcher("123456789abcx223456789abc").find());
+	}
 }
