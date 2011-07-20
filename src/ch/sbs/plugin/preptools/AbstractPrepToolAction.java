@@ -154,29 +154,6 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	}
 
 	/**
-	 * @return
-	 */
-	protected int getStartIndex() {
-		final Document document = prepToolsPluginExtension
-				.getDocumentMetaInfo().getDocument();
-		try {
-			final String bookTag = "<book";
-			final int indexOf = document.getText(0, document.getLength())
-					.indexOf(bookTag);
-			if (indexOf < 0) {
-				final String message = "\"" + bookTag
-						+ "\" not found in document!";
-				prepToolsPluginExtension.showMessage(message);
-				throw new RuntimeException(message);
-			}
-			return indexOf;
-		} catch (final BadLocationException e) {
-			prepToolsPluginExtension.showMessage(e.getMessage());
-			throw new RuntimeException(e);
-		}
-	}
-
-	/**
 	 * Subclasses call this method to notify completion of process.
 	 */
 	protected void done() {
@@ -318,7 +295,7 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 
 		metaInfo.setHasStarted(true);
 		metaInfo.setDone(false);
-		searchOn(aWSTextEditorPage, editorAccess, getStartIndex());
+		searchOn(aWSTextEditorPage, editorAccess, 0);
 	}
 
 }
@@ -377,10 +354,8 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 		final int continueAt = handleText(aWSTextEditorPage.getDocument(),
 				aWSTextEditorPage.getSelectedText());
 
-		final int startIndex = Math.max(continueAt, getStartIndex());
-
 		searchOn(aWSTextEditorPage, prepToolsPluginExtension.getWsEditor(),
-				startIndex);
+				continueAt);
 	}
 
 	/**
@@ -1066,7 +1041,7 @@ class OrphanParenStartAction extends AbstractOrphanParenAction {
 		final List<Match> orphans;
 		try {
 			orphans = ParensUtil.findOrphans(
-					document.getText(0, document.getLength()), getStartIndex(),
+					document.getText(0, document.getLength()), 0,
 					prepToolsPluginExtension.makeSkipper());
 		} catch (BadLocationException e) {
 			prepToolsPluginExtension.showMessage(e.getMessage());

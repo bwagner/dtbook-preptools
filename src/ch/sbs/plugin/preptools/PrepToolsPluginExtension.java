@@ -103,7 +103,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 	public RegionSkipper makeSkipper() {
 		final RegionSkipper compositeSkipper = RegionSkipper
-				.getLiteralAndCommentSkipper();
+				.getDefaultSkipper();
 		for (final String tagRegexToSkip : tagRegexesToSkip) {
 			compositeSkipper.addPattern(RegionSkipper
 					.makeMarkupRegex(tagRegexToSkip));
