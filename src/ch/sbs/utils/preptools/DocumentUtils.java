@@ -10,7 +10,9 @@ public class DocumentUtils {
 	/**
 	 * Performs as many replacements as possible of pattern regex in document,
 	 * starting at document index theStart. The replacement string may contain
-	 * backreferences (e.g. "$1").
+	 * backreferences (e.g. "$1"). If the regex to search is to be taken
+	 * literally, enclose it with \\Q und \\E.
+	 * 
 	 * 
 	 * @param theDocument
 	 *            The document on which to perform the replacement.
@@ -29,7 +31,9 @@ public class DocumentUtils {
 
 	/**
 	 * Performs as many replacements as possible of pattern regex in document,
-	 * The replacement string may contain backreferences (e.g. "$1").
+	 * The replacement string may contain backreferences (e.g. "$1"). If the
+	 * regex to search is to be taken literally, enclose it with \\Q und \\E.
+	 * 
 	 * 
 	 * @param theDocument
 	 *            The document on which to perform the replacement.
@@ -67,7 +71,8 @@ public class DocumentUtils {
 	/**
 	 * Performs a single replacement of pattern regex in document, starting at
 	 * document index theStart. The replacement string may contain
-	 * backreferences (e.g. "$1").
+	 * backreferences (e.g. "$1"). If the regex to search is to be taken
+	 * literally, enclose it with \\Q und \\E.
 	 * 
 	 * @param theDocument
 	 *            The document on which to perform the replacement.
