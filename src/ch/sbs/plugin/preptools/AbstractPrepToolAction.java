@@ -143,6 +143,18 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	protected abstract void doSomething() throws BadLocationException;
 
 	/**
+	 * Utility method that returns the start position of the current selection.
+	 * 
+	 * @return The start position of the current selection.
+	 */
+	protected final int getSelectionStart() {
+		final WSEditor editorAccess = prepToolsPluginExtension.getWsEditor();
+		final WSTextEditorPage aWSTextEditorPage = PrepToolsPluginExtension
+				.getPage(editorAccess);
+		return aWSTextEditorPage.getSelectionStart();
+	}
+
+	/**
 	 * Utility method that returns the end position of the current selection.
 	 * 
 	 * @return The end position of the current selection.
@@ -304,6 +316,8 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 @SuppressWarnings("serial")
 abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 
+	protected boolean takeUpWhereWeLeftOffLastTimeFlag;
+
 	AbstractMarkupProceedAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String theName) {
@@ -313,8 +327,7 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 	/**
 	 * 
 	 * Compulsory hook to be implemented by subclasses. Handles selected text
-	 * and returns
-	 * position where to continue with search.
+	 * and returns position where to continue with search.
 	 * 
 	 * @param document
 	 *            The document.
@@ -348,8 +361,10 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 		if (abortIfSelectionChanged(aWSTextEditorPage.getSelectedText()))
 			return;
 
-		if (handleManualCursorMovement()) {
-			return;
+		if (resumePositionAfterManualCursorMovement()) {
+			if (breakIfManualEditOccurred())
+				return;
+			takeUpWhereWeLeftOffLastTimeFlag = true;
 		}
 
 		final int continueAt = handleText(aWSTextEditorPage.getDocument(),
@@ -365,7 +380,7 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 	 * @param aWSTextEditorPage
 	 * @param dmi
 	 */
-	private boolean handleManualCursorMovement() {
+	private boolean resumePositionAfterManualCursorMovement() {
 		final DocumentMetaInfo dmi = prepToolsPluginExtension
 				.getDocumentMetaInfo();
 		final WSTextEditorPage aWSTextEditorPage = prepToolsPluginExtension
@@ -379,7 +394,7 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 				prepToolsPluginExtension.select(
 						lastMatchStart = pm.startOffset.getOffset(),
 						lastMatchEnd = pm.endOffset.getOffset());
-				return breakIfManualEditOccurred();
+				return true;
 			}
 		}
 		return false;
@@ -511,7 +526,9 @@ abstract class AbstractMarkupFindAction extends AbstractMarkupProceedAction {
 	@Override
 	protected int handleText(final Document document, final String selText)
 			throws BadLocationException {
-		return getSelectionEnd();
+		final boolean t = takeUpWhereWeLeftOffLastTimeFlag;
+		takeUpWhereWeLeftOffLastTimeFlag = false;
+		return t ? getSelectionStart() : getSelectionEnd();
 	}
 }
 
