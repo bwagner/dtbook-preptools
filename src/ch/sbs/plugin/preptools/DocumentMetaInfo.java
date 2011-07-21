@@ -245,14 +245,6 @@ class DocumentMetaInfo {
 	}
 
 	/**
-	 * last edit was manual.
-	 * 
-	 */
-	public void setManualEdit() {
-		lastEditWasManual = true;
-	}
-
-	/**
 	 * last edit was not manual.
 	 * 
 	 */
