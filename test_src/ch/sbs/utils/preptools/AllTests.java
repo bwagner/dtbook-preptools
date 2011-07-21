@@ -19,7 +19,7 @@ import ch.sbs.utils.string.StringUtilsTest;
 		RegexAbbrevTest.class, RegexMeasureTest.class, RegexOrdinalTest.class,
 		RegexPageBreakTest.class, RegexTest.class, RegionSkipperTest.class,
 		StringUtilsTest.class, TestIntervalTree.class, TestRbTree.class,
-		VFormUtilTest.class, WordHierarchyTest.class, })
+		TextUtilsTest.class, VFormUtilTest.class, WordHierarchyTest.class, })
 public class AllTests {
 	// the class remains completely empty,
 	// being used only as a holder for the above annotations
