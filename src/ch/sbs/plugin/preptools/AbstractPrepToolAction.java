@@ -21,6 +21,7 @@ import ch.sbs.utils.preptools.Match;
 import ch.sbs.utils.preptools.Match.PositionMatch;
 import ch.sbs.utils.preptools.MetaUtils;
 import ch.sbs.utils.preptools.RegionSkipper;
+import ch.sbs.utils.preptools.TextUtils;
 import ch.sbs.utils.preptools.parens.ParensUtil;
 
 @SuppressWarnings("serial")
@@ -635,8 +636,8 @@ class AccentChangeAction extends FullRegexChangeAction {
 		final String newText = getPattern().matcher(selText).replaceAll(
 				getReplaceString());
 
-		DocumentUtils.performReplacement(document, "\\b" + selText + "\\b",
-				newText);
+		DocumentUtils.performMultipleReplacements(document,
+				"\\b" + TextUtils.quoteRegexMeta(selText) + "\\b", newText);
 
 		return lastMatchStart + newText.length();
 	}
@@ -671,7 +672,7 @@ class AccentChangeAction extends FullRegexChangeAction {
 	 */
 	@Override
 	protected void doWrapUp() {
-		DocumentUtils.performReplacement(prepToolsPluginExtension
+		DocumentUtils.performMultipleReplacements(prepToolsPluginExtension
 				.getDocumentMetaInfo().getDocument(), REGEX_SPAN_DETAILED,
 				REPLACE);
 	}
@@ -710,8 +711,8 @@ abstract class AbstractChangeAction extends FullRegexChangeAction {
 		}
 		final String newText = performReplacement(getPattern(), selText);
 
-		DocumentUtils.performSingleReplacement(document, selText, newText,
-				lastMatchStart);
+		DocumentUtils.performSingleReplacement(document,
+				TextUtils.quoteRegexMeta(selText), newText, lastMatchStart);
 
 		return lastMatchStart + newText.length();
 	}

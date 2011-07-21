@@ -34,7 +34,7 @@ public class DocumentUtilsTest {
 		sb2.append("</dtbook>\n");
 		final Document document = DocumentTestUtil.makeDocument(sb1.toString());
 		sb1.setLength(0);
-		final int count = DocumentUtils.performReplacement(document,
+		final int count = DocumentUtils.performMultipleReplacements(document,
 				"<span.*?>(.*)</span>", "$1");
 		assertEquals(sb2.toString(), document.getText(0, document.getLength()));
 		assertEquals(3, count);
@@ -66,7 +66,7 @@ public class DocumentUtilsTest {
 		sb2.append("</dtbook>\n");
 		final Document document = DocumentTestUtil.makeDocument(sb1.toString());
 		sb1.setLength(0);
-		final int count = DocumentUtils.performReplacement(document,
+		final int count = DocumentUtils.performMultipleReplacements(document,
 				"<span\\s+brl:accents=\"reduced\">(.*)</span>", "$1");
 		assertEquals(sb2.toString(), document.getText(0, document.getLength()));
 		assertEquals(2, count);
@@ -103,7 +103,7 @@ public class DocumentUtilsTest {
 		sb2.append("</dtbook>\n");
 		final Document document = DocumentTestUtil.makeDocument(sb1.toString());
 		sb1.setLength(0);
-		final int count = DocumentUtils.performReplacement(document,
+		final int count = DocumentUtils.performMultipleReplacements(document,
 				"<span.*?>(.*)</span>", "$1");
 		assertEquals(sb2.toString(), document.getText(0, document.getLength()));
 		assertEquals(5, count);
@@ -114,7 +114,7 @@ public class DocumentUtilsTest {
 		final Document document = DocumentTestUtil
 				.makeDocument("Dieser Text enthält leider keine Klammer. Das tut ihm Leid.Restlos.");
 		final String regex = "leid.r";
-		final int count = DocumentUtils.performReplacement(document,
+		final int count = DocumentUtils.performMultipleReplacements(document,
 				TextUtils.wrapI(regex), "Leid. R");
 		assertEquals(
 				"Dieser Text enthält Leid. R keine Klammer. Das tut ihm Leid. Restlos.",
@@ -127,7 +127,7 @@ public class DocumentUtilsTest {
 		final Document document = DocumentTestUtil
 				.makeDocument("Dieser Text enthält leider keine Klammer. Das tut ihm Leid.Restlos.");
 		final String regex = "leid.r";
-		final int count = DocumentUtils.performReplacement(document,
+		final int count = DocumentUtils.performMultipleReplacements(document,
 				TextUtils.wrapI(TextUtils.quoteRegexMeta(regex)), "Leid. R");
 
 		assertEquals(

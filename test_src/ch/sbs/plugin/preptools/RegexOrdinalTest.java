@@ -108,7 +108,7 @@ public class RegexOrdinalTest {
 				.compile(PrepToolLoader.ORDINAL_SEARCH_REGEX);
 		final String feature1416 = OrdinalChangeAction.feature1416(pattern,
 				sb1.toString());
-		final int count = DocumentUtils.performReplacement(document,
+		final int count = DocumentUtils.performMultipleReplacements(document,
 				PrepToolLoader.ORDINAL_SEARCH_REGEX, feature1416);
 		assertEquals(sb2.toString(), document.getText(0, document.getLength()));
 		assertEquals(1, count);

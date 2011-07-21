@@ -23,9 +23,9 @@ public class DocumentUtils {
 	 *            backreferences (e.g. "$1")
 	 * @return The number of replacements applied.
 	 */
-	public static int performReplacement(final Document theDocument,
+	public static int performMultipleReplacements(final Document theDocument,
 			final String theRegexToSearch, final String theReplacement) {
-		return performReplacement(theDocument, theRegexToSearch,
+		return performMultipleReplacements(theDocument, theRegexToSearch,
 				theReplacement, 0);
 	}
 
@@ -46,7 +46,7 @@ public class DocumentUtils {
 	 *            The index from where on to start the search.
 	 * @return The number of replacements applied.
 	 */
-	public static int performReplacement(final Document theDocument,
+	public static int performMultipleReplacements(final Document theDocument,
 			final String theRegexToSearch, final String theReplacement,
 			int theStart) {
 		final Pattern pattern = Pattern.compile(theRegexToSearch);
