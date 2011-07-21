@@ -387,7 +387,8 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 
 	/**
 	 * Optional hook for subclasses to indicate whether to continue where we
-	 * left off last time or continue anyway
+	 * left off last time or continue anyway. Default behaviour is to let the
+	 * user decide.
 	 * 
 	 * @return True if we're supposed to take up where we left off last time.
 	 */
@@ -638,6 +639,14 @@ class AccentChangeAction extends FullRegexChangeAction {
 				newText);
 
 		return lastMatchStart + newText.length();
+	}
+
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractMarkupProceedAction#takeUpWhereWeLeftOffLastTime()
+	 */
+	@Override
+	protected boolean takeUpWhereWeLeftOffLastTime() {
+		return true;
 	}
 
 	@Override
