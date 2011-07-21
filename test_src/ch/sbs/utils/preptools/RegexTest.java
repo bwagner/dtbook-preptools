@@ -27,12 +27,15 @@ import ch.sbs.plugin.preptools.PrepToolLoader;
  * (?f) ____ (?-f) # allows turning a flag on and off within a regex
  * (?f ____ ) # keeps the flag on for the regex in parenthesis.
  * (?-f ____ ) # keeps the flag off for the regex in parenthesis.
- * Ignore-case  : i
- * Unix lines   : d Only the '\n' line terminator is recognized in the behavior of ., ^, and $. 
- * Multiline    : m expressions ^ and $ match just after (just before), a line terminator or the end of the input sequence.
- * Ignore-case  : s expression . matches any character, including a line terminator. 
- * Unicode-case : u Unicode-aware case folding
- * Ignore-case  : x Whitespace is ignored, and embedded comments starting with # are ignored until the end of a line. 
+ * Ignore-case       : i
+ * Unix lines        : d Only the '\n' line terminator is recognized in the behavior of ., ^, and $. 
+ * Multiline         : m expressions ^ and $ match just after (just before), a line terminator or the end of the input sequence.
+ * Ignore-case       : s expression . matches any character, including a line terminator: testDotAll()
+ * Unicode-case      : u Unicode-aware case folding
+ * Ignore-case       : x Whitespace is ignored, and embedded comments starting with # are ignored until the end of a line.
+ * Unicode Char Class: U Java7 only! (US-ASCII only) Predefined character classes and POSIX character classes are in 
+ *                     conformance with Unicode Technical Standard #18: Unicode Regular Expression Annex C:
+                       Compatibility Properties. (http://www.unicode.org/reports/tr18/#Compatibility_Properties)
  *
  * Capturing parentheses: ( ___ )
  * 
@@ -347,10 +350,8 @@ public class RegexTest {
 	// http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html#cg
 	@Test
 	public void testBackrefName() {
-		final boolean java7 = "1.7".equals(System
-				.getProperty("java.specification.version"));
 		final Pattern pattern = Pattern
-				.compile(java7 ? "(?<first>)(?<second>)b\\k<second>\\k<first>"
+				.compile(isJava7() ? "(?<first>)(?<second>)b\\k<second>\\k<first>"
 						: "(.)(.)b\\2\\1");
 		assertTrue(pattern.matcher("aoboa").find());
 		assertFalse(pattern.matcher("aobaa").find());
@@ -363,16 +364,14 @@ public class RegexTest {
 	// http://blogs.oracle.com/xuemingshen/entry/named_capturing_group_in_jdk7
 	// http://stackoverflow.com/questions/415580/regex-named-groups-in-java
 	@Test
-	public void testReplaceBackrefName() {
-		final boolean java7 = "1.7".equals(System
-				.getProperty("java.specification.version"));
+	public void testBackrefNameReplace() {
 		final Pattern pattern = Pattern
-				.compile(java7 ? "(?<first>)(?<second>)b\\k<second>\\k<first>"
+				.compile(isJava7() ? "(?<first>)(?<second>)b\\k<second>\\k<first>"
 						: "(.)(.)b\\2\\1");
 		assertEquals(
 				"oBa aobaa",
 				pattern.matcher("aoboa aobaa").replaceAll(
-						java7 ? "${second}B${first}" : "$2B$1"));
+						isJava7() ? "${second}B${first}" : "$2B$1"));
 	}
 
 	// http://download.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#backref
@@ -383,4 +382,11 @@ public class RegexTest {
 		assertTrue(pattern.matcher("123456789abcx123456789abc").find());
 		assertFalse(pattern.matcher("123456789abcx223456789abc").find());
 	}
+
+	private static boolean isJava7() {
+		return JAVA_7;
+	}
+
+	private static final boolean JAVA_7 = "1.7".equals(System
+			.getProperty("java.specification.version"));
 }
