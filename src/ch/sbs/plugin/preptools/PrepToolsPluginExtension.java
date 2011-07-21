@@ -591,14 +591,17 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	/**
 	 * @param title
 	 * @param msg
-	 * @param confirm
-	 * @param deny
-	 * @return true if user clicked "confirm", false if user clicked "deny"
+	 * @param trueText
+	 *            String to indicate the "true" button
+	 * @param falseText
+	 *            String to indicate the "false" button
+	 * @return true if user clicked "trueText", false if user clicked
+	 *         "falseText"
 	 */
 	boolean showConfirmDialog(final String title, final String msg,
-			final String confirm, final String deny) {
+			final String trueText, final String falseText) {
 		return pluginWorkspaceAccess.showConfirmDialog(DIALOG_HEADER + title,
-				msg, new String[] { confirm, deny }, new int[] { 0, 1 }) == 0;
+				msg, new String[] { trueText, falseText }, new int[] { 0, 1 }) == 0;
 	}
 
 	public static WSTextEditorPage getPage(final WSEditor editorAccess) {
