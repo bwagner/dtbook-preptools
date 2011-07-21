@@ -14,12 +14,12 @@ import ch.sbs.utils.preptools.vform.WordHierarchyTest;
 import ch.sbs.utils.string.StringUtilsTest;
 
 @RunWith(Suite.class)
-@Suite.SuiteClasses({ FileUtilsTest.class, PropsUtilsTest.class,
-		RegexAbbrevTest.class, RegexTest.class, RegexMeasureTest.class,
-		RegexOrdinalTest.class, RegexPageBreakTest.class,
-		RegionSkipperTest.class, ParensUtilTest.class, VFormUtilTest.class,
-		WordHierarchyTest.class, TestRbTree.class, TestIntervalTree.class,
-		AccentRegexTest.class, StringUtilsTest.class, DocumentUtilsTest.class })
+@Suite.SuiteClasses({ AccentRegexTest.class, DocumentUtilsTest.class,
+		FileUtilsTest.class, ParensUtilTest.class, PropsUtilsTest.class,
+		RegexAbbrevTest.class, RegexMeasureTest.class, RegexOrdinalTest.class,
+		RegexPageBreakTest.class, RegexTest.class, RegionSkipperTest.class,
+		StringUtilsTest.class, TestIntervalTree.class, TestRbTree.class,
+		VFormUtilTest.class, WordHierarchyTest.class, })
 public class AllTests {
 	// the class remains completely empty,
 	// being used only as a holder for the above annotations
