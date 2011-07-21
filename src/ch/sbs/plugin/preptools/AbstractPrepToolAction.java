@@ -646,7 +646,7 @@ class AccentChangeAction extends FullRegexChangeAction {
 	 */
 	@Override
 	protected boolean takeUpWhereWeLeftOffLastTime() {
-		return true;
+		return true; // user is not supposed to have a choice.
 	}
 
 	@Override
