@@ -35,14 +35,14 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 
 	/**
 	 * @param thePrepToolsPluginExtension
-	 * @param theName
+	 * @param theActionName
 	 *            the name of this action.
 	 */
 	AbstractPrepToolAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			String theName) {
+			final String theActionName) {
 		prepToolsPluginExtension = thePrepToolsPluginExtension;
-		NAME = theName;
+		ACTION_NAME = theActionName;
 	}
 
 	/* (non-Javadoc)
@@ -78,7 +78,7 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 				if (!dmi.isCancelled()) {
 					wrapUp(document);
 					prepToolsPluginExtension.showDialog("You're done with "
-							+ getProcessName() + "!");
+							+ getPrepToolName() + "!");
 
 					// TODO: once the schema has been upgraded, set this flag to
 					// true (or remove the if)
@@ -93,7 +93,7 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 												prepToolsPluginExtension
 														.getDocumentMetaInfo()
 														.getDocument(),
-												getProcessName());
+												getPrepToolName());
 
 									}
 								});
@@ -165,16 +165,16 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	 * 
 	 * @return
 	 */
-	protected abstract String getProcessName();
+	protected abstract String getPrepToolName();
 
 	/**
 	 * @return
 	 */
-	public String getName() {
-		return NAME;
+	public String getActionName() {
+		return ACTION_NAME;
 	}
 
-	private final String NAME;
+	private final String ACTION_NAME;
 }
 
 @SuppressWarnings("serial")
@@ -263,10 +263,10 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 		final URL editorLocation = editorAccess.getEditorLocation();
 		final DocumentMetaInfo.MetaInfo metaInfo = getMetaInfo();
 		if (metaInfo.isDone()) {
-			if (prepToolsPluginExtension.showConfirmDialog(getProcessName()
+			if (prepToolsPluginExtension.showConfirmDialog(getPrepToolName()
 					+ ": Start Over?",
 					"The document " + FileUtils.basename(editorLocation)
-							+ " has already been " + getProcessName()
+							+ " has already been " + getPrepToolName()
 							+ "ed.\n Do you want to start over?")
 
 			) {
@@ -279,10 +279,10 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 			}
 		}
 		else if (metaInfo.hasStarted()) {
-			if (prepToolsPluginExtension.showConfirmDialog(getProcessName()
+			if (prepToolsPluginExtension.showConfirmDialog(getPrepToolName()
 					+ ": Start Over?",
 					"The document " + FileUtils.basename(editorLocation)
-							+ " is currently being " + getProcessName()
+							+ " is currently being " + getPrepToolName()
 							+ "ed.\n Do you want to start over?")
 
 			) {
@@ -375,9 +375,7 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 		if (lastMatchStart != pm.startOffset.getOffset()
 				|| lastMatchEnd != pm.endOffset.getOffset()
 				|| dmi.manualEditOccurred()) {
-			if (prepToolsPluginExtension.showConfirmDialog(getProcessName()
-					+ ": Cursor", "Cursor position has changed!\n",
-					"Take up where we left off last time", "continue anyway")) {
+			if (takeUpWhereWeLeftOffLastTime()) {
 				prepToolsPluginExtension.select(
 						lastMatchStart = pm.startOffset.getOffset(),
 						lastMatchEnd = pm.endOffset.getOffset());
@@ -385,6 +383,18 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Optional hook for subclasses to indicate whether to continue where we
+	 * left off last time or continue anyway
+	 * 
+	 * @return True if we're supposed to take up where we left off last time.
+	 */
+	protected boolean takeUpWhereWeLeftOffLastTime() {
+		return prepToolsPluginExtension.showConfirmDialog(getPrepToolName()
+				+ ": Cursor", "Cursor position has changed!\n",
+				"Take up where we left off last time", "continue anyway");
 	}
 
 	/**
@@ -507,19 +517,19 @@ abstract class AbstractMarkupFindAction extends AbstractMarkupProceedAction {
 class RegexHelper {
 
 	private final Pattern pattern;
-	private final String processName;
+	private final String prepToolName;
 
-	RegexHelper(final String thePattern, final String theProcessName) {
+	RegexHelper(final String thePattern, final String thePrepToolName) {
 		pattern = Pattern.compile(thePattern);
-		processName = theProcessName;
+		prepToolName = thePrepToolName;
 	}
 
 	public Pattern getPattern() {
 		return pattern;
 	}
 
-	public String getProcessName() {
-		return processName;
+	public String getPrepToolName() {
+		return prepToolName;
 	}
 
 }
@@ -531,9 +541,9 @@ class RegexStartAction extends AbstractMarkupStartAction {
 	RegexStartAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String theName, final String thePattern,
-			final String theProcessName) {
+			final String thePrepToolName) {
 		super(thePrepToolsPluginExtension, theName);
-		helper = new RegexHelper(thePattern, theProcessName);
+		helper = new RegexHelper(thePattern, thePrepToolName);
 	}
 
 	@Override
@@ -542,8 +552,8 @@ class RegexStartAction extends AbstractMarkupStartAction {
 	}
 
 	@Override
-	protected String getProcessName() {
-		return helper.getProcessName();
+	protected String getPrepToolName() {
+		return helper.getPrepToolName();
 	}
 }
 
@@ -554,9 +564,9 @@ class RegexChangeAction extends AbstractMarkupChangeAction {
 	RegexChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String theName, final String thePattern,
-			final String theProcessName, final String theTagToInsert) {
+			final String thePrepToolName, final String theTagToInsert) {
 		super(thePrepToolsPluginExtension, theName, theTagToInsert);
-		helper = new RegexHelper(thePattern, theProcessName);
+		helper = new RegexHelper(thePattern, thePrepToolName);
 	}
 
 	@Override
@@ -565,8 +575,8 @@ class RegexChangeAction extends AbstractMarkupChangeAction {
 	}
 
 	@Override
-	protected String getProcessName() {
-		return helper.getProcessName();
+	protected String getPrepToolName() {
+		return helper.getPrepToolName();
 	}
 }
 
@@ -577,9 +587,9 @@ class FullRegexChangeAction extends AbstractMarkupFullRegexChangeAction {
 	FullRegexChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String theName, final String thePattern,
-			final String theProcessName, final String theReplaceString) {
+			final String thePrepToolName, final String theReplaceString) {
 		super(thePrepToolsPluginExtension, theName, theReplaceString);
-		helper = new RegexHelper(thePattern, theProcessName);
+		helper = new RegexHelper(thePattern, thePrepToolName);
 	}
 
 	@Override
@@ -588,8 +598,8 @@ class FullRegexChangeAction extends AbstractMarkupFullRegexChangeAction {
 	}
 
 	@Override
-	protected String getProcessName() {
-		return helper.getProcessName();
+	protected String getPrepToolName() {
+		return helper.getPrepToolName();
 	}
 }
 
@@ -610,9 +620,9 @@ class AccentChangeAction extends FullRegexChangeAction {
 	AccentChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String theName, final String thePattern,
-			final String theProcessName, final String theReplaceString) {
-		super(thePrepToolsPluginExtension, theName, thePattern, theProcessName,
-				theReplaceString);
+			final String thePrepToolName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName, thePattern,
+				thePrepToolName, theReplaceString);
 	}
 
 	@Override
@@ -665,17 +675,17 @@ abstract class AbstractChangeAction extends FullRegexChangeAction {
 	AbstractChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String theName, final String thePattern,
-			final String theProcessName) {
-		this(thePrepToolsPluginExtension, theName, thePattern, theProcessName,
+			final String thePrepToolName) {
+		this(thePrepToolsPluginExtension, theName, thePattern, thePrepToolName,
 				null);
 	}
 
 	AbstractChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String theName, final String thePattern,
-			final String theProcessName, final String theReplaceString) {
-		super(thePrepToolsPluginExtension, theName, thePattern, theProcessName,
-				theReplaceString);
+			final String thePrepToolName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName, thePattern,
+				thePrepToolName, theReplaceString);
 	}
 
 	@Override
@@ -716,17 +726,17 @@ class OrdinalChangeAction extends AbstractChangeAction {
 	OrdinalChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String theName, final String thePattern,
-			final String theProcessName) {
-		this(thePrepToolsPluginExtension, theName, thePattern, theProcessName,
+			final String thePrepToolName) {
+		this(thePrepToolsPluginExtension, theName, thePattern, thePrepToolName,
 				null);
 	}
 
 	OrdinalChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String theName, final String thePattern,
-			final String theProcessName, final String theReplaceString) {
-		super(thePrepToolsPluginExtension, theName, thePattern, theProcessName,
-				theReplaceString);
+			final String thePrepToolName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName, thePattern,
+				thePrepToolName, theReplaceString);
 	}
 
 	/**
@@ -787,17 +797,17 @@ class AbbrevChangeAction extends AbstractChangeAction {
 	AbbrevChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String theName, final String thePattern,
-			final String theProcessName) {
-		this(thePrepToolsPluginExtension, theName, thePattern, theProcessName,
+			final String thePrepToolName) {
+		this(thePrepToolsPluginExtension, theName, thePattern, thePrepToolName,
 				null);
 	}
 
 	AbbrevChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String theName, final String thePattern,
-			final String theProcessName, final String theReplaceString) {
-		super(thePrepToolsPluginExtension, theName, thePattern, theProcessName,
-				theReplaceString);
+			final String thePrepToolName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName, thePattern,
+				thePrepToolName, theReplaceString);
 	}
 
 	@Override
@@ -842,8 +852,8 @@ class AbbrevStartAction extends RegexStartAction {
 	AbbrevStartAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String theName, final String thePattern,
-			final String theProcessName) {
-		super(thePrepToolsPluginExtension, theName, thePattern, theProcessName);
+			final String thePrepToolName) {
+		super(thePrepToolsPluginExtension, theName, thePattern, thePrepToolName);
 	}
 
 	/* (non-Javadoc)
@@ -861,8 +871,8 @@ class AbbrevStartAction extends RegexStartAction {
 class AbbrevFindAction extends RegexFindAction {
 
 	AbbrevFindAction(PrepToolsPluginExtension thePrepToolsPluginExtension,
-			String theName, String thePattern, String theProcessName) {
-		super(thePrepToolsPluginExtension, theName, thePattern, theProcessName);
+			String theName, String thePattern, String thePrepToolName) {
+		super(thePrepToolsPluginExtension, theName, thePattern, thePrepToolName);
 	}
 
 	/* (non-Javadoc)
@@ -882,9 +892,9 @@ class RegexFindAction extends AbstractMarkupFindAction {
 
 	RegexFindAction(final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			final String theName, final String thePattern,
-			final String theProcessName) {
+			final String thePrepToolName) {
 		super(thePrepToolsPluginExtension, theName);
-		helper = new RegexHelper(thePattern, theProcessName);
+		helper = new RegexHelper(thePattern, thePrepToolName);
 	}
 
 	@Override
@@ -893,8 +903,8 @@ class RegexFindAction extends AbstractMarkupFindAction {
 	}
 
 	@Override
-	protected String getProcessName() {
-		return helper.getProcessName();
+	protected String getPrepToolName() {
+		return helper.getPrepToolName();
 	}
 }
 
@@ -915,8 +925,8 @@ class VFormStartAction extends AbstractMarkupStartAction {
 	}
 
 	@Override
-	protected String getProcessName() {
-		return helper.getProcessName();
+	protected String getPrepToolName() {
+		return helper.getPrepToolName();
 	}
 }
 
@@ -937,8 +947,8 @@ class VFormChangeAction extends AbstractMarkupChangeAction {
 	}
 
 	@Override
-	protected String getProcessName() {
-		return helper.getProcessName();
+	protected String getPrepToolName() {
+		return helper.getPrepToolName();
 	}
 }
 
@@ -958,8 +968,8 @@ class VFormFindAction extends AbstractMarkupFindAction {
 	}
 
 	@Override
-	protected String getProcessName() {
-		return helper.getProcessName();
+	protected String getPrepToolName() {
+		return helper.getPrepToolName();
 	}
 }
 
@@ -975,7 +985,7 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 	protected final ParensPrepTool.MetaInfo getMetaInfo(
 			final DocumentMetaInfo dmi) {
 		return (ParensPrepTool.MetaInfo) dmi
-				.getToolSpecificMetaInfo(ParensPrepTool.LABEL);
+				.getToolSpecificMetaInfo(ParensPrepTool.PREPTOOL_NAME);
 	}
 
 	/**
@@ -988,7 +998,7 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 				.getDocumentMetaInfo(prepToolsPluginExtension.getWsEditor()
 						.getEditorLocation());
 		return (ParensPrepTool.MetaInfo) dmi
-				.getToolSpecificMetaInfo(ParensPrepTool.LABEL);
+				.getToolSpecificMetaInfo(ParensPrepTool.PREPTOOL_NAME);
 	}
 
 	@Override
@@ -1020,8 +1030,8 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 	}
 
 	@Override
-	public String getProcessName() {
-		return ParensPrepTool.LABEL;
+	public String getPrepToolName() {
+		return ParensPrepTool.PREPTOOL_NAME;
 	}
 }
 

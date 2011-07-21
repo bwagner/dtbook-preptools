@@ -18,8 +18,8 @@ public class VFormActionHelper {
 		return getMetaInfo().getCurrentPattern();
 	}
 
-	public String getProcessName() {
-		return VFormPrepTool.LABEL;
+	public String getPrepToolName() {
+		return VFormPrepTool.PREPTOOL_NAME;
 	}
 
 	/**
@@ -32,6 +32,6 @@ public class VFormActionHelper {
 	protected final VFormPrepTool.MetaInfo getMetaInfo() {
 		return (VFormPrepTool.MetaInfo) prepToolsPluginExtension
 				.getDocumentMetaInfo().getToolSpecificMetaInfo(
-						VFormPrepTool.LABEL);
+						VFormPrepTool.PREPTOOL_NAME);
 	}
 }

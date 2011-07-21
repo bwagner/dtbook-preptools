@@ -69,7 +69,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	Map<String, MetaInfo> getToolSpecificMetaInfos(final Document document) {
 		final Map<String, MetaInfo> toolSpecific = new HashMap<String, MetaInfo>();
 		for (final PrepTool preptool : prepTools) {
-			toolSpecific.put(preptool.getLabel(),
+			toolSpecific.put(preptool.getPrepToolName(),
 					preptool.makeMetaInfo(document));
 		}
 		return toolSpecific;
@@ -147,7 +147,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		int i = 0;
 		for (final PrepTool preptool : prepTools) {
 			if (getDocumentMetaInfo().getToolSpecificMetaInfo(
-					preptool.getLabel()).isDone()) {
+					preptool.getPrepToolName()).isDone()) {
 				setPrepToolItemDone(i);
 			}
 			else {
@@ -179,7 +179,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		while (!found && iter.hasNext()) {
 			preptool = iter.next();
 			final MetaInfo mi = getDocumentMetaInfo().getToolSpecificMetaInfo(
-					preptool.getLabel());
+					preptool.getPrepToolName());
 			if (!(found = !mi.isDone())) {
 				++i;
 			}
@@ -462,7 +462,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 							final MetaInfo metaInfo = getDocumentMetaInfo()
 									.getCurrentToolSpecificMetaInfo();
 							final PrepTool currentPrepTool = getCurrentPrepTool();
-							final String label = currentPrepTool.getLabel();
+							final String label = currentPrepTool.getPrepToolName();
 							if (preptool != currentPrepTool
 									&& (!metaInfo.isProcessing() || showConfirmDialog(
 											"Switching:",
@@ -481,7 +481,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 							}
 						}
 					});
-			item.setText(preptool.getLabel());
+			item.setText(preptool.getPrepToolName());
 			item.setMnemonic(preptool.getMnemonic());
 			menuPrepTools.add(item);
 			group.add(item);

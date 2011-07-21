@@ -295,7 +295,7 @@ class DocumentMetaInfo {
 		if (currentPrepTool == null) {
 			return null;
 		}
-		final String label = currentPrepTool.getLabel();
+		final String label = currentPrepTool.getPrepToolName();
 		return getToolSpecificMetaInfo(label);
 	}
 
