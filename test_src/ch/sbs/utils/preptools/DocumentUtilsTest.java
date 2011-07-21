@@ -108,4 +108,31 @@ public class DocumentUtilsTest {
 		assertEquals(sb2.toString(), document.getText(0, document.getLength()));
 		assertEquals(5, count);
 	}
+
+	@Test
+	public void testUnProtect() throws BadLocationException {
+		final Document document = DocumentTestUtil
+				.makeDocument("Dieser Text enthält leider keine Klammer. Das tut ihm Leid.Restlos.");
+		final String regex = "leid.r";
+		final int count = DocumentUtils.performReplacement(document,
+				TextUtils.wrapI(regex), "Leid. R");
+		assertEquals(
+				"Dieser Text enthält Leid. R keine Klammer. Das tut ihm Leid. Restlos.",
+				document.getText(0, document.getLength()));
+		assertEquals(2, count);
+	}
+
+	@Test
+	public void testProtect() throws BadLocationException {
+		final Document document = DocumentTestUtil
+				.makeDocument("Dieser Text enthält leider keine Klammer. Das tut ihm Leid.Restlos.");
+		final String regex = "leid.r";
+		final int count = DocumentUtils.performReplacement(document,
+				TextUtils.wrapI(TextUtils.quoteRegexMeta(regex)), "Leid. R");
+
+		assertEquals(
+				"Dieser Text enthält leider keine Klammer. Das tut ihm Leid. Restlos.",
+				document.getText(0, document.getLength()));
+		assertEquals(1, count);
+	}
 }
