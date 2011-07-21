@@ -374,8 +374,7 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 		lastMatchEnd = aWSTextEditorPage.getSelectionEnd();
 		final Match.PositionMatch pm = dmi.getCurrentPositionMatch();
 		if (lastMatchStart != pm.startOffset.getOffset()
-				|| lastMatchEnd != pm.endOffset.getOffset()
-				|| dmi.manualEditOccurred()) {
+				|| lastMatchEnd != pm.endOffset.getOffset()) {
 			if (takeUpWhereWeLeftOffLastTime()) {
 				prepToolsPluginExtension.select(
 						lastMatchStart = pm.startOffset.getOffset(),
