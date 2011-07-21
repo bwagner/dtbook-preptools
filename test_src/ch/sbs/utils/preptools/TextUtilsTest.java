@@ -29,4 +29,24 @@ public class TextUtilsTest {
 	public void testX() {
 		assertEquals("(?x:bla)", TextUtils.wrapComments("bla"));
 	}
+
+	@Test
+	public void testProtectForSearchString() {
+		final String txt = "Dieser Text enthält leider keine Klammer. Das tut ihm Leid.Restlos.";
+		final String regex = "leid.r";
+		assertEquals(
+				"Dieser Text enthält Leid. R keine Klammer. Das tut ihm Leid. Restlos.",
+				txt.replaceAll(TextUtils.wrapI(regex), "Leid. R"));
+		assertEquals(
+				"Dieser Text enthält leider keine Klammer. Das tut ihm Leid. Restlos.",
+				txt.replaceAll(
+						TextUtils.wrapI(TextUtils.quoteRegexMeta(regex)),
+						"Leid. R"));
+	}
+
+	@Test(expected = AssertionError.class)
+	public void testProtectDoesNotWorkForReplacementString() {
+		assertEquals("b-$1-a",
+				"bla".replaceAll("(l)", TextUtils.quoteRegexMeta("-$1-")));
+	}
 }
