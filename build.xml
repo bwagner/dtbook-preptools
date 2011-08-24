@@ -91,7 +91,7 @@
 		<zip destfile="${ant.project.name}.zip" duplicate="fail" basedir="${plugindir}/.." includes="${ant.project.name}/**"/>
 	</target>
 	
-	<target name="send" depends="zip" description="opens nautilus to send zip">
+	<target name="send" depends="zip" description="opens thunderbird to send zip">
 		<exec executable="pwd" outputproperty="pwd" failifexecutionfails="false" errorproperty="" />
 		<exec executable="thunderbird">
 			<arg value="-compose"/>
