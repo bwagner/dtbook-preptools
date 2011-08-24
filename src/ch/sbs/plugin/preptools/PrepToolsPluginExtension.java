@@ -204,6 +204,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	 * Plugin workspace access.
 	 */
 	private StandalonePluginWorkspace pluginWorkspaceAccess;
+	private double oxygenVersion;
 
 	private boolean applicationClosing;
 
@@ -218,7 +219,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	public void applicationStarted(
 			final StandalonePluginWorkspace thePluginWorkspaceAccess) {
 		pluginWorkspaceAccess = thePluginWorkspaceAccess;
-
+		oxygenVersion = Double.parseDouble(pluginWorkspaceAccess.getVersion());
 		caretHandler = new MyCaretListener();
 
 		populatePrepTools();
@@ -344,11 +345,43 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 						ta.addCaretListener(caretHandler);
 					}
 
+					/**
+					 * IMPORTANT: Don't add annotation @Override here!
+					 * 
+					 * This implementation is supposed to work with both oXygen
+					 * versions 12.1 and 12.2.
+					 * Only in versions > 12.1 is this method going to be
+					 * called.
+					 * 
+					 * @param editorLocation
+					 * @return
+					 */
+
+					// @Override IMPORTANT: Don't add annotation @Override here!
+					public boolean editorAboutToBeClosed(
+							final URL editorLocation) {
+						final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
+						if (dmi.isProcessing() && !applicationClosing) {
+							// we can veto closing in version 12.2 !
+							return (!showConfirmDialog(
+									"Continue?",
+									"Document "
+											+ FileUtils
+													.basename(editorLocation)
+											+ " is still being processed. Do you want to continue processing?",
+									"Continue Processing", "Close Anyway"));
+						}
+						return true; // true means editor will be closed, false
+										// means editor remains open.
+					}
+
 					@Override
 					public void editorClosed(final URL editorLocation) {
 						final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
-						if (dmi.isProcessing() && !applicationClosing) {
-							// we can't veto closing!
+						if (dmi.isProcessing() && !applicationClosing
+								&& oxygenVersion < 12.2) {
+							// we can't veto closing in
+							// oxygen versions below 12.2!
 							if (showConfirmDialog(
 									"Reopen and Continue?",
 									"Document "
@@ -462,7 +495,8 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 							final MetaInfo metaInfo = getDocumentMetaInfo()
 									.getCurrentToolSpecificMetaInfo();
 							final PrepTool currentPrepTool = getCurrentPrepTool();
-							final String label = currentPrepTool.getPrepToolName();
+							final String label = currentPrepTool
+									.getPrepToolName();
 							if (preptool != currentPrepTool
 									&& (!metaInfo.isProcessing() || showConfirmDialog(
 											"Switching:",
