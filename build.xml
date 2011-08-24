@@ -124,10 +124,8 @@
 			<attribute name="Build-Time" value="${release.time}" />
 			<attribute name="Implementation-Version" value="${repository.version}" />
 		</manifest>
-		<jar destfile="${jarfile}" basedir="${build.dir}">
-			<fileset dir="${build.dir}">
-				<include name="**/*" />
-			</fileset>
+		<jar destfile="${jarfile}">
+			<fileset dir="${build.dir}" excludes="**/*Test.class,**/*Tests.class,**/*TestUtil.class"/>
 			<fileset dir=".">
 				<include name="${stamp.properties}" />
 			</fileset>
