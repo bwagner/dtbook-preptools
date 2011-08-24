@@ -125,7 +125,11 @@
 			<attribute name="Implementation-Version" value="${repository.version}" />
 		</manifest>
 		<jar destfile="${jarfile}">
-			<fileset dir="${build.dir}" excludes="**/*Test.class,**/*Tests.class,**/*TestUtil.class"/>
+			<fileset dir="${build.dir}">
+				<exclude name="**/*Test.class"/>
+				<exclude name="**/*Tests.class"/>
+				<exclude name="**/*TestUtil.class"/>
+			</fileset>
 			<fileset dir=".">
 				<include name="${stamp.properties}" />
 			</fileset>
