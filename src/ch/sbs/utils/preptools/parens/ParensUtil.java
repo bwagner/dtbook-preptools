@@ -17,8 +17,6 @@ public class ParensUtil {
 	public static final char RAQUO = '»';
 	public static final char LSAQUO = '‹';
 	public static final char RSAQUO = '›';
-	public static final char LANG = '〈';
-	public static final char RANG = '〉';
 	public static final char LBRACE = '{';
 	public static final char RBRACE = '}';
 	public static final char LBRACKET = '[';
@@ -151,11 +149,10 @@ public class ParensUtil {
 	static class QuoteOrphanMatcher extends OrphanMatcher {
 
 		private static final char UNSET_CHAR = 0;
-		static final String[] AQUO_PAIR = new String[] { "«", "»" };
-		static final String[] SAQUO_PAIR = new String[] { "‹", "›" };
-		static final String[] ANG_PAIR = new String[] { "〈", "〉" };
-		static final String[][] PAIRS = new String[][] { AQUO_PAIR, SAQUO_PAIR,
-				ANG_PAIR, };
+		private static final String[] AQUO_PAIR = new String[] { "«", "»" };
+		private static final String[] SAQUO_PAIR = new String[] { "‹", "›" };
+		private static final String[][] PAIRS = new String[][] { AQUO_PAIR,
+				SAQUO_PAIR, };
 		private final Map<String[], Character> openingChar;
 		private final Map<String[], Character> closingChar;
 

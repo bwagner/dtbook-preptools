@@ -37,7 +37,7 @@ public class ParensUtilTest {
 
 	@Test
 	public void testParens() {
-		final String sample = "« » ‹ › 〈 〉 ( ) [ ] { } ";
+		final String sample = " » « › ‹ 〈 〉 ( ) [ ] { } ";
 		assertEquals(
 				0,
 				ParensUtil.findOrphans(sample,
@@ -46,7 +46,7 @@ public class ParensUtilTest {
 
 	@Test
 	public void testParens1() {
-		final String sample = "« » ‹ › 〈 〉 ( ) [ ] {  ";
+		final String sample = " » « › ‹ 〈 〉 ( ) [ ] { ";
 		assertEquals(
 				1,
 				ParensUtil.findOrphans(sample,
@@ -55,7 +55,7 @@ public class ParensUtilTest {
 
 	@Test
 	public void testParens2() {
-		final String sample = "« » ‹ › 〈  ( ) [ ] {  ";
+		final String sample = "» « › 〈  ( ) [ ] {  ";
 		assertEquals(
 				2,
 				ParensUtil.findOrphans(sample,
@@ -66,15 +66,12 @@ public class ParensUtilTest {
 	public void testParensLoc() {
 		// ------------------------------1---------2
 		// --------------------012345678901234567890123456789
-		final String sample = "« » ‹ › 〈    ) [ ] {  ";
+		final String sample = "» « › ‹ 〈    ) [ ] {  ";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
 				RegionSkipper.getCommentSkipper());
-		assertEquals(3, orphans.size());
+		assertEquals(2, orphans.size());
 		int i = 0;
 		Match match = orphans.get(i++);
-		assertEquals(8, match.startOffset);
-		assertEquals(9, match.endOffset);
-		match = orphans.get(i++);
 		assertEquals(13, match.startOffset);
 		assertEquals(14, match.endOffset);
 		match = orphans.get(i++);
@@ -86,15 +83,12 @@ public class ParensUtilTest {
 	public void testParensLoc2() {
 		// ------------------------------1---------2
 		// --------------------012345678901234567890123456789
-		final String sample = "« » ‹ › 〈 (    [ ] {  ";
+		final String sample = "» « › ‹ 〈 (    [ ] {  ";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
 				RegionSkipper.getCommentSkipper());
-		assertEquals(3, orphans.size());
+		assertEquals(2, orphans.size());
 		int i = 0;
 		Match match = orphans.get(i++);
-		assertEquals(8, match.startOffset);
-		assertEquals(9, match.endOffset);
-		match = orphans.get(i++);
 		assertEquals(10, match.startOffset);
 		assertEquals(11, match.endOffset);
 		match = orphans.get(i++);
@@ -106,16 +100,13 @@ public class ParensUtilTest {
 	public void testParensLoc3() {
 		// ------------------------------1---------2
 		// --------------------012345678901234567890123456789
-		final String sample = "« » ‹ › 〈 ( )) (( [ ] { } ";
+		final String sample = "» « › ‹ 〈 ( )) (( [ ] { } ";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
 				RegionSkipper.getCommentSkipper());
 		Collections.sort(orphans);
-		assertEquals(4, orphans.size());
+		assertEquals(3, orphans.size());
 		int i = 0;
 		Match match = orphans.get(i++);
-		assertEquals(8, match.startOffset);
-		assertEquals(9, match.endOffset);
-		match = orphans.get(i++);
 		assertEquals(13, match.startOffset);
 		assertEquals(14, match.endOffset);
 		match = orphans.get(i++);
@@ -178,7 +169,7 @@ public class ParensUtilTest {
 	public void testParensLocQuot() {
 		// ------------------------------1---------2
 		// --------------------012345678901234567890123456789
-		final String sample = "«« »»";
+		final String sample = "»» ««";
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
 				RegionSkipper.getCommentSkipper());
 		Collections.sort(orphans);
@@ -228,12 +219,9 @@ public class ParensUtilTest {
 		final List<Match> orphans = ParensUtil.findOrphans(sample,
 				RegionSkipper.getCommentSkipper());
 		Collections.sort(orphans);
-		assertEquals(3, orphans.size());
+		assertEquals(2, orphans.size());
 		int i = 0;
 		Match match = orphans.get(i++);
-		assertEquals(0, match.startOffset);
-		assertEquals(1, match.endOffset);
-		match = orphans.get(i++);
 		assertEquals(2, match.startOffset);
 		assertEquals(3, match.endOffset);
 		match = orphans.get(i++);
@@ -457,10 +445,7 @@ public class ParensUtilTest {
 		final QuoteOrphanMatcher quoteOrphanMatcher = new QuoteOrphanMatcher();
 		final List<Match> orphans = quoteOrphanMatcher.findOrphans(sample, 0,
 				RegionSkipper.getDefaultSkipper());
-		assertEquals(1, orphans.size());
-		int i = 0;
-		final Match match = orphans.get(i++);
-		assertEquals(5, match.startOffset);
+		assertEquals(0, orphans.size());
 	}
 
 	@Test
