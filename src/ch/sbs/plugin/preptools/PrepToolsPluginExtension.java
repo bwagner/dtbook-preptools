@@ -435,8 +435,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 					 */
 					@Override
 					public void customizeToolbar(ToolbarInfo theToolbarInfo) {
-						if (ToolbarComponentsCustomizer.CUSTOM
-								.equals(theToolbarInfo.getToolbarID())) {
+						if (Ids.TOOLBAR_ID.equals(theToolbarInfo.getToolbarID())) {
 
 							toolbarPanel = new JPanel();
 							toolbarPanel.setLayout(new BoxLayout(toolbarPanel,
@@ -463,14 +462,14 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 					 */
 					@Override
 					public void customizeView(ViewInfo viewInfo) {
-						if (ViewComponentCustomizer.CUSTOM.equals(viewInfo
-								.getViewID())) {
+						if (Ids.VIEW_ID.equals(viewInfo.getViewID())) {
 							prepToolsMessagesArea = new JTextArea(
 									"PrepTools Session History:");
 							viewInfo.setComponent(new JScrollPane(
 									prepToolsMessagesArea));
 							viewInfo.setTitle("PrepTools Messages");
-							viewInfo.setIcon(Icons.CMS_MESSAGES_CUSTOM_VIEW);
+							viewInfo.setIcon(Icons
+									.getIcon(Icons.CMS_MESSAGES_CUSTOM_VIEW_STRING));
 							showMessage(getVersion());
 						}
 						else if ("Project".equals(viewInfo.getViewID())) {
@@ -615,7 +614,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	void showDialog(final String msg) {
 		pluginWorkspaceAccess.showConfirmDialog(DIALOG_HEADER, msg,
 				new String[] { "OK" }, new int[] { 0 });
-		pluginWorkspaceAccess.showView(ViewComponentCustomizer.CUSTOM, true);
+		pluginWorkspaceAccess.showView(Ids.VIEW_ID, true);
 	}
 
 	boolean showConfirmDialog(final String title, final String msg) {
