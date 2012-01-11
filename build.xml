@@ -16,9 +16,6 @@
 	<!-- used by "jar" and "init" -->
 	<property name="build.dir" value="bin" />
 
-	<!-- used by "jar" -->
-	<property name="app.manifest" value="MANIFEST.MF" />
-
 	<!-- used by "compile" -->
 	<property name="src.dir" value="src" />
 
@@ -123,12 +120,12 @@
 	</target>
 
 	<target name="jar" depends="compile, stamp, git.revision"  description="create deployable jar file" >
-		<manifest file="${app.manifest}">
-			<attribute name="Built-By" value="${user.name}" />
-			<attribute name="Build-Time" value="${release.time}" />
-			<attribute name="Implementation-Version" value="${repository.version}" />
-		</manifest>
 		<jar destfile="${jarfile}">
+			<manifest>
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Build-Time" value="${release.time}" />
+				<attribute name="Implementation-Version" value="${repository.version}" />
+			</manifest>
 			<fileset dir="${build.dir}">
 				<exclude name="**/*Test.class"/>
 				<exclude name="**/*Tests.class"/>
