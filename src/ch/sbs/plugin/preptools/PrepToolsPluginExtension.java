@@ -228,9 +228,26 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 			/**
 			 * @see ro.sync.exml.workspace.api.standalone.MenuBarCustomizer#customizeMainMenu(javax.swing.JMenuBar)
 			 */
-			@SuppressWarnings("serial")
 			@Override
 			public void customizeMainMenu(final JMenuBar mainMenuBar) {
+				customizeExistingMenuEntries(mainMenuBar);
+				// PrepTools menu
+				menuPrepTools = createPrepToolsMenu();
+				menuPrepTools.setMnemonic(KeyEvent.VK_R);
+				// Add the Preptools menu before the Help menu
+				mainMenuBar.add(menuPrepTools, mainMenuBar.getMenuCount() - 1);
+			}
+
+			/**
+			 * Customizes existing entries in the menu bar: We're maintaining
+			 * the original functionality, adding to it as follows:
+			 * - offer canceling the operation
+			 * - add cleanup bookkeeping if operation was made.
+			 * 
+			 * @param mainMenuBar
+			 */
+			@SuppressWarnings("serial")
+			private void customizeExistingMenuEntries(final JMenuBar mainMenuBar) {
 				final String[] revertLabel = { "Revert...", "Rückgängig..." };
 				boolean plug = MenuPlugger.plug(mainMenuBar, revertLabel,
 						new MenuPlugger.ActionWrapper() {
@@ -302,11 +319,6 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 					pluginWorkspaceAccess.showErrorMessage("plugging \""
 							+ StringUtils.join(saveAsLabel) + "\" failed.");
 				}
-				// PrepTools menu
-				menuPrepTools = createPrepToolsMenu();
-				menuPrepTools.setMnemonic(KeyEvent.VK_R);
-				// Add the Preptools menu before the Help menu
-				mainMenuBar.add(menuPrepTools, mainMenuBar.getMenuCount() - 1);
 			}
 		});
 

@@ -9,6 +9,16 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
+/**
+ * Allows to wrap Actions in a given MenuBar, surrounding by optional pre- and
+ * post-operations, optionally vetoing actions.
+ * 
+ * This utility is used in stead of
+ * http://www.oxygenxml.com/doc/ug-editor/concepts
+ * /components-validation-plugin.html
+ * 
+ * which only allows *filtering* of GUI-components.
+ */
 public class MenuPlugger {
 
 	@SuppressWarnings("serial")
@@ -94,7 +104,7 @@ public class MenuPlugger {
 	 * Navigates all menus in theJMenuBar and tries to find an entry with the
 	 * given label. When found, the attached action is wrapped in the given
 	 * theActionWrapper.
-	 * thLabels is an array of strings to support multi-language.
+	 * theLabels is an array of strings to support multi-language.
 	 * 
 	 * @param theComponents
 	 * @param theLabels
@@ -129,7 +139,7 @@ public class MenuPlugger {
 	 * Navigates all menus in theJMenuBar and tries to find an entry with the
 	 * given label. When found, the attached action is wrapped in the given
 	 * theActionWrapper.
-	 * thLabels is an array of strings to support multi-language.
+	 * theLabels is an array of strings to support multi-language.
 	 * 
 	 * @param theJMenuBar
 	 * @param theLabels
