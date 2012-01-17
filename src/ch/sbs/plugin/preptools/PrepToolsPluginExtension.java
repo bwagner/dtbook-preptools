@@ -171,6 +171,13 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 				: null;
 	}
 
+	/**
+	 * Finds the first uncompleted PrepTool by simply iterating through the
+	 * entire list and checking each PrepTool whether it is done. As soon as
+	 * a PrepTool is found that isn't done yet, it's activated.
+	 * If all PrepTools are done, an according dialog is shown.
+	 * 
+	 */
 	public void chooseNextUncompletedPrepTool() {
 		boolean found = false;
 		final Iterator<PrepTool> iter = prepTools.iterator();
