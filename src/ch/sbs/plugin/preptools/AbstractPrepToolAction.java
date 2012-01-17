@@ -838,25 +838,27 @@ class AbbrevChangeAction extends AbstractChangeAction {
 	@Override
 	protected String performReplacement(final Pattern thePattern,
 			final String selText) {
-		return feature1414(thePattern, selText);
+		return changeAbbrevFollowedByDigit(thePattern, selText);
 	}
 
 	/**
 	 * Applies the given pattern to the given input and replaces the matches
-	 * according to http://redmine.sbszh.ch/issues/1414
+	 * according to http://redmine.sbszh.ch/issues/1414, i.e. abbrevs
+	 * followed by a digit.
 	 * 
 	 * @param pattern
 	 * @param input
 	 * @return
 	 */
-	public static String feature1414(final Pattern pattern, final String input) {
+	public static String changeAbbrevFollowedByDigit(final Pattern pattern,
+			final String input) {
 		final Matcher matcher = pattern.matcher(input);
 		matcher.find();
-		if (matcher.group(3) != null) {
-			return pattern.matcher(input).replaceAll("<abbr>$2</abbr>$3");
+		if (matcher.group(3) == null) {
+			return pattern.matcher(input).replaceAll("<abbr>$1</abbr>$2");
 		}
 		else {
-			return pattern.matcher(input).replaceAll("<abbr>$1</abbr>");
+			return pattern.matcher(input).replaceAll("<abbr>$3</abbr>");
 		}
 	}
 

@@ -36,7 +36,7 @@ public class PrepToolLoader {
 	// Akronyme des Typs GmbH, GSoA, etc.
 	// Abkürzungen des Typs x.y. oder x. y.
 	// Grossbuchstaben(folgen) des Typs A, A-Z, MM, USA, A4
-	public static final String ABBREV_SEARCH_REGEX = "(\\b\\p{L}*\\p{Ll}\\p{Lu}\\p{L}*\\b|\\b\\p{L}{1,4}\\.(?:\\s*\\p{L}{1,4}\\.){1,3}|\\p{Lu}\\p{Lu}+|\\p{Lu}(?!\\p{Ll}))|(\\b\\p{L}{1,4}\\.\\s+)(\\d)";
+	public static final String ABBREV_SEARCH_REGEX = "(\\b\\p{L}{1,4}\\.\\s+)(\\d)|(\\b\\p{L}*\\p{Ll}\\p{Lu}\\p{L}*\\b|\\b\\p{L}{1,4}\\.(?:\\s*\\p{L}{1,4}\\.){1,3}|\\p{Lu}\\p{Lu}+|\\p{Lu}(?!\\p{Ll}))";
 	public static final String ABBREV_TAG = "abbr";
 
 	// http://redmine.sbszh.ch/issues/show/1203

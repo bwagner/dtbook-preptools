@@ -36,7 +36,8 @@ public class RegexAbbrevTest {
 				.compile(PrepToolLoader.ABBREV_SEARCH_REGEX);
 		assertTrue(pattern.matcher("bloss A4 brauchen").find());
 		assertEquals("bloss <abbr>A</abbr>4 brauchen",
-				AbbrevChangeAction.feature1414(pattern, "bloss A4 brauchen"));
+				AbbrevChangeAction.changeAbbrevFollowedByDigit(pattern,
+						"bloss A4 brauchen"));
 		assertTrue(pattern.matcher("drum A geben").find());
 		assertTrue(pattern.matcher("drumA454 geben").find());
 	}
@@ -66,21 +67,30 @@ public class RegexAbbrevTest {
 	}
 
 	@Test
-	public void testFeature1414() {
+	public void testChangeAbbrevFollowedByDigit() {
 		final Pattern pattern = Pattern
 				.compile(PrepToolLoader.ABBREV_SEARCH_REGEX);
 
 		assertTrue(pattern.matcher("blabla Abb. 232 blabla").find());
 		assertEquals("blabla <abbr>Abb. </abbr>232 blabla",
-				AbbrevChangeAction.feature1414(pattern,
+				AbbrevChangeAction.changeAbbrevFollowedByDigit(pattern,
 						"blabla Abb. 232 blabla"));
 
 		assertTrue(pattern.matcher("blabla Nr. 3 blabla").find());
 		assertEquals("blabla <abbr>Nr. </abbr>3 blabla",
-				AbbrevChangeAction.feature1414(pattern, "blabla Nr. 3 blabla"));
+				AbbrevChangeAction.changeAbbrevFollowedByDigit(pattern,
+						"blabla Nr. 3 blabla"));
 
 		assertTrue(pattern.matcher("blabla Bd. 33 blabla").find());
 		assertEquals("blabla <abbr>Bd. </abbr>33 blabla",
-				AbbrevChangeAction.feature1414(pattern, "blabla Bd. 33 blabla"));
+				AbbrevChangeAction.changeAbbrevFollowedByDigit(pattern,
+						"blabla Bd. 33 blabla"));
+
+		// Feature 1628: Match single capital letters in Abbreviation-PrepTool
+		assertTrue(pattern.matcher("S. 232").find());
+		assertEquals("blabla <abbr>S. </abbr>3 blabla",
+				AbbrevChangeAction.changeAbbrevFollowedByDigit(pattern,
+						"blabla S. 3 blabla"));
 	}
+
 }
