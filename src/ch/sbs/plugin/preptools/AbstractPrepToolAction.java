@@ -100,7 +100,6 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 								});
 					}
 				}
-				prepToolsPluginExtension.chooseNextUncompletedPrepTool();
 			}
 		}
 	}
