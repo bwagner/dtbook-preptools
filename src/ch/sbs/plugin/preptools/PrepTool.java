@@ -65,6 +65,10 @@ abstract class PrepTool {
 		return new DocumentMetaInfo.MetaInfo();
 	}
 
+	/**
+	 * Activates this PrepTool, i.e. sets the documentMetaInfo to this tool,
+	 * selects the tool in the menu, regenerates the toolbar.
+	 */
 	public void activate() {
 		final DocumentMetaInfo documentMetaInfo = prepToolsPluginExtension
 				.getDocumentMetaInfo();
@@ -75,6 +79,9 @@ abstract class PrepTool {
 		makeToolbar();
 	}
 
+	/**
+	 * Rebuilds the toolbar anew and asserts the GUI is updated.
+	 */
 	private void makeToolbar() {
 		final List<JComponent> components = getComponents();
 		prepToolsPluginExtension.toolbarPanel.removeAll();
@@ -89,10 +96,13 @@ abstract class PrepTool {
 		relayout();
 	}
 
+	/**
+	 * Force re-layouting of GUI. This is necessary since we have a dynamic GUI
+	 * component, i.e. it changes it size (depending on the selected PrepTool).
+	 */
 	private void relayout() {
 		Container parent = prepToolsPluginExtension.toolbarPanel;
-		while (parent.getParent() != null) {
-			parent = parent.getParent();
+		while ((parent = parent.getParent()) != null) {
 			parent.invalidate();
 			parent.validate();
 		}
@@ -107,8 +117,6 @@ abstract class PrepTool {
 	 */
 	protected JButton makeButton(final AbstractPrepToolAction theAction,
 			int theKeyEvent) {
-		// assign accelerator key to JButton
-		// http://www.stratulat.com/assign_accelerator_key_to_a_JButton.html
 		final JButton jButton = new JButton(theAction);
 		jButton.setText(theAction.getActionName());
 		assignAcceleratorKey(theAction, theAction.getActionName(), theKeyEvent,
@@ -116,6 +124,15 @@ abstract class PrepTool {
 		return jButton;
 	}
 
+	/**
+	 * Assigns accelerator key to the given action. Code adapted from here:
+	 * http://www.stratulat.com/assign_accelerator_key_to_a_JButton.html
+	 * 
+	 * @param theAction
+	 * @param theLabel
+	 * @param theKeyEvent
+	 * @param jComponent
+	 */
 	private static void assignAcceleratorKey(final Action theAction,
 			final String theLabel, int theKeyEvent, final JComponent jComponent) {
 		final InputMap keyMap = new ComponentInputMap(jComponent);
@@ -129,6 +146,12 @@ abstract class PrepTool {
 				JComponent.WHEN_IN_FOCUSED_WINDOW, keyMap);
 	}
 
+	/**
+	 * Set all actions to enabled/disabled. Convenience method in case a minor
+	 * subset of actions' enabled/disabled state is different from the rest.
+	 * 
+	 * @param enabled
+	 */
 	public void setAllActionsEnabled(boolean enabled) {
 		final List<Action> allActions = getAllActions();
 		for (final Action action : allActions) {
@@ -187,6 +210,12 @@ abstract class PrepTool {
 		return MNEMONIC;
 	}
 
+	/**
+	 * Reflects the current state in the GUI: enable/disable elements, traffic
+	 * light.
+	 * 
+	 * @param theDocumentMetaInfo
+	 */
 	public void setCurrentState(final DocumentMetaInfo theDocumentMetaInfo) {
 		if (theDocumentMetaInfo != null && theDocumentMetaInfo.isDtBook()) {
 			prepToolsPluginExtension.enableMenuPrepTools();
@@ -202,6 +231,12 @@ abstract class PrepTool {
 		}
 	}
 
+	/**
+	 * Reflects the state of the current PrepTool for the current document in
+	 * the traffic light.
+	 * 
+	 * @param theDocumentMetaInfo
+	 */
 	private void updateTrafficLight(final DocumentMetaInfo theDocumentMetaInfo) {
 		final boolean isTextPage = isTextPage(theDocumentMetaInfo);
 		if (!theDocumentMetaInfo.hasStarted()) { // not started
@@ -233,6 +268,13 @@ abstract class PrepTool {
 
 	}
 
+	/**
+	 * True if the current editor page is of type text: Our tools only operate
+	 * on text (i.e. not author or grid).
+	 * 
+	 * @param theDocumentMetaInfo
+	 * @return
+	 */
 	protected boolean isTextPage(final DocumentMetaInfo theDocumentMetaInfo) {
 		return theDocumentMetaInfo.getCurrentEditorPage().equals(
 				EditorPageConstants.PAGE_TEXT);

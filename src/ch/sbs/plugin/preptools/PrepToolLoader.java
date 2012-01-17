@@ -3,6 +3,10 @@ package ch.sbs.plugin.preptools;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * TODO: preptools should load themselves. PrepToolLoader shouldn't know or care
+ * about specific tools.
+ */
 public class PrepToolLoader {
 
 	// Ordnungszahlen
@@ -49,8 +53,6 @@ public class PrepToolLoader {
 			+ PLACEHOLDER + "\">$1</span>";
 	public static final String ACCENT_SKIP_REGEX = "span.*?";
 
-	// TODO: preptools should load themselves.
-	// PrepToolLoader shouldn't know or care about specific tools.
 	public static List<PrepTool> loadPrepTools(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
 		final List<PrepTool> prepTools = new ArrayList<PrepTool>();
