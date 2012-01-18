@@ -6,6 +6,6 @@ package ch.sbs.plugin.preptools;
  * 
  */
 public interface Ids {
-	public static final String VIEW_ID = "preptoolsviewid";
-	public static final String TOOLBAR_ID = "preptoolstoolbarid";
+	public static final String VIEW_ID = "dtbook-preptoolsviewid";
+	public static final String TOOLBAR_ID = "dtbook-preptoolstoolbarid";
 }

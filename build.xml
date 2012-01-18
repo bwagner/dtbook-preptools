@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="preptools" default="deploy">
+<project name="dtbook-preptools" default="deploy">
+<!-- NOTE: project name is used in properties viewid and toolbarid which need to correspond to the constants in Ids.java! -->
 	
 	<!-- used by "send": properties "recipient" and "greet" -->
 	<property file="build.properties" />
@@ -85,6 +86,11 @@
 		<!--
 		<copy file="${stamp.properties}" todir="${plugindir}" />
 		-->
+	</target>
+	
+	<target name="undist" depends="oxygendir" description="uninstall plugin from local oxygen">
+		<property name="plugindir" value="${oxygendir}/plugins/${ant.project.name}" />
+		<delete dir="${plugindir}" />
 	</target>
 	
 	<target name="zip" depends="dist" description="makes zip for official distribution">

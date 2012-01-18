@@ -84,6 +84,10 @@ abstract class PrepTool {
 	 */
 	private void makeToolbar() {
 		final List<JComponent> components = getComponents();
+		if (prepToolsPluginExtension.toolbarPanel == null) {
+			throw new RuntimeException(
+					"Configuration error: Probably Ids.TOOLBAR_ID does not correspond to the property toolbarid in build.xml!");
+		}
 		prepToolsPluginExtension.toolbarPanel.removeAll();
 		for (final JComponent component : components) {
 			prepToolsPluginExtension.toolbarPanel.add(component);
