@@ -5,9 +5,8 @@ import java.util.Arrays;
 public class StringUtils {
 
 	/**
-	 * Utility method to join an array of Strings with the given delimiter.
+	 * Utility method to join an array of Strings.
 	 * 
-	 * @param delimiter
 	 * @param strings
 	 * @return concatenation of all strings with the delimiter in between
 	 *         strings.

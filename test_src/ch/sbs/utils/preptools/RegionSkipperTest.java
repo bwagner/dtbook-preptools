@@ -28,7 +28,7 @@ public class RegionSkipperTest {
 	@Test
 	public void testSkipLiteral() {
 		final RegionSkipper theRegionSkipper = RegionSkipper
-				.getLiteralAndCommentSkipper();
+				.getDefaultSkipper();
 		theRegionSkipper.addPattern(RegionSkipper
 				.makeMarkupRegex(VFormActionHelper.VFORM_TAG));
 		final MarkupUtil mu = new MarkupUtil(theRegionSkipper);
@@ -59,7 +59,7 @@ public class RegionSkipperTest {
 	@Test
 	public void testLiteralSkipper1() {
 		final RegionSkipper literalSkipper = RegionSkipper
-				.getLiteralAndCommentSkipper();
+				.getDefaultSkipper();
 		final String theText = "\nhallo\n<brl:literal>\ndu\n</brl:literal>\nhier\n";
 		literalSkipper.findRegionsToSkip(theText);
 		assertFalse(literalSkipper.inSkipRegion(makeMatcher("hallo", theText)));
@@ -67,13 +67,39 @@ public class RegionSkipperTest {
 	}
 
 	@Test
-	public void tesCommentSkipper1() {
+	public void testCommentSkipper1() {
 		final RegionSkipper commentSkipper = RegionSkipper
-				.getLiteralAndCommentSkipper();
+				.getDefaultSkipper();
 		final String theText = "\nhallo\n<!--\ndu\n-->\nhier\n";
 		commentSkipper.findRegionsToSkip(theText);
 		assertFalse(commentSkipper.inSkipRegion(makeMatcher("hallo", theText)));
 		assertTrue(commentSkipper.inSkipRegion(makeMatcher("du", theText)));
+	}
+
+	@Test
+	public void testHeaderSkipper1() {
+		final RegionSkipper commentSkipper = RegionSkipper
+				.getDefaultSkipper();
+		final String theText = "bla hola bla tu bla <book>\nhallo\n\ndu\n\nhier\n</book>";
+		commentSkipper.findRegionsToSkip(theText);
+		assertTrue(commentSkipper.inSkipRegion(makeMatcher("hola", theText)));
+		assertTrue(commentSkipper.inSkipRegion(makeMatcher("tu", theText)));
+		assertFalse(commentSkipper.inSkipRegion(makeMatcher("hallo", theText)));
+		assertFalse(commentSkipper.inSkipRegion(makeMatcher("du", theText)));
+	}
+
+	@Test
+	public void testHeaderSkipper() {
+		final RegionSkipper commentSkipper = RegionSkipper
+				.getDefaultSkipper();
+		final String theText = "\nbonsoir\n\nvous\n\nla\n<book>\nhallo\n\ndu\n\nhier\n</book>";
+		commentSkipper.findRegionsToSkip(theText);
+		assertTrue(commentSkipper.inSkipRegion(makeMatcher("bonsoir", theText)));
+		assertTrue(commentSkipper.inSkipRegion(makeMatcher("vous", theText)));
+		assertTrue(commentSkipper.inSkipRegion(makeMatcher("la", theText)));
+		assertFalse(commentSkipper.inSkipRegion(makeMatcher("hallo", theText)));
+		assertFalse(commentSkipper.inSkipRegion(makeMatcher("du", theText)));
+		assertFalse(commentSkipper.inSkipRegion(makeMatcher("hier", theText)));
 	}
 
 	private static Matcher makeMatcher(final String thePattern,

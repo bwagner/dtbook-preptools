@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
@@ -20,23 +21,34 @@ import ch.sbs.utils.preptools.Match;
 import ch.sbs.utils.preptools.Match.PositionMatch;
 import ch.sbs.utils.preptools.MetaUtils;
 import ch.sbs.utils.preptools.RegionSkipper;
+import ch.sbs.utils.preptools.TextUtils;
 import ch.sbs.utils.preptools.parens.ParensUtil;
 
 @SuppressWarnings("serial")
 abstract class AbstractPrepToolAction extends AbstractAction {
-	/**
-	 * 
-	 */
+
+	// common names for actions:
+	public static final String START = "Start";
+	public static final String FIND = "Find";
+	public static final String CHANGE = "Change";
+
 	protected final PrepToolsPluginExtension prepToolsPluginExtension;
 
 	/**
 	 * @param thePrepToolsPluginExtension
+	 * @param theActionName
+	 *            the name of this action.
 	 */
 	AbstractPrepToolAction(
-			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theActionName) {
 		prepToolsPluginExtension = thePrepToolsPluginExtension;
+		ACTION_NAME = theActionName;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 */
 	@Override
 	public void actionPerformed(final ActionEvent arg0) {
 		if ((prepToolsPluginExtension.getPage()) != null) {
@@ -63,29 +75,32 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 				}
 			});
 			dmi.setCurrentState();
-			if (dmi.isDone() && !dmi.isCancelled()) {
-				wrapUp(document);
-				prepToolsPluginExtension.showDialog("You're done with "
-						+ getProcessName() + "!");
+			if (dmi.isDone()) {
+				if (!dmi.isCancelled()) {
+					wrapUp(document);
+					prepToolsPluginExtension.showDialog("You're done with "
+							+ getPrepToolName() + "!");
 
-				// TODO: once the schema has been upgraded, set this flag to
-				// true (or remove the if)
-				final boolean FEATURE_1205 = false;
-				if (FEATURE_1205) {
-					OxygenEditGrouper.perform(document,
-							new OxygenEditGrouper.Edit() {
-								@Override
-								public void edit() {
+					// TODO: once the schema has been upgraded, set this flag to
+					// true (or remove the if)
+					final boolean FEATURE_1205 = false;
+					if (FEATURE_1205) {
+						OxygenEditGrouper.perform(document,
+								new OxygenEditGrouper.Edit() {
+									@Override
+									public void edit() {
 
-									MetaUtils.insertPrepToolInfo(
-											prepToolsPluginExtension
-													.getDocumentMetaInfo()
-													.getDocument(),
-											getProcessName());
+										MetaUtils.insertPrepToolInfo(
+												prepToolsPluginExtension
+														.getDocumentMetaInfo()
+														.getDocument(),
+												getPrepToolName());
 
-								}
-							});
+									}
+								});
+					}
 				}
+				prepToolsPluginExtension.chooseNextUncompletedPrepTool();
 			}
 		}
 	}
@@ -106,7 +121,8 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 
 	/**
 	 * Hook thet gets called just before meta-information is inserted into the
-	 * document.
+	 * document. This code is executed as a single edit, so it can be undone by
+	 * the user as a single edit step.
 	 */
 	protected void doWrapUp() {
 
@@ -119,12 +135,24 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	}
 
 	/**
-	 * Hook that gets called only when editor, page, document, text have
-	 * successfully been retrieved.
+	 * Compulsory hook that gets called only when editor, page, document, text
+	 * have successfully been retrieved.
 	 * 
 	 * @throws BadLocationException
 	 */
 	protected abstract void doSomething() throws BadLocationException;
+
+	/**
+	 * Utility method that returns the start position of the current selection.
+	 * 
+	 * @return The start position of the current selection.
+	 */
+	protected final int getSelectionStart() {
+		final WSEditor editorAccess = prepToolsPluginExtension.getWsEditor();
+		final WSTextEditorPage aWSTextEditorPage = PrepToolsPluginExtension
+				.getPage(editorAccess);
+		return aWSTextEditorPage.getSelectionStart();
+	}
 
 	/**
 	 * Utility method that returns the end position of the current selection.
@@ -138,26 +166,6 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 		return aWSTextEditorPage.getSelectionEnd();
 	}
 
-	protected int getStartIndex() {
-		final Document document = prepToolsPluginExtension
-				.getDocumentMetaInfo().getDocument();
-		try {
-			final String bookTag = "<book";
-			final int indexOf = document.getText(0, document.getLength())
-					.indexOf(bookTag);
-			if (indexOf < 0) {
-				final String message = "\"" + bookTag
-						+ "\" not found in document!";
-				prepToolsPluginExtension.showMessage(message);
-				throw new RuntimeException(message);
-			}
-			return indexOf;
-		} catch (final BadLocationException e) {
-			prepToolsPluginExtension.showMessage(e.getMessage());
-			throw new RuntimeException(e);
-		}
-	}
-
 	/**
 	 * Subclasses call this method to notify completion of process.
 	 */
@@ -165,23 +173,30 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 		prepToolsPluginExtension.getDocumentMetaInfo().setDone(true);
 	}
 
-	protected abstract String getProcessName();
+	/**
+	 * Compulsory hook for subclasses.
+	 * 
+	 * @return
+	 */
+	protected abstract String getPrepToolName();
+
+	/**
+	 * @return
+	 */
+	public String getActionName() {
+		return ACTION_NAME;
+	}
+
+	private final String ACTION_NAME;
 }
 
 @SuppressWarnings("serial")
 abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 
-	private final String MYTAG;
-
 	AbstractMarkupAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String tag) {
-		super(thePrepToolsPluginExtension);
-		MYTAG = tag;
-	}
-
-	protected String getTag() {
-		return MYTAG;
+			final String theName) {
+		super(thePrepToolsPluginExtension, theName);
 	}
 
 	/**
@@ -203,9 +218,13 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 		// Possibly improve this: don't create a skipper for every searchOn
 		// call.
 		// Instead save the skipper in DocumentMetaInfo. However, make sure
-		// it is properly synced with changes occurring in the text, also
+		// it is properly synced with changes occurring in the document, also
 		// via Undo!
 		final RegionSkipper skipper = prepToolsPluginExtension.makeSkipper();
+		final String customPattern = getCustomSkipPatternToAdd();
+		if (customPattern != null) {
+			skipper.addPattern(customPattern);
+		}
 		final Match match = new MarkupUtil(skipper).find(newText, startAt,
 				getPattern());
 		if (match.equals(Match.NULL_MATCH)) {
@@ -218,6 +237,20 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
 	}
 
+	/**
+	 * Optional hook for subclasses to add a skipper pattern.
+	 * 
+	 * @return the pattern to skip
+	 */
+	protected String getCustomSkipPatternToAdd() {
+		return null;
+	}
+
+	/**
+	 * Compulsory hook for subclasses.
+	 * 
+	 * @return pattern for which to search
+	 */
 	abstract protected Pattern getPattern();
 
 	protected DocumentMetaInfo.MetaInfo getMetaInfo() {
@@ -231,8 +264,8 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 
 	AbstractMarkupStartAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String tag) {
-		super(thePrepToolsPluginExtension, tag);
+			final String theName) {
+		super(thePrepToolsPluginExtension, theName);
 	}
 
 	@Override
@@ -243,10 +276,10 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 		final URL editorLocation = editorAccess.getEditorLocation();
 		final DocumentMetaInfo.MetaInfo metaInfo = getMetaInfo();
 		if (metaInfo.isDone()) {
-			if (prepToolsPluginExtension.showConfirmDialog(getProcessName()
+			if (prepToolsPluginExtension.showConfirmDialog(getPrepToolName()
 					+ ": Start Over?",
 					"The document " + FileUtils.basename(editorLocation)
-							+ " has already been " + getProcessName()
+							+ " has already been " + getPrepToolName()
 							+ "ed.\n Do you want to start over?")
 
 			) {
@@ -259,10 +292,10 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 			}
 		}
 		else if (metaInfo.hasStarted()) {
-			if (prepToolsPluginExtension.showConfirmDialog(getProcessName()
+			if (prepToolsPluginExtension.showConfirmDialog(getPrepToolName()
 					+ ": Start Over?",
 					"The document " + FileUtils.basename(editorLocation)
-							+ " is currently being " + getProcessName()
+							+ " is currently being " + getPrepToolName()
 							+ "ed.\n Do you want to start over?")
 
 			) {
@@ -275,7 +308,7 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 
 		metaInfo.setHasStarted(true);
 		metaInfo.setDone(false);
-		searchOn(aWSTextEditorPage, editorAccess, getStartIndex());
+		searchOn(aWSTextEditorPage, editorAccess, 0);
 	}
 
 }
@@ -283,16 +316,18 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 @SuppressWarnings("serial")
 abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 
+	protected boolean takeUpWhereWeLeftOffLastTimeFlag;
+
 	AbstractMarkupProceedAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String tag) {
-		super(thePrepToolsPluginExtension, tag);
+			final String theName) {
+		super(thePrepToolsPluginExtension, theName);
 	}
 
 	/**
 	 * 
-	 * Hook to be implemented by subclasses. Handles selected text and returns
-	 * position where to continue with search.
+	 * Compulsory hook to be implemented by subclasses. Handles selected text
+	 * and returns position where to continue with search.
 	 * 
 	 * @param document
 	 *            The document.
@@ -305,12 +340,13 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 			final String selText) throws BadLocationException;
 
 	/**
-	 * Hook to be implemented by subclasses. If true the process is aborted.
+	 * Optional hook to be implemented by subclasses. If true the process is
+	 * aborted.
 	 * 
 	 * @param selText
 	 * @return True if the process is to be aborted.
 	 */
-	protected boolean veto(final String selText) {
+	protected boolean abortIfSelectionChanged(final String selText) {
 		return false;
 	}
 
@@ -322,11 +358,13 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 		final WSTextEditorPage aWSTextEditorPage = prepToolsPluginExtension
 				.getPage();
 
-		if (veto(aWSTextEditorPage.getSelectedText()))
+		if (abortIfSelectionChanged(aWSTextEditorPage.getSelectedText()))
 			return;
 
-		if (handleManualCursorMovement()) {
-			return;
+		if (resumePositionAfterManualCursorMovement()) {
+			if (breakIfManualEditOccurred())
+				return;
+			takeUpWhereWeLeftOffLastTimeFlag = true;
 		}
 
 		final int continueAt = handleText(aWSTextEditorPage.getDocument(),
@@ -342,7 +380,7 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 	 * @param aWSTextEditorPage
 	 * @param dmi
 	 */
-	private boolean handleManualCursorMovement() {
+	private boolean resumePositionAfterManualCursorMovement() {
 		final DocumentMetaInfo dmi = prepToolsPluginExtension
 				.getDocumentMetaInfo();
 		final WSTextEditorPage aWSTextEditorPage = prepToolsPluginExtension
@@ -351,18 +389,28 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 		lastMatchEnd = aWSTextEditorPage.getSelectionEnd();
 		final Match.PositionMatch pm = dmi.getCurrentPositionMatch();
 		if (lastMatchStart != pm.startOffset.getOffset()
-				|| lastMatchEnd != pm.endOffset.getOffset()
-				|| dmi.manualEditOccurred()) {
-			if (prepToolsPluginExtension.showConfirmDialog(getProcessName()
-					+ ": Cursor", "Cursor position has changed!\n",
-					"Take up where we left off last time", "continue anyway")) {
+				|| lastMatchEnd != pm.endOffset.getOffset()) {
+			if (takeUpWhereWeLeftOffLastTime()) {
 				prepToolsPluginExtension.select(
 						lastMatchStart = pm.startOffset.getOffset(),
 						lastMatchEnd = pm.endOffset.getOffset());
-				return breakIfManualEditOccurred();
+				return true;
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Optional hook for subclasses to indicate whether to continue where we
+	 * left off last time or continue anyway. Default behaviour is to let the
+	 * user decide.
+	 * 
+	 * @return True if we're supposed to take up where we left off last time.
+	 */
+	protected boolean takeUpWhereWeLeftOffLastTime() {
+		return prepToolsPluginExtension.showConfirmDialog(getPrepToolName()
+				+ ": Cursor", "Cursor position has changed!\n",
+				"Take up where we left off last time", "continue anyway");
 	}
 
 	/**
@@ -378,29 +426,38 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 }
 
 @SuppressWarnings("serial")
-abstract class AbstractMarkupChangeVetoAction extends
+abstract class AbstractMarkupChangeAbortIfSelectionChangedAction extends
 		AbstractMarkupProceedAction {
 
-	AbstractMarkupChangeVetoAction(
+	AbstractMarkupChangeAbortIfSelectionChangedAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String tag) {
-		super(thePrepToolsPluginExtension, tag);
+			final String theName) {
+		super(thePrepToolsPluginExtension, theName);
 	}
 
 	@Override
-	protected boolean veto(final String selText) {
+	protected boolean abortIfSelectionChanged(final String selText) {
 		return (selText == null || !MarkupUtil.matches(selText, getPattern()));
 	}
 }
 
 @SuppressWarnings("serial")
 abstract class AbstractMarkupChangeAction extends
-		AbstractMarkupChangeVetoAction {
+		AbstractMarkupChangeAbortIfSelectionChangedAction {
+
+	private final String FULL_OPENING_TAG;
+	private final String FULL_CLOSING_TAG;
 
 	AbstractMarkupChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String tag) {
-		super(thePrepToolsPluginExtension, tag);
+			final String theName, final String theTagToInsert) {
+		super(thePrepToolsPluginExtension, theName);
+		// moved initialization of these up here, to "cache" the result, since
+		// getClosingTag is potentially costly (see Bug
+		// http://redmine.sbszh.ch/issues/show/1259)
+		FULL_OPENING_TAG = "<" + theTagToInsert + ">";
+		FULL_CLOSING_TAG = "</" + MarkupUtil.getClosingTag(theTagToInsert)
+				+ ">";
 	}
 
 	/* (non-Javadoc)
@@ -409,9 +466,6 @@ abstract class AbstractMarkupChangeAction extends
 	@Override
 	protected int handleText(final Document document, final String selText)
 			throws BadLocationException {
-		final String FULL_OPENING_TAG = "<" + getTag() + ">";
-		final String FULL_CLOSING_TAG = "</"
-				+ MarkupUtil.getClosingTag(getTag()) + ">";
 		// starting with the end, so the start position doesn't shift
 		document.insertString(lastMatchEnd, FULL_CLOSING_TAG, null);
 		document.insertString(lastMatchStart, FULL_OPENING_TAG, null);
@@ -424,15 +478,19 @@ abstract class AbstractMarkupChangeAction extends
 
 @SuppressWarnings("serial")
 abstract class AbstractMarkupFullRegexChangeAction extends
-		AbstractMarkupChangeVetoAction {
+		AbstractMarkupChangeAbortIfSelectionChangedAction {
 
 	private final String replaceString;
 
 	AbstractMarkupFullRegexChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String tag, final String theReplaceString) {
-		super(thePrepToolsPluginExtension, tag);
+			final String theName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName);
 		replaceString = theReplaceString;
+	}
+
+	protected String getReplaceString() {
+		return replaceString;
 	}
 
 	/* (non-Javadoc)
@@ -458,8 +516,8 @@ abstract class AbstractMarkupFindAction extends AbstractMarkupProceedAction {
 
 	AbstractMarkupFindAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String tag) {
-		super(thePrepToolsPluginExtension, tag);
+			final String theName) {
+		super(thePrepToolsPluginExtension, theName);
 	}
 
 	/* (non-Javadoc)
@@ -468,33 +526,28 @@ abstract class AbstractMarkupFindAction extends AbstractMarkupProceedAction {
 	@Override
 	protected int handleText(final Document document, final String selText)
 			throws BadLocationException {
-		return getSelectionEnd();
+		final boolean t = takeUpWhereWeLeftOffLastTimeFlag;
+		takeUpWhereWeLeftOffLastTimeFlag = false;
+		return t ? getSelectionStart() : getSelectionEnd();
 	}
 }
 
 class RegexHelper {
 
 	private final Pattern pattern;
-	private final String processName;
-	private final String tag;
+	private final String prepToolName;
 
-	RegexHelper(final String thePattern, final String theProcessName,
-			final String theTag) {
+	RegexHelper(final String thePattern, final String thePrepToolName) {
 		pattern = Pattern.compile(thePattern);
-		processName = theProcessName;
-		tag = theTag;
+		prepToolName = thePrepToolName;
 	}
 
 	public Pattern getPattern() {
 		return pattern;
 	}
 
-	public String getProcessName() {
-		return processName;
-	}
-
-	public String getTag() {
-		return tag;
+	public String getPrepToolName() {
+		return prepToolName;
 	}
 
 }
@@ -505,10 +558,10 @@ class RegexStartAction extends AbstractMarkupStartAction {
 
 	RegexStartAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String thePattern, final String theProcessName,
-			final String theTag) {
-		super(thePrepToolsPluginExtension, theTag);
-		helper = new RegexHelper(thePattern, theProcessName, theTag);
+			final String theName, final String thePattern,
+			final String thePrepToolName) {
+		super(thePrepToolsPluginExtension, theName);
+		helper = new RegexHelper(thePattern, thePrepToolName);
 	}
 
 	@Override
@@ -517,8 +570,8 @@ class RegexStartAction extends AbstractMarkupStartAction {
 	}
 
 	@Override
-	protected String getProcessName() {
-		return helper.getProcessName();
+	protected String getPrepToolName() {
+		return helper.getPrepToolName();
 	}
 }
 
@@ -528,10 +581,10 @@ class RegexChangeAction extends AbstractMarkupChangeAction {
 
 	RegexChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String thePattern, final String theProcessName,
-			final String theTag) {
-		super(thePrepToolsPluginExtension, theTag);
-		helper = new RegexHelper(thePattern, theProcessName, theTag);
+			final String theName, final String thePattern,
+			final String thePrepToolName, final String theTagToInsert) {
+		super(thePrepToolsPluginExtension, theName, theTagToInsert);
+		helper = new RegexHelper(thePattern, thePrepToolName);
 	}
 
 	@Override
@@ -540,8 +593,8 @@ class RegexChangeAction extends AbstractMarkupChangeAction {
 	}
 
 	@Override
-	protected String getProcessName() {
-		return helper.getProcessName();
+	protected String getPrepToolName() {
+		return helper.getPrepToolName();
 	}
 }
 
@@ -551,10 +604,10 @@ class FullRegexChangeAction extends AbstractMarkupFullRegexChangeAction {
 
 	FullRegexChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String thePattern, final String theProcessName,
-			final String theTag, final String theReplaceString) {
-		super(thePrepToolsPluginExtension, theTag, theReplaceString);
-		helper = new RegexHelper(thePattern, theProcessName, theTag);
+			final String theName, final String thePattern,
+			final String thePrepToolName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName, theReplaceString);
+		helper = new RegexHelper(thePattern, thePrepToolName);
 	}
 
 	@Override
@@ -563,13 +616,13 @@ class FullRegexChangeAction extends AbstractMarkupFullRegexChangeAction {
 	}
 
 	@Override
-	protected String getProcessName() {
-		return helper.getProcessName();
+	protected String getPrepToolName() {
+		return helper.getPrepToolName();
 	}
 }
 
 @SuppressWarnings("serial")
-abstract class AccentChangeAction extends FullRegexChangeAction {
+class AccentChangeAction extends FullRegexChangeAction {
 
 	private static final String PLACE_HOLDER = "_";
 	private static final String REGEX_SPAN_TEMPLATE = "<span\\s+brl:accents\\s*=\\s*\""
@@ -584,16 +637,33 @@ abstract class AccentChangeAction extends FullRegexChangeAction {
 
 	AccentChangeAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String thePattern, final String theProcessName,
-			final String theTag, final String theReplaceString) {
-		super(thePrepToolsPluginExtension, thePattern, theProcessName, theTag,
-				theReplaceString);
+			final String theName, final String thePattern,
+			final String thePrepToolName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName, thePattern,
+				thePrepToolName, theReplaceString);
 	}
 
 	@Override
-	protected void doSomething() throws BadLocationException {
-		super.doSomething();
-		incrementCounter();
+	protected int handleText(final Document document, final String selText)
+			throws BadLocationException {
+		if (selText == null) {
+			return lastMatchStart;
+		}
+		final String newText = getPattern().matcher(selText).replaceAll(
+				getReplaceString());
+
+		DocumentUtils.performMultipleReplacements(document,
+				"\\b" + TextUtils.quoteRegexMeta(selText) + "\\b", newText);
+
+		return lastMatchStart + newText.length();
+	}
+
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractMarkupProceedAction#takeUpWhereWeLeftOffLastTime()
+	 */
+	@Override
+	protected boolean takeUpWhereWeLeftOffLastTime() {
+		return true; // user is not supposed to have a choice.
 	}
 
 	@Override
@@ -601,94 +671,243 @@ abstract class AccentChangeAction extends FullRegexChangeAction {
 		return true;
 	}
 
-	// override veto behaviour from intermediate superclasses.
+	// Override abortIfSelectionChanged behaviour from intermediate
+	// superclasses. We don't want to silently abort the process when the cursor
+	// has been manually moved, because we deal with that case by re-setting the
+	// cursor to the last position.
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractMarkupChangeAbortIfSelectionChangedAction#abortIfSelectionChanged(java.lang.String)
+	 */
 	@Override
-	protected boolean veto(final String selText) {
+	protected boolean abortIfSelectionChanged(final String selText) {
 		return false;
 	}
 
-	protected abstract void incrementCounter();
-
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractPrepToolAction#doWrapUp()
+	 */
 	@Override
 	protected void doWrapUp() {
-		final AccentPrepTool.MetaInfo metaInfo = getMetaInfo();
-		final int foreignCount = metaInfo.getForeignCount();
-		final int swissCount = metaInfo.getSwissCount();
-		if (foreignCount > swissCount) {
-			DocumentUtils.performReplacement(prepToolsPluginExtension
-					.getDocumentMetaInfo().getDocument(), REGEX_SPAN_REDUCED,
-					REPLACE);
+		DocumentUtils.performMultipleReplacements(prepToolsPluginExtension
+				.getDocumentMetaInfo().getDocument(), REGEX_SPAN_DETAILED,
+				REPLACE);
+	}
+
+}
+
+@SuppressWarnings("serial")
+abstract class AbstractChangeAction extends FullRegexChangeAction {
+
+	AbstractChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName, final String thePattern,
+			final String thePrepToolName) {
+		this(thePrepToolsPluginExtension, theName, thePattern, thePrepToolName,
+				null);
+	}
+
+	AbstractChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName, final String thePattern,
+			final String thePrepToolName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName, thePattern,
+				thePrepToolName, theReplaceString);
+	}
+
+	@Override
+	protected boolean breakIfManualEditOccurred() {
+		return true;
+	}
+
+	@Override
+	protected int handleText(final Document document, final String selText)
+			throws BadLocationException {
+		if (selText == null) {
+			return lastMatchStart;
 		}
-		else {
-			DocumentUtils.performReplacement(prepToolsPluginExtension
-					.getDocumentMetaInfo().getDocument(), REGEX_SPAN_DETAILED,
-					REPLACE);
-		}
+		final String newText = performReplacement(getPattern(), selText);
+
+		DocumentUtils.performSingleReplacement(document,
+				TextUtils.quoteRegexMeta(selText), newText, lastMatchStart);
+
+		return lastMatchStart + newText.length();
 	}
 
 	/**
-	 * Utility (not hook!) method to get tool specific metainfo.
+	 * Compulsory hook for subclasses to perform replacement of thePattern on
+	 * selText.
 	 * 
-	 * @return tool specific metainfo.
+	 * @param thePattern
+	 * @param selText
+	 * @return
+	 */
+	protected abstract String performReplacement(final Pattern thePattern,
+			final String selText);
+
+}
+
+@SuppressWarnings("serial")
+class OrdinalChangeAction extends AbstractChangeAction {
+
+	OrdinalChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName, final String thePattern,
+			final String thePrepToolName) {
+		this(thePrepToolsPluginExtension, theName, thePattern, thePrepToolName,
+				null);
+	}
+
+	OrdinalChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName, final String thePattern,
+			final String thePrepToolName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName, thePattern,
+				thePrepToolName, theReplaceString);
+	}
+
+	/**
+	 * Applies the given pattern to the given input and replaces the matches
+	 * according to http://redmine.sbszh.ch/issues/1416
+	 * 
+	 * @param pattern
+	 * @param input
+	 * @return
+	 */
+	public static String feature1416(final Pattern pattern, final String input) {
+		final Matcher matcher = pattern.matcher(input);
+		matcher.find();
+		String replacement = "<brl:num role=\"ordinal\">$1</brl:num>";
+		// We check for group(2).length() because the second capturing group in
+		// PrepToolLoader.ORDINAL_SEARCH_REGEX (\s*) matches the empty string
+		// and thus can never be null, see
+		// http://download.oracle.com/javase/1.5.0/docs/api/java/util/regex/Matcher.html#group%28%29
+		if (matcher.group(2).length() != 0) {
+			if (matcher.group(3) == null) {
+				replacement += "&nbsp;";
+			}
+			else {
+				replacement += matcher.group(2);
+			}
+		}
+		// We check for group(3) != null because the third capturing group in
+		// PrepToolLoader.ORDINAL_SEARCH_REGEX ((</|&nbsp;)?) does not match the
+		// empty string and thus can be null, see
+		// http://download.oracle.com/javase/1.5.0/docs/api/java/util/regex/Matcher.html#group%28%29
+		if (matcher.group(3) != null) {
+			replacement += matcher.group(3);
+		}
+		return matcher.replaceAll(replacement);
+	}
+
+	@Override
+	protected String performReplacement(final Pattern thePattern,
+			final String selText) {
+		return feature1416(thePattern, selText);
+	}
+}
+
+/**
+ * (@see <a href="http://redmine.sbszh.ch/issues/1443">Bug 1443</a>)
+ * This pattern is used for the Abbrev-Start-, -Find-, and Change-Actions to
+ * allow them to plug in an additional pattern to skip, namely to avoid matching
+ * text within a p element, particularly:
+ * <p class="sourcePublisher">
+ */
+interface Bug1443 {
+	public static final String CUSTOM_PATTERN = "<p[^>]*>";
+}
+
+@SuppressWarnings("serial")
+class AbbrevChangeAction extends AbstractChangeAction {
+
+	AbbrevChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName, final String thePattern,
+			final String thePrepToolName) {
+		this(thePrepToolsPluginExtension, theName, thePattern, thePrepToolName,
+				null);
+	}
+
+	AbbrevChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName, final String thePattern,
+			final String thePrepToolName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName, thePattern,
+				thePrepToolName, theReplaceString);
+	}
+
+	@Override
+	protected String performReplacement(final Pattern thePattern,
+			final String selText) {
+		return feature1414(thePattern, selText);
+	}
+
+	/**
+	 * Applies the given pattern to the given input and replaces the matches
+	 * according to http://redmine.sbszh.ch/issues/1414
+	 * 
+	 * @param pattern
+	 * @param input
+	 * @return
+	 */
+	public static String feature1414(final Pattern pattern, final String input) {
+		final Matcher matcher = pattern.matcher(input);
+		matcher.find();
+		if (matcher.group(3) != null) {
+			return pattern.matcher(input).replaceAll("<abbr>$2</abbr>$3");
+		}
+		else {
+			return pattern.matcher(input).replaceAll("<abbr>$1</abbr>");
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractMarkupAction#createPattern()
+	 * (@see <a href="http://redmine.sbszh.ch/issues/1443">Bug 1443</a>)
 	 */
 	@Override
-	protected final AccentPrepTool.MetaInfo getMetaInfo() {
-		final DocumentMetaInfo dmi = prepToolsPluginExtension
-				.getDocumentMetaInfo(prepToolsPluginExtension.getWsEditor()
-						.getEditorLocation());
-		return (AccentPrepTool.MetaInfo) dmi
-				.getToolSpecificMetaInfo(AccentPrepTool.LABEL);
+	protected String getCustomSkipPatternToAdd() {
+		return Bug1443.CUSTOM_PATTERN;
 	}
 
 }
 
 @SuppressWarnings("serial")
-class AccentStartAction extends RegexStartAction {
+class AbbrevStartAction extends RegexStartAction {
 
-	AccentStartAction(PrepToolsPluginExtension thePrepToolsPluginExtension,
-			String thePattern, String theProcessName, String theTag) {
-		super(thePrepToolsPluginExtension, thePattern, theProcessName, theTag);
-	}
-
-	@Override
-	protected void doSomething() throws BadLocationException {
-		((AccentPrepTool.MetaInfo) getMetaInfo()).resetCounts();
-		super.doSomething();
-	}
-
-}
-
-@SuppressWarnings("serial")
-class SwissAccentChangeAction extends AccentChangeAction {
-
-	SwissAccentChangeAction(
+	AbbrevStartAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String thePattern, final String theProcessName,
-			final String theTag, final String theReplaceString) {
-		super(thePrepToolsPluginExtension, thePattern, theProcessName, theTag,
-				theReplaceString);
+			final String theName, final String thePattern,
+			final String thePrepToolName) {
+		super(thePrepToolsPluginExtension, theName, thePattern, thePrepToolName);
 	}
 
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractMarkupAction#createPattern()
+	 * (@see <a href="http://redmine.sbszh.ch/issues/1443">Bug 1443</a>)
+	 */
 	@Override
-	protected void incrementCounter() {
-		getMetaInfo().incrementSwissCount();
+	protected String getCustomSkipPatternToAdd() {
+		return Bug1443.CUSTOM_PATTERN;
 	}
+
 }
 
 @SuppressWarnings("serial")
-class ForeignAccentChangeAction extends AccentChangeAction {
+class AbbrevFindAction extends RegexFindAction {
 
-	ForeignAccentChangeAction(
-			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String thePattern, final String theProcessName,
-			final String theTag, final String theReplaceString) {
-		super(thePrepToolsPluginExtension, thePattern, theProcessName, theTag,
-				theReplaceString);
+	AbbrevFindAction(PrepToolsPluginExtension thePrepToolsPluginExtension,
+			String theName, String thePattern, String thePrepToolName) {
+		super(thePrepToolsPluginExtension, theName, thePattern, thePrepToolName);
 	}
 
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractMarkupAction#createPattern()
+	 * (@see <a href="http://redmine.sbszh.ch/issues/1443">Bug 1443</a>)
+	 */
 	@Override
-	protected void incrementCounter() {
-		getMetaInfo().incrementForeignCount();
+	protected String getCustomSkipPatternToAdd() {
+		return Bug1443.CUSTOM_PATTERN;
 	}
 
 }
@@ -698,10 +917,10 @@ class RegexFindAction extends AbstractMarkupFindAction {
 	private final RegexHelper helper;
 
 	RegexFindAction(final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			final String thePattern, final String theProcessName,
-			final String theTag) {
-		super(thePrepToolsPluginExtension, theTag);
-		helper = new RegexHelper(thePattern, theProcessName, theTag);
+			final String theName, final String thePattern,
+			final String thePrepToolName) {
+		super(thePrepToolsPluginExtension, theName);
+		helper = new RegexHelper(thePattern, thePrepToolName);
 	}
 
 	@Override
@@ -710,8 +929,8 @@ class RegexFindAction extends AbstractMarkupFindAction {
 	}
 
 	@Override
-	protected String getProcessName() {
-		return helper.getProcessName();
+	protected String getPrepToolName() {
+		return helper.getPrepToolName();
 	}
 }
 
@@ -719,8 +938,10 @@ class RegexFindAction extends AbstractMarkupFindAction {
 class VFormStartAction extends AbstractMarkupStartAction {
 	private final VFormActionHelper helper;
 
-	VFormStartAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension, VFormActionHelper.VFORM_TAG);
+	VFormStartAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName) {
+		super(thePrepToolsPluginExtension, START);
 		helper = new VFormActionHelper(thePrepToolsPluginExtension);
 	}
 
@@ -730,8 +951,8 @@ class VFormStartAction extends AbstractMarkupStartAction {
 	}
 
 	@Override
-	protected String getProcessName() {
-		return helper.getProcessName();
+	protected String getPrepToolName() {
+		return helper.getPrepToolName();
 	}
 }
 
@@ -739,8 +960,10 @@ class VFormStartAction extends AbstractMarkupStartAction {
 class VFormChangeAction extends AbstractMarkupChangeAction {
 	private final VFormActionHelper helper;
 
-	VFormChangeAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension, VFormActionHelper.VFORM_TAG);
+	VFormChangeAction(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName) {
+		super(thePrepToolsPluginExtension, CHANGE, VFormActionHelper.VFORM_TAG);
 		helper = new VFormActionHelper(thePrepToolsPluginExtension);
 	}
 
@@ -750,8 +973,8 @@ class VFormChangeAction extends AbstractMarkupChangeAction {
 	}
 
 	@Override
-	protected String getProcessName() {
-		return helper.getProcessName();
+	protected String getPrepToolName() {
+		return helper.getPrepToolName();
 	}
 }
 
@@ -759,8 +982,9 @@ class VFormChangeAction extends AbstractMarkupChangeAction {
 class VFormFindAction extends AbstractMarkupFindAction {
 	private final VFormActionHelper helper;
 
-	VFormFindAction(final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension, VFormActionHelper.VFORM_TAG);
+	VFormFindAction(final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName) {
+		super(thePrepToolsPluginExtension, FIND);
 		helper = new VFormActionHelper(thePrepToolsPluginExtension);
 	}
 
@@ -770,8 +994,8 @@ class VFormFindAction extends AbstractMarkupFindAction {
 	}
 
 	@Override
-	protected String getProcessName() {
-		return helper.getProcessName();
+	protected String getPrepToolName() {
+		return helper.getPrepToolName();
 	}
 }
 
@@ -787,7 +1011,7 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 	protected final ParensPrepTool.MetaInfo getMetaInfo(
 			final DocumentMetaInfo dmi) {
 		return (ParensPrepTool.MetaInfo) dmi
-				.getToolSpecificMetaInfo(ParensPrepTool.LABEL);
+				.getToolSpecificMetaInfo(ParensPrepTool.PREPTOOL_NAME);
 	}
 
 	/**
@@ -800,7 +1024,7 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 				.getDocumentMetaInfo(prepToolsPluginExtension.getWsEditor()
 						.getEditorLocation());
 		return (ParensPrepTool.MetaInfo) dmi
-				.getToolSpecificMetaInfo(ParensPrepTool.LABEL);
+				.getToolSpecificMetaInfo(ParensPrepTool.PREPTOOL_NAME);
 	}
 
 	@Override
@@ -817,18 +1041,23 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 		}
 	}
 
+	/**
+	 * Optional hook for subclasses: To perform something before general
+	 * processing.
+	 */
 	protected void init() {
 
 	}
 
 	AbstractOrphanParenAction(
-			PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension);
+			PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName) {
+		super(thePrepToolsPluginExtension, theName);
 	}
 
 	@Override
-	public String getProcessName() {
-		return ParensPrepTool.LABEL;
+	public String getPrepToolName() {
+		return ParensPrepTool.PREPTOOL_NAME;
 	}
 }
 
@@ -837,7 +1066,7 @@ class OrphanParenStartAction extends AbstractOrphanParenAction {
 
 	OrphanParenStartAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension);
+		super(thePrepToolsPluginExtension, START);
 	}
 
 	@Override
@@ -848,7 +1077,7 @@ class OrphanParenStartAction extends AbstractOrphanParenAction {
 		final List<Match> orphans;
 		try {
 			orphans = ParensUtil.findOrphans(
-					document.getText(0, document.getLength()), getStartIndex(),
+					document.getText(0, document.getLength()), 0,
 					prepToolsPluginExtension.makeSkipper());
 		} catch (BadLocationException e) {
 			prepToolsPluginExtension.showMessage(e.getMessage());
@@ -866,6 +1095,6 @@ class OrphanParenFindNextAction extends AbstractOrphanParenAction {
 
 	OrphanParenFindNextAction(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
-		super(thePrepToolsPluginExtension);
+		super(thePrepToolsPluginExtension, FIND);
 	}
 }

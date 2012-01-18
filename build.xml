@@ -16,9 +16,6 @@
 	<!-- used by "jar" and "init" -->
 	<property name="build.dir" value="bin" />
 
-	<!-- used by "jar" -->
-	<property name="app.manifest" value="MANIFEST.MF" />
-
 	<!-- used by "compile" -->
 	<property name="src.dir" value="src" />
 
@@ -42,6 +39,10 @@
 	<property name="fqnclazz2" value="${package}.${clazz2}" />
 	<property name="type2" value="componentsValidator" />
 	<property name="extensionClazz2" value="${fqnclazz2}Extension" />
+	
+	<!-- NOTE: these two ids need to correspond to the constants in Ids.java! -->
+	<property name="viewid" value="${ant.project.name}viewid" />
+	<property name="toolbarid" value="${ant.project.name}toolbarid" />
 
 	<property name="lib.dir" value="lib" />
 	<path id="classpath.path">
@@ -55,14 +56,18 @@
 		<mkdir dir="${build.dir}" />
 	</target>
 
+    <presetdef name="my.javac">
+        <javac includeantruntime="false" />
+    </presetdef>
+
 	<target name="compile" depends="init, boilerplate" description="compile project">
-		<javac destdir="${build.dir}" deprecation="on" debug="on">
+		<my.javac destdir="${build.dir}" deprecation="on" debug="on">
 			<src path="${src.dir}" />
 			<src path="${src.generated}" />
 			<classpath>
 				<path refid="classpath.path" />
 			</classpath>
-		</javac>
+		</my.javac>
 	</target>
 
 	<target name="deploy" description="install plugin in local oxygen and restart oxygen" >
@@ -87,7 +92,7 @@
 		<zip destfile="${ant.project.name}.zip" duplicate="fail" basedir="${plugindir}/.." includes="${ant.project.name}/**"/>
 	</target>
 	
-	<target name="send" depends="zip" description="opens nautilus to send zip">
+	<target name="send" depends="zip" description="opens thunderbird to send zip">
 		<exec executable="pwd" outputproperty="pwd" failifexecutionfails="false" errorproperty="" />
 		<exec executable="thunderbird">
 			<arg value="-compose"/>
@@ -125,14 +130,16 @@
 	</target>
 
 	<target name="jar" depends="compile, stamp, git.revision"  description="create deployable jar file" >
-		<manifest file="${app.manifest}">
-			<attribute name="Built-By" value="${user.name}" />
-			<attribute name="Build-Time" value="${release.time}" />
-			<attribute name="Implementation-Version" value="${repository.version}" />
-		</manifest>
-		<jar destfile="${jarfile}" basedir="${build.dir}">
+		<jar destfile="${jarfile}">
+			<manifest>
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Build-Time" value="${release.time}" />
+				<attribute name="Implementation-Version" value="${repository.version}" />
+			</manifest>
 			<fileset dir="${build.dir}">
-				<include name="**/*" />
+				<exclude name="**/*Test.class"/>
+				<exclude name="**/*Tests.class"/>
+				<exclude name="**/*TestUtil.class"/>
 			</fileset>
 			<fileset dir=".">
 				<include name="${stamp.properties}" />
@@ -170,6 +177,10 @@
 				class="${extensionClazz}"/&gt;
 			&lt;extension type="${type2}" 
 				class="${extensionClazz2}"/&gt;
+			
+			&lt;view id="${viewid}" initialSide="WEST" initialRow="0"/&gt;
+			&lt;toolbar id="${toolbarid}" initialSide="NORTH" initialRow="1"/&gt;
+
 			&lt;/plugin&gt;
 		</echo>
 	</target>

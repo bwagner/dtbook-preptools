@@ -6,7 +6,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -77,14 +76,15 @@ abstract class PrepTool {
 	}
 
 	private void makeToolbar() {
-		final JComponent[] components = getComponents();
+		final List<JComponent> components = getComponents();
 		prepToolsPluginExtension.toolbarPanel.removeAll();
 		for (final JComponent component : components) {
 			prepToolsPluginExtension.toolbarPanel.add(component);
 		}
 		prepToolsPluginExtension.toolbarPanel
 				.add(trafficLight = new TrafficLight(26));
-		prepToolsPluginExtension.toolbarPanel.add(new JLabel(" " + getLabel()));
+		prepToolsPluginExtension.toolbarPanel.add(new JLabel(" "
+				+ getPrepToolName()));
 		setCurrentState(prepToolsPluginExtension.getDocumentMetaInfo());
 		relayout();
 	}
@@ -103,17 +103,16 @@ abstract class PrepTool {
 	 * 
 	 * @param theAction
 	 *            The action associated with the button
-	 * @param theLabel
-	 *            The label for the button.
 	 * @return the newly created button.
 	 */
-	protected JButton makeButton(final Action theAction, final String theLabel,
+	protected JButton makeButton(final AbstractPrepToolAction theAction,
 			int theKeyEvent) {
 		// assign accelerator key to JButton
 		// http://www.stratulat.com/assign_accelerator_key_to_a_JButton.html
 		final JButton jButton = new JButton(theAction);
-		jButton.setText(theLabel);
-		assignAcceleratorKey(theAction, theLabel, theKeyEvent, jButton);
+		jButton.setText(theAction.getActionName());
+		assignAcceleratorKey(theAction, theAction.getActionName(), theKeyEvent,
+				jButton);
 		return jButton;
 	}
 
@@ -122,7 +121,7 @@ abstract class PrepTool {
 		final InputMap keyMap = new ComponentInputMap(jComponent);
 		keyMap.put(
 				KeyStroke.getKeyStroke(theKeyEvent, InputEvent.CTRL_DOWN_MASK
-						| InputEvent.ALT_DOWN_MASK), theLabel);
+						| InputEvent.SHIFT_DOWN_MASK), theLabel);
 		final ActionMap actionMap = new ActionMapUIResource();
 		actionMap.put(theLabel, theAction);
 		SwingUtilities.replaceUIActionMap(jComponent, actionMap);
@@ -131,7 +130,7 @@ abstract class PrepTool {
 	}
 
 	public void setAllActionsEnabled(boolean enabled) {
-		final Action[] allActions = getAllActions();
+		final List<Action> allActions = getAllActions();
 		for (final Action action : allActions) {
 			action.setEnabled(enabled);
 		}
@@ -162,19 +161,19 @@ abstract class PrepTool {
 	}
 
 	/**
-	 * hook to provide label
+	 * hook to provide the PrepTool's name
 	 */
-	protected abstract String getLabel();
+	protected abstract String getPrepToolName();
 
 	/**
 	 * hook to provide components
 	 */
-	protected abstract JComponent[] getComponents();
+	protected abstract List<JComponent> getComponents();
 
 	/**
 	 * hook to provide all actions
 	 */
-	protected abstract Action[] getAllActions();
+	protected abstract List<Action> getAllActions();
 
 	/**
 	 * optional hook to provide all additional components that aren't covered
@@ -240,11 +239,11 @@ abstract class PrepTool {
 	}
 
 	/**
-	 * Optional hook for PrepTools to provide the tag they insert.
+	 * Optional hook for PrepTools to provide the regex they need to skip.
 	 * 
-	 * @return Tag
+	 * @return Tag regex to skip
 	 */
-	public String getTag() {
+	public String getTagRegexToSkip() {
 		return null;
 	}
 
@@ -254,40 +253,46 @@ abstract class PrepTool {
 /**
  * Common superclass for RegexPrepTool and VFormPrepTool
  */
-abstract class MarkupPrepTool extends PrepTool {
+abstract class AbstractMarkupPrepTool extends PrepTool {
 
-	protected Action startAction;
+	protected AbstractPrepToolAction startAction;
 
-	protected Action findAction;
+	protected AbstractPrepToolAction findAction;
 
-	protected Action changeAction;
+	protected AbstractPrepToolAction changeAction;
 
-	protected abstract Action makeStartAction();
+	protected abstract AbstractPrepToolAction makeStartAction();
 
-	protected abstract Action makeFindAction();
+	protected abstract AbstractPrepToolAction makeFindAction();
 
-	protected abstract Action makeChangeAction();
+	protected abstract AbstractPrepToolAction makeChangeAction();
 
 	@Override
-	protected Action[] getAllActions() {
+	protected List<Action> getAllActions() {
 		if (startAction == null) {
 			startAction = makeStartAction();
 			findAction = makeFindAction();
 			changeAction = makeChangeAction();
 		}
-		return new Action[] { startAction, changeAction, findAction };
+		final List<Action> list = new ArrayList<Action>();
+		list.add(startAction);
+		list.add(findAction);
+		list.add(changeAction);
+		return list;
 	}
 
 	@Override
-	protected JComponent[] getComponents() {
+	protected List<JComponent> getComponents() {
 		getAllActions();
-		return new JComponent[] {
-				makeButton(startAction, "Start", KeyEvent.VK_7),
-				makeButton(findAction, "Find", KeyEvent.VK_8),
-				makeButton(changeAction, "Change", KeyEvent.VK_9), };
+		final List<JComponent> list = new ArrayList<JComponent>();
+		list.add(makeButton(startAction, KeyEvent.VK_F5));
+		list.add(makeButton(findAction, KeyEvent.VK_F6));
+		list.add(makeButton(changeAction, KeyEvent.VK_F7));
+		return list;
 	}
 
-	MarkupPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
+	AbstractMarkupPrepTool(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			int theMenuItemNr, int theMnemonic) {
 		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic);
 	}
@@ -317,180 +322,373 @@ abstract class MarkupPrepTool extends PrepTool {
 			 - change:     disabled:0/enabled:1
 			 - allforms:   disabled:0/enabled:1
 		 */
-		startAction.setEnabled(isTextPage);
 		if (!theDocumentMetaInfo.hasStarted()) { // not started
-			findAction.setEnabled(false);
-			changeAction.setEnabled(false);
+			setAllActionsEnabled(false);
 		}
 		else if (theDocumentMetaInfo.isDone()) { // done
-			findAction.setEnabled(false);
-			changeAction.setEnabled(false);
+			setAllActionsEnabled(false);
 		}
 		else { // inProgress
 			setAllActionsEnabled(isTextPage);
 		}
+		startAction.setEnabled(isTextPage);
 	}
 }
 
 /**
  * 
- * RegexPrepTool is not supposed to be subclassed.
- * It should be seen as a blackbox class that can be configured with
- * a regex, a mnemonic, a pattern, and a label.
+ * RegexPrepTool can be used as a blackbox class that can be configured
+ * with
+ * - a regex pattern to search,
+ * - a menu item number,
+ * - a mnemonic for the menu entry,
+ * - a preptool name for the menu entry.
+ * - a tag to insert,
+ * - a regex pattern to skip during the search,
+ * 
+ * Why do we implement getTagRegexToSkip here when it's called in the
+ * topmost class of the hierarchy?
+ * Because it's something tunneled through all intermediate classes.
+ * The skipping functionality is only relevant to RegexPrepTool, i.e. the
+ * document needs to be protected from inserted tags only for RegexPrepTool.
  */
-class RegexPrepTool extends MarkupPrepTool {
+class RegexPrepTool extends AbstractMarkupPrepTool {
 
-	final String LABEL;
-	final String TAG;
-	final String PATTERN;
+	private final String PREPTOOL_NAME;
+	private final String TAG_REGEX_TO_SKIP;
+	final String PATTERN_TO_SEARCH;
+	private final String TAG_TO_INSERT;
 
+	/**
+	 * @param thePrepToolsPluginExtension
+	 * @param theMenuItemNr
+	 * @param theMnemonic
+	 * @param thePrepToolName
+	 * @param thePatternToSearch
+	 * @param theTagToInsert
+	 * @param tagRegexToSkip
+	 */
 	RegexPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			int theMenuItemNr, int theMnemonic, final String theLabel,
-			final String thePattern, final String theTag) {
+			int theMenuItemNr, int theMnemonic, final String thePrepToolName,
+			final String thePatternToSearch, final String theTagToInsert,
+			final String tagRegexToSkip) {
 		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic);
-		LABEL = theLabel;
-		PATTERN = thePattern;
-		TAG = theTag;
+		PREPTOOL_NAME = thePrepToolName;
+		PATTERN_TO_SEARCH = thePatternToSearch;
+		TAG_TO_INSERT = theTagToInsert;
+		TAG_REGEX_TO_SKIP = tagRegexToSkip;
 	}
 
-	@Override
-	public String getTag() {
-		return TAG;
+	/**
+	 * @param thePrepToolsPluginExtension
+	 * @param theMenuItemNr
+	 * @param theMnemonic
+	 * @param thePrepToolName
+	 * @param thePatternToSearch
+	 * @param theTag
+	 */
+	RegexPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			int theMenuItemNr, int theMnemonic, final String thePrepToolName,
+			final String thePatternToSearch, final String theTag) {
+		this(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic,
+				thePrepToolName, thePatternToSearch, theTag, theTag);
 	}
 
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.PrepTool#getTagRegexToSkip()
+	 */
 	@Override
-	protected String getLabel() {
-		return LABEL;
+	public String getTagRegexToSkip() {
+		return TAG_REGEX_TO_SKIP;
 	}
 
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.PrepTool#getPrepToolName()
+	 */
 	@Override
-	protected Action makeStartAction() {
-		return new RegexStartAction(prepToolsPluginExtension, PATTERN, LABEL,
-				TAG);
+	protected String getPrepToolName() {
+		return PREPTOOL_NAME;
 	}
 
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractMarkupPrepTool#makeStartAction()
+	 */
 	@Override
-	protected Action makeFindAction() {
-		return new RegexFindAction(prepToolsPluginExtension, PATTERN, LABEL,
-				TAG);
+	protected AbstractPrepToolAction makeStartAction() {
+		return new RegexStartAction(prepToolsPluginExtension,
+				AbstractPrepToolAction.START, PATTERN_TO_SEARCH, PREPTOOL_NAME);
 	}
 
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractMarkupPrepTool#makeFindAction()
+	 */
 	@Override
-	protected Action makeChangeAction() {
-		return new RegexChangeAction(prepToolsPluginExtension, PATTERN, LABEL,
-				TAG);
+	protected AbstractPrepToolAction makeFindAction() {
+		return new RegexFindAction(prepToolsPluginExtension,
+				AbstractPrepToolAction.FIND, PATTERN_TO_SEARCH, PREPTOOL_NAME);
+	}
+
+	/* (non-Javadoc)
+	 * @see ch.sbs.plugin.preptools.AbstractMarkupPrepTool#makeChangeAction()
+	 */
+	@Override
+	protected AbstractPrepToolAction makeChangeAction() {
+		return new RegexChangeAction(prepToolsPluginExtension,
+				AbstractPrepToolAction.CHANGE, PATTERN_TO_SEARCH,
+				PREPTOOL_NAME, TAG_TO_INSERT);
 	}
 
 }
 
+/**
+ * FullRegexPrepTool can be used as a blackbox class that can be configured
+ * with
+ * - a regex pattern to search,
+ * - a menu item number,
+ * - a mnemonic for the menu entry,
+ * - a preptool name for the menu entry.
+ * - a replace string to insert, (note that this is more generic than the super
+ * class where you can simply add a tag)
+ * - a regex pattern to skip during the search,
+ * 
+ */
 class FullRegexPrepTool extends RegexPrepTool {
 
-	private final String replaceString;
+	private final String REPLACE_STRING;
+
+	private final String CHANGE_BUTTON_LABEL;
+
+	// null: we don't want the functionality provided by the superclass.
+	// We provide our own replace string.
+	private static final String TAG_TO_INSERT = null;
+
+	// null: we don't want the functionality provided by the superclass.
+	// This probably could be improved: Why not protect this class from
+	// its own insertions?
+	private static final String TAG_REGEX_TO_SKIP = null;
+
+	private AbstractPrepToolAction lStartAction;
+	private AbstractPrepToolAction lFindAction;
+	private AbstractPrepToolAction lChangeAction;
+
+	/**
+	 * @param thePrepToolsPluginExtension
+	 * @param theMenuItemNr
+	 * @param theMnemonic
+	 * @param thePrepToolName
+	 * @param thePatternToSearch
+	 * @param theReplaceString
+	 * @param theChangeButtonLabel
+	 */
+	FullRegexPrepTool(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			int theMenuItemNr, int theMnemonic, final String thePrepToolName,
+			final String thePatternToSearch, final String theReplaceString,
+			final String theChangeButtonLabel) {
+		this(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic,
+				thePrepToolName, thePatternToSearch, theReplaceString,
+				theChangeButtonLabel, null);
+	}
+
+	/**
+	 * @param thePrepToolsPluginExtension
+	 * @param theMenuItemNr
+	 * @param theMnemonic
+	 * @param thePrepToolName
+	 * @param thePatternToSearch
+	 * @param theReplaceString
+	 * @param theChangeButtonLabel
+	 * @param theChangeAction
+	 */
+	FullRegexPrepTool(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			int theMenuItemNr, int theMnemonic, final String thePrepToolName,
+			final String thePatternToSearch, final String theReplaceString,
+			final String theChangeButtonLabel,
+			final AbstractPrepToolAction theChangeAction) {
+		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic,
+				thePrepToolName, thePatternToSearch, TAG_TO_INSERT,
+				TAG_REGEX_TO_SKIP);
+		REPLACE_STRING = theReplaceString;
+		CHANGE_BUTTON_LABEL = theChangeButtonLabel;
+		lChangeAction = theChangeAction;
+	}
+
+	/**
+	 * @param thePrepToolsPluginExtension
+	 * @param theMenuItemNr
+	 * @param theMnemonic
+	 * @param thePrepToolName
+	 * @param thePatternToSearch
+	 * @param theReplaceString
+	 * @param thePatternToSkip
+	 * @param theChangeButtonLabel
+	 * @param theChangeAction
+	 */
+	FullRegexPrepTool(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			int theMenuItemNr, int theMnemonic, final String thePrepToolName,
+			final String thePatternToSearch, final String theReplaceString,
+			final String thePatternToSkip, final String theChangeButtonLabel,
+			final AbstractPrepToolAction theChangeAction) {
+		this(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic,
+				thePrepToolName, thePatternToSearch, theReplaceString,
+				thePatternToSkip, theChangeButtonLabel, null, null,
+				theChangeAction);
+	}
+
+	/**
+	 * @param thePrepToolsPluginExtension
+	 * @param theMenuItemNr
+	 * @param theMnemonic
+	 * @param thePrepToolName
+	 * @param thePatternToSearch
+	 * @param theReplaceString
+	 * @param thePatternToSkip
+	 * @param theChangeButtonLabel
+	 * @param theStartAction
+	 * @param theChangeAction
+	 */
+	FullRegexPrepTool(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			int theMenuItemNr, int theMnemonic, final String thePrepToolName,
+			final String thePatternToSearch, final String theReplaceString,
+			final String thePatternToSkip, final String theChangeButtonLabel,
+			final AbstractPrepToolAction theStartAction,
+			final AbstractPrepToolAction theChangeAction) {
+		this(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic,
+				thePrepToolName, thePatternToSearch, theReplaceString,
+				thePatternToSkip, theChangeButtonLabel, theStartAction, null,
+				theChangeAction);
+	}
 
 	FullRegexPrepTool(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			int theMenuItemNr, int theMnemonic, final String theLabel,
-			final String theRegex, final String theTag,
-			final String theReplaceString) {
+			int theMenuItemNr, int theMnemonic, final String thePrepToolName,
+			final String thePatternToSearch, final String theReplaceString,
+			final String thePatternToSkip, final String theChangeButtonLabel,
+			final AbstractPrepToolAction theStartAction,
+			final AbstractPrepToolAction theFindAction,
+			final AbstractPrepToolAction theChangeAction) {
 		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic,
-				theLabel, theRegex, theTag);
-		replaceString = theReplaceString;
+				thePrepToolName, thePatternToSearch, TAG_TO_INSERT,
+				thePatternToSkip);
+		REPLACE_STRING = theReplaceString;
+		if (theChangeButtonLabel != null) {
+			CHANGE_BUTTON_LABEL = theChangeButtonLabel;
+		}
+		else if (theChangeAction != null) {
+			CHANGE_BUTTON_LABEL = theChangeAction.getActionName();
+		}
+		else {
+			CHANGE_BUTTON_LABEL = "*ERR: either set label or action!";
+		}
+		lStartAction = theStartAction;
+		lFindAction = theFindAction;
+		lChangeAction = theChangeAction;
 	}
 
 	@Override
-	protected Action makeChangeAction() {
-		return new FullRegexChangeAction(prepToolsPluginExtension, PATTERN,
-				LABEL, TAG, replaceString);
+	protected AbstractPrepToolAction makeStartAction() {
+		if (lStartAction == null) {
+			return lStartAction = super.makeStartAction();
+		}
+		return lStartAction;
 	}
 
+	@Override
+	protected AbstractPrepToolAction makeFindAction() {
+		if (lFindAction == null) {
+			return lFindAction = super.makeFindAction();
+		}
+		return lFindAction;
+	}
+
+	@Override
+	protected AbstractPrepToolAction makeChangeAction() {
+		if (lChangeAction == null) {
+			lChangeAction = new FullRegexChangeAction(prepToolsPluginExtension,
+					CHANGE_BUTTON_LABEL, PATTERN_TO_SEARCH, getPrepToolName(),
+					REPLACE_STRING);
+		}
+		return lChangeAction;
+	}
+}
+
+class PageBreakPrepTool extends FullRegexPrepTool {
+
+	private final AbstractPrepToolAction INSERT_PEL_ACTION;
+
+	PageBreakPrepTool(
+			final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			int theMenuItemNr, int theMnemonic) {
+		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic,
+				"Pagebreak", PrepToolLoader.PAGEBREAK_SEARCH_REGEX,
+				PrepToolLoader.PAGEBREAK_REPLACE, "Join");
+		INSERT_PEL_ACTION = makePelAction();
+	}
+
+	@Override
+	protected List<Action> getAllActions() {
+		final List<Action> actions = super.getAllActions();
+		actions.add(INSERT_PEL_ACTION);
+		return actions;
+	}
+
+	@Override
+	protected List<JComponent> getComponents() {
+		getAllActions();
+		final List<JComponent> components = super.getComponents();
+		components.add(makeButton(INSERT_PEL_ACTION, KeyEvent.VK_F8));
+		return components;
+	}
+
+	private AbstractPrepToolAction makePelAction() {
+		return new FullRegexChangeAction(prepToolsPluginExtension,
+				"Insert PEL", PATTERN_TO_SEARCH, getPrepToolName(),
+				PrepToolLoader.PAGEBREAK_REPLACE2);
+	}
 }
 
 class AccentPrepTool extends RegexPrepTool {
 
-	// TODO: Label here, label in the constuctor: clean this stuff up!
-	static final String LABEL = "Accent";
+	static final String PREPTOOL_NAME = "Accent";
 
-	@Override
-	public DocumentMetaInfo.MetaInfo makeMetaInfo(final Document document) {
-		return new MetaInfo();
-	}
+	private static final String replaceString = PrepToolLoader.ACCENT_REPLACE;
 
-	static class MetaInfo extends DocumentMetaInfo.MetaInfo {
-
-		private int swissCount;
-		private int foreignCount;
-
-		public int getSwissCount() {
-			return swissCount;
-		}
-
-		public void incrementSwissCount() {
-			swissCount++;
-		}
-
-		public int getForeignCount() {
-			return foreignCount;
-		}
-
-		public void incrementForeignCount() {
-			foreignCount++;
-		}
-
-		public void resetCounts() {
-			foreignCount = swissCount = 0;
-		}
-	}
-
-	private final String replaceString;
+	// null: We have our own
+	private static final String TAG_TO_INSERT = null;
 
 	AccentPrepTool(final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			int theMenuItemNr, int theMnemonic, final String theLabel,
-			final String theRegex, final String theTag,
-			final String theReplaceString) {
+			int theMenuItemNr, int theMnemonic) {
 		super(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic,
-				theLabel, theRegex, theTag);
-		replaceString = theReplaceString;
+				PREPTOOL_NAME, PrepToolLoader.ACCENT_SEARCH_REGEX,
+				TAG_TO_INSERT, PrepToolLoader.ACCENT_SKIP_REGEX);
 	}
 
 	@Override
-	protected JComponent[] getComponents() {
-		getAllActions();
-		return new JComponent[] {
-				// TODO: if our action provided the label, we could keep this
-				// stuff in the superclass.
-				// e.g. by saying:
-				// makeButton(startAction, startAction.getLabel(),
-				// KeyEvent.VK_7),
-				makeButton(startAction, "Start", KeyEvent.VK_7),
-				makeButton(findAction, "Swiss", KeyEvent.VK_8),
-				makeButton(changeAction, "Foreign", KeyEvent.VK_9), };
+	protected AbstractPrepToolAction makeStartAction() {
+		return new RegexStartAction(prepToolsPluginExtension,
+				AbstractPrepToolAction.START, PATTERN_TO_SEARCH, PREPTOOL_NAME);
 	}
 
 	@Override
-	protected Action makeStartAction() {
-		return new AccentStartAction(prepToolsPluginExtension, PATTERN, LABEL,
-				TAG);
+	protected AbstractPrepToolAction makeFindAction() {
+		return new AccentChangeAction(prepToolsPluginExtension, "Swiss",
+				PATTERN_TO_SEARCH, PREPTOOL_NAME, replaceString.replace(
+						PrepToolLoader.PLACEHOLDER, "detailed"));
 	}
 
 	@Override
-	protected Action makeFindAction() {
-		return new SwissAccentChangeAction(prepToolsPluginExtension, PATTERN,
-				LABEL, TAG, replaceString.replace(PrepToolLoader.PLACEHOLDER,
-						"detailed")); // TODO "detailed" belongs in
-										// SwissAccentChangeAction
-	}
-
-	@Override
-	protected Action makeChangeAction() {
-		return new ForeignAccentChangeAction(prepToolsPluginExtension, PATTERN,
-				LABEL, TAG, replaceString.replace(PrepToolLoader.PLACEHOLDER,
-						"reduced")); // TODO "reduced" belongs in
-										// ForeignAccentChangeAction
+	protected AbstractPrepToolAction makeChangeAction() {
+		return new AccentChangeAction(prepToolsPluginExtension, "Foreign",
+				PATTERN_TO_SEARCH, PREPTOOL_NAME, replaceString.replace(
+						PrepToolLoader.PLACEHOLDER, "reduced"));
 	}
 
 }
 
-class VFormPrepTool extends MarkupPrepTool {
+class VFormPrepTool extends AbstractMarkupPrepTool {
 
 	@Override
 	public DocumentMetaInfo.MetaInfo makeMetaInfo(final Document document) {
@@ -536,7 +734,7 @@ class VFormPrepTool extends MarkupPrepTool {
 
 	}
 
-	static final String LABEL = "VForms";
+	static final String PREPTOOL_NAME = "VForms";
 
 	VFormPrepTool(final PrepToolsPluginExtension prepToolsPluginExtension,
 			int theMenuItemNr, int theMnemonic) {
@@ -546,25 +744,20 @@ class VFormPrepTool extends MarkupPrepTool {
 	private JCheckBox allForms;
 
 	@Override
-	protected String getLabel() {
-		return LABEL;
+	protected String getPrepToolName() {
+		return PREPTOOL_NAME;
 	}
 
 	@Override
-	public String getTag() {
+	public String getTagRegexToSkip() {
 		return VFormActionHelper.VFORM_TAG;
 	}
 
 	@Override
-	protected JComponent[] getComponents() {
-		final JComponent[] comps = super.getComponents();
-		// intermediary list required, because the list
-		// created by Arrays.asList does not support the
-		// operation add(index, element) (throws RuntimeException)
-		final List<JComponent> list = new ArrayList<JComponent>(
-				Arrays.asList(comps));
-		list.add(list.size() - 1, allForms = makeCheckbox());
-		return list.toArray(new JComponent[0]);
+	protected List<JComponent> getComponents() {
+		final List<JComponent> components = super.getComponents();
+		components.add(components.size() - 1, allForms = makeCheckbox());
+		return components;
 	}
 
 	@Override
@@ -575,7 +768,8 @@ class VFormPrepTool extends MarkupPrepTool {
 	}
 
 	private MetaInfo getMetaInfo(final DocumentMetaInfo theDocumentMetaInfo) {
-		return (MetaInfo) theDocumentMetaInfo.getToolSpecificMetaInfo(LABEL);
+		return (MetaInfo) theDocumentMetaInfo
+				.getToolSpecificMetaInfo(PREPTOOL_NAME);
 	}
 
 	private MetaInfo getMetaInfo() {
@@ -606,18 +800,18 @@ class VFormPrepTool extends MarkupPrepTool {
 	}
 
 	@Override
-	protected Action makeStartAction() {
-		return new VFormStartAction(prepToolsPluginExtension);
+	protected AbstractPrepToolAction makeStartAction() {
+		return new VFormStartAction(prepToolsPluginExtension, null);
 	}
 
 	@Override
-	protected Action makeFindAction() {
-		return new VFormFindAction(prepToolsPluginExtension);
+	protected AbstractPrepToolAction makeFindAction() {
+		return new VFormFindAction(prepToolsPluginExtension, null);
 	}
 
 	@Override
-	protected Action makeChangeAction() {
-		return new VFormChangeAction(prepToolsPluginExtension);
+	protected AbstractPrepToolAction makeChangeAction() {
+		return new VFormChangeAction(prepToolsPluginExtension, null);
 	}
 }
 
@@ -644,8 +838,8 @@ class ParensPrepTool extends PrepTool {
 		public void set(final List<Match> theOrphanedParens) {
 			final List<Match.PositionMatch> pml = new ArrayList<Match.PositionMatch>();
 			for (final Match match : theOrphanedParens) {
-				Match.PositionMatch mp = new Match.PositionMatch(document,
-						match);
+				final Match.PositionMatch mp = new Match.PositionMatch(
+						document, match);
 				pml.add(mp);
 			}
 			orphanedParensIterator = pml.iterator();
@@ -671,28 +865,29 @@ class ParensPrepTool extends PrepTool {
 
 	}
 
-	static final String LABEL = "Parens";
+	static final String PREPTOOL_NAME = "Parens";
 
 	ParensPrepTool(final PrepToolsPluginExtension prepToolsPluginExtension,
 			int theMenuItemNr, int theMnemonic) {
 		super(prepToolsPluginExtension, theMenuItemNr, theMnemonic);
 	}
 
-	private final Action startAction = new OrphanParenStartAction(
+	private final AbstractPrepToolAction startAction = new OrphanParenStartAction(
 			prepToolsPluginExtension);
-	private final Action findNextAction = new OrphanParenFindNextAction(
+	private final AbstractPrepToolAction findNextAction = new OrphanParenFindNextAction(
 			prepToolsPluginExtension);
 
 	@Override
-	protected String getLabel() {
-		return LABEL;
+	protected String getPrepToolName() {
+		return PREPTOOL_NAME;
 	}
 
 	@Override
-	protected JComponent[] getComponents() {
-		return new JComponent[] {
-				makeButton(startAction, "Start", KeyEvent.VK_7),
-				makeButton(findNextAction, "Find", KeyEvent.VK_8) };
+	protected List<JComponent> getComponents() {
+		final List<JComponent> list = new ArrayList<JComponent>();
+		list.add(makeButton(startAction, KeyEvent.VK_F5));
+		list.add(makeButton(findNextAction, KeyEvent.VK_F6));
+		return list;
 	}
 
 	@Override
@@ -702,7 +897,10 @@ class ParensPrepTool extends PrepTool {
 	}
 
 	@Override
-	protected Action[] getAllActions() {
-		return new Action[] { startAction, findNextAction };
+	protected List<Action> getAllActions() {
+		final List<Action> list = new ArrayList<Action>();
+		list.add(startAction);
+		list.add(findNextAction);
+		return list;
 	}
 }

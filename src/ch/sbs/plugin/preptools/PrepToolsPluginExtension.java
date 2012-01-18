@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,7 +57,7 @@ import ch.sbs.utils.swing.MenuPlugger;
 public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension {
 
 	private List<PrepTool> prepTools;
-	private Set<String> tags;
+	private Set<String> tagRegexesToSkip;
 
 	/**
 	 * A method to support DocumentMetaInfo's independence of specific
@@ -68,7 +69,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	Map<String, MetaInfo> getToolSpecificMetaInfos(final Document document) {
 		final Map<String, MetaInfo> toolSpecific = new HashMap<String, MetaInfo>();
 		for (final PrepTool preptool : prepTools) {
-			toolSpecific.put(preptool.getLabel(),
+			toolSpecific.put(preptool.getPrepToolName(),
 					preptool.makeMetaInfo(document));
 		}
 		return toolSpecific;
@@ -91,20 +92,21 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 	private void populatePrepTools() {
 		prepTools = PrepToolLoader.loadPrepTools(this);
-		tags = new HashSet<String>();
+		tagRegexesToSkip = new HashSet<String>();
 		for (final PrepTool prepTool : prepTools) {
-			final String tag = prepTool.getTag();
-			if (tag != null) {
-				tags.add(tag);
+			final String tagRegexToSkip = prepTool.getTagRegexToSkip();
+			if (tagRegexToSkip != null) {
+				tagRegexesToSkip.add(tagRegexToSkip);
 			}
 		}
 	}
 
 	public RegionSkipper makeSkipper() {
 		final RegionSkipper compositeSkipper = RegionSkipper
-				.getLiteralAndCommentSkipper();
-		for (final String tag : tags) {
-			compositeSkipper.addPattern(RegionSkipper.makeMarkupRegex(tag));
+				.getDefaultSkipper();
+		for (final String tagRegexToSkip : tagRegexesToSkip) {
+			compositeSkipper.addPattern(RegionSkipper
+					.makeMarkupRegex(tagRegexToSkip));
 		}
 		return compositeSkipper;
 	}
@@ -117,7 +119,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		item.setFont(item.getFont().deriveFont(Font.PLAIN));
 	}
 
-	void setPrepToolItemDone(final JMenuItem item) {
+	private void setPrepToolItemDone(final JMenuItem item) {
 		setPlain(item);
 	}
 
@@ -137,15 +139,15 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		setBold(item);
 	}
 
-	void setPrepToolItemNormal(int i) {
+	private void setPrepToolItemNormal(int i) {
 		setPrepToolItemNormal(menuPrepTools.getItem(i));
 	}
 
-	void updatePrepToolItems() {
+	private void updatePrepToolItems() {
 		int i = 0;
 		for (final PrepTool preptool : prepTools) {
 			if (getDocumentMetaInfo().getToolSpecificMetaInfo(
-					preptool.getLabel()).isDone()) {
+					preptool.getPrepToolName()).isDone()) {
 				setPrepToolItemDone(i);
 			}
 			else {
@@ -163,6 +165,34 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		return prepTools.get(0);
 	}
 
+	private PrepTool getCurrentPrepTool() {
+		final DocumentMetaInfo documentMetaInfo = getDocumentMetaInfo();
+		return documentMetaInfo != null ? documentMetaInfo.getCurrentPrepTool()
+				: null;
+	}
+
+	public void chooseNextUncompletedPrepTool() {
+		boolean found = false;
+		final Iterator<PrepTool> iter = prepTools.iterator();
+		int i = 0;
+		PrepTool preptool = null;
+		while (!found && iter.hasNext()) {
+			preptool = iter.next();
+			final MetaInfo mi = getDocumentMetaInfo().getToolSpecificMetaInfo(
+					preptool.getPrepToolName());
+			if (!(found = !mi.isDone())) {
+				++i;
+			}
+		}
+		if (found) {
+			selectPrepToolItem(i);
+			preptool.activate();
+		}
+		else {
+			showDialog("All PrepTools done.");
+		}
+	}
+
 	JPanel toolbarPanel;
 
 	/**
@@ -174,6 +204,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	 * Plugin workspace access.
 	 */
 	private StandalonePluginWorkspace pluginWorkspaceAccess;
+	private double oxygenVersion;
 
 	private boolean applicationClosing;
 
@@ -188,7 +219,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	public void applicationStarted(
 			final StandalonePluginWorkspace thePluginWorkspaceAccess) {
 		pluginWorkspaceAccess = thePluginWorkspaceAccess;
-
+		oxygenVersion = Double.parseDouble(pluginWorkspaceAccess.getVersion());
 		caretHandler = new MyCaretListener();
 
 		populatePrepTools();
@@ -229,9 +260,8 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 								if (mi.hasStarted()) {
 									mi.setHasStarted(false);
 									mi.setDone(false);
-									getDocumentMetaInfo().getCurrentPrepTool()
-											.setCurrentState(
-													getDocumentMetaInfo());
+									getCurrentPrepTool().setCurrentState(
+											getDocumentMetaInfo());
 								}
 
 							}
@@ -315,11 +345,43 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 						ta.addCaretListener(caretHandler);
 					}
 
+					/**
+					 * IMPORTANT: Don't add annotation @Override here!
+					 * 
+					 * This implementation is supposed to work with both oXygen
+					 * versions 12.1 and 12.2.
+					 * Only in versions > 12.1 is this method going to be
+					 * called.
+					 * 
+					 * @param editorLocation
+					 * @return
+					 */
+
+					// @Override IMPORTANT: Don't add annotation @Override here!
+					public boolean editorAboutToBeClosed(
+							final URL editorLocation) {
+						final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
+						if (dmi.isProcessing() && !applicationClosing) {
+							// we can veto closing in version 12.2 !
+							return (!showConfirmDialog(
+									"Continue?",
+									"Document "
+											+ FileUtils
+													.basename(editorLocation)
+											+ " is still being processed. Do you want to continue processing?",
+									"Continue Processing", "Close Anyway"));
+						}
+						return true; // true means editor will be closed, false
+										// means editor remains open.
+					}
+
 					@Override
 					public void editorClosed(final URL editorLocation) {
 						final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
-						if (dmi.isProcessing() && !applicationClosing) {
-							// we can't veto closing!
+						if (dmi.isProcessing() && !applicationClosing
+								&& oxygenVersion < 12.2) {
+							// we can't veto closing in
+							// oxygen versions below 12.2!
 							if (showConfirmDialog(
 									"Reopen and Continue?",
 									"Document "
@@ -373,8 +435,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 					 */
 					@Override
 					public void customizeToolbar(ToolbarInfo theToolbarInfo) {
-						if (ToolbarComponentsCustomizer.CUSTOM
-								.equals(theToolbarInfo.getToolbarID())) {
+						if (Ids.TOOLBAR_ID.equals(theToolbarInfo.getToolbarID())) {
 
 							toolbarPanel = new JPanel();
 							toolbarPanel.setLayout(new BoxLayout(toolbarPanel,
@@ -401,14 +462,14 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 					 */
 					@Override
 					public void customizeView(ViewInfo viewInfo) {
-						if (ViewComponentCustomizer.CUSTOM.equals(viewInfo
-								.getViewID())) {
+						if (Ids.VIEW_ID.equals(viewInfo.getViewID())) {
 							prepToolsMessagesArea = new JTextArea(
 									"PrepTools Session History:");
 							viewInfo.setComponent(new JScrollPane(
 									prepToolsMessagesArea));
 							viewInfo.setTitle("PrepTools Messages");
-							viewInfo.setIcon(Icons.CMS_MESSAGES_CUSTOM_VIEW);
+							viewInfo.setIcon(Icons
+									.getIcon(Icons.CMS_MESSAGES_CUSTOM_VIEW_STRING));
 							showMessage(getVersion());
 						}
 						else if ("Project".equals(viewInfo.getViewID())) {
@@ -432,12 +493,12 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 						public void actionPerformed(ActionEvent e) {
 							final MetaInfo metaInfo = getDocumentMetaInfo()
 									.getCurrentToolSpecificMetaInfo();
-							final PrepTool currentPrepTool = getDocumentMetaInfo()
-									.getCurrentPrepTool();
-							final String label = currentPrepTool.getLabel();
+							final PrepTool currentPrepTool = getCurrentPrepTool();
+							final String label = currentPrepTool
+									.getPrepToolName();
 							if (preptool != currentPrepTool
 									&& (!metaInfo.isProcessing() || showConfirmDialog(
-											"PrepTools",
+											"Switching:",
 											"Not Yet Done Processing " + label
 													+ "!", "Switch Anyway",
 											"Cancel"))) {
@@ -453,7 +514,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 							}
 						}
 					});
-			item.setText(preptool.getLabel());
+			item.setText(preptool.getPrepToolName());
 			item.setMnemonic(preptool.getMnemonic());
 			menuPrepTools.add(item);
 			group.add(item);
@@ -505,7 +566,10 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 			returnString = "'" + key + "' not found in props file " + filename;
 		}
 
-		return returnString;
+		final String oxygenVersion = "\nOxygen-Version:"
+				+ pluginWorkspaceAccess.getVersion() + "\n";
+
+		return returnString + oxygenVersion;
 	}
 
 	/**
@@ -550,7 +614,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	void showDialog(final String msg) {
 		pluginWorkspaceAccess.showConfirmDialog(DIALOG_HEADER, msg,
 				new String[] { "OK" }, new int[] { 0 });
-		pluginWorkspaceAccess.showView(ViewComponentCustomizer.CUSTOM, true);
+		pluginWorkspaceAccess.showView(Ids.VIEW_ID, true);
 	}
 
 	boolean showConfirmDialog(final String title, final String msg) {
@@ -560,14 +624,17 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	/**
 	 * @param title
 	 * @param msg
-	 * @param confirm
-	 * @param deny
-	 * @return true if user clicked "confirm", false if user clicked "deny"
+	 * @param trueText
+	 *            String to indicate the "true" button
+	 * @param falseText
+	 *            String to indicate the "false" button
+	 * @return true if user clicked "trueText", false if user clicked
+	 *         "falseText"
 	 */
 	boolean showConfirmDialog(final String title, final String msg,
-			final String confirm, final String deny) {
+			final String trueText, final String falseText) {
 		return pluginWorkspaceAccess.showConfirmDialog(DIALOG_HEADER + title,
-				msg, new String[] { confirm, deny }, new int[] { 0, 1 }) == 0;
+				msg, new String[] { trueText, falseText }, new int[] { 0, 1 }) == 0;
 	}
 
 	public static WSTextEditorPage getPage(final WSEditor editorAccess) {
@@ -623,7 +690,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 				/ 2, r.width, r.height + OFFSET));
 	}
 
-	private void consolidatePrepTools(URL editorLocation) {
+	private void consolidatePrepTools(final URL editorLocation) {
 		final DocumentMetaInfo dmi = getDocumentMetaInfo(editorLocation);
 		if (dmi != null) {
 			PrepTool currentPrepTool = dmi.getCurrentPrepTool();
@@ -638,12 +705,17 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	/*
 	 * This is actually redundant to my own book-keeping in
 	 * ProceedAction.handleManualCursorMovement
+	 * 
+	 * Also: The caretUpdate will be called when moving the 
+	 * caret from my code, not only when the user moves the 
+	 * caret within the editor!
 	 */
 	class MyCaretListener implements CaretListener {
 
 		@Override
 		public void caretUpdate(CaretEvent e) {
-			getDocumentMetaInfo().setManualEdit();
+			// getDocumentMetaInfo().setManualEdit();
+			showMessage("caret moved! " + e);
 		}
 
 	}

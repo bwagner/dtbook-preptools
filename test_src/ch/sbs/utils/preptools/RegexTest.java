@@ -12,7 +12,7 @@ import org.junit.Test;
 import ch.sbs.plugin.preptools.PrepToolLoader;
 
 /*
- * 
+ *             Lookarounds:
  *             +----------+----------+
  *             |     =    |     !    |
  *             | Positive | Negative |
@@ -21,6 +21,29 @@ import ch.sbs.plugin.preptools.PrepToolLoader;
  * +-----------+----------+----------+
  * | Behind ?< |   ?<=    |   ?<!    |
  * +-----------+----------+----------+
+ * 
+ * Non-capturing parentheses: (?: ___ )
+ * Switches/Groups with flags:
+ * (?f) ____ (?-f) # allows turning a flag on and off within a regex
+ * (?f ____ ) # keeps the flag on for the regex in parenthesis.
+ * (?-f ____ ) # keeps the flag off for the regex in parenthesis.
+ * Ignore-case       : i
+ * Unix lines        : d Only the '\n' line terminator is recognized in the behavior of ., ^, and $. 
+ * Multiline         : m expressions ^ and $ match just after (just before), a line terminator or the end of the input sequence.
+ * Ignore-case       : s expression . matches any character, including a line terminator: testDotAll()
+ * Unicode-case      : u Unicode-aware case folding
+ * Ignore-case       : x Whitespace is ignored, and embedded comments starting with # are ignored until the end of a line.
+ * Unicode Char Class: U Java7 only! (US-ASCII only) Predefined character classes and POSIX character classes are in 
+ *                     conformance with Unicode Technical Standard #18: Unicode Regular Expression Annex C:
+                       Compatibility Properties. (http://www.unicode.org/reports/tr18/#Compatibility_Properties)
+ *
+ * Capturing parentheses: ( ___ )
+ * 
+ * 
+ * See:
+ * http://download.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html
+ * http://download.oracle.com/javase/7/docs/api/java/util/regex/Matcher.html
+ * 
  */
 
 public class RegexTest {
@@ -226,72 +249,13 @@ public class RegexTest {
 	}
 
 	@Test
-	public void testOrdinal() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.ORDINAL_REGEX);
-		assertTrue(pattern.matcher("5.").find());
-		assertFalse(pattern.matcher("a5.").find());
-		assertTrue(pattern.matcher("23423.").find());
-		assertFalse(pattern.matcher("2342").find());
-	}
-
-	@Test
 	public void testRoman() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.ROMAN_REGEX);
+		final Pattern pattern = Pattern
+				.compile(PrepToolLoader.ROMAN_SEARCH_REGEX);
 		assertTrue(pattern.matcher("IXII.").find());
 		assertTrue(pattern.matcher("IXII").find());
 		assertFalse(pattern.matcher("ixviv.").find());
 		assertFalse(pattern.matcher("ixviv").find());
-	}
-
-	@Test
-	public void testAbbrevPeriod() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
-		assertTrue(pattern.matcher("z.B.").find());
-		assertTrue(pattern.matcher("z. B.").find());
-		assertTrue(pattern.matcher("dipl. Inf.").find());
-		assertTrue(pattern.matcher("a.\n          b.").find());
-		assertTrue(pattern.matcher("Z").find());
-		assertTrue(Pattern.compile(PrepToolLoader.ABBREV).matcher("a.b.")
-				.find());
-	}
-
-	@Test
-	public void testAbbrevPeriodMoreChars() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
-		assertTrue(pattern.matcher("z.Å.").find());
-	}
-
-	@Test
-	public void testAbbrevCapital() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
-		assertTrue(pattern.matcher("bloss A4 brauchen").find());
-		assertEquals(
-				"bloss <abbr>A</abbr>4 brauchen",
-				pattern.matcher("bloss A4 brauchen").replaceAll(
-						"<abbr>$1</abbr>"));
-		assertTrue(pattern.matcher("drum A geben").find());
-		assertTrue(pattern.matcher("drumA454 geben").find());
-	}
-
-	@Test
-	public void testAbbrevCapitalMoreChars() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
-		assertTrue(pattern.matcher("bloss É4 brauchen").find());
-	}
-
-	@Test
-	public void testAbbrevAcronym() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
-		assertTrue(pattern.matcher("Die GSoA ist").find());
-		assertTrue(pattern.matcher("ein mE guter").find());
-		assertFalse(pattern.matcher("ein Arbeiten").find());
-	}
-
-	@Test
-	public void testAbbrevAcronymMoreChars() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.ABBREV);
-		assertTrue(pattern.matcher("Die GSöA ist").find());
-		assertTrue(pattern.matcher("ein mÉ guter").find());
 	}
 
 	@Test
@@ -318,31 +282,6 @@ public class RegexTest {
 		assertTrue(pattern.matcher("<!-- Die GSoA\n\nblabla \n ist -->").find());
 		assertFalse(pattern.matcher("ein mE guter").find());
 		assertFalse(pattern.matcher("ein Arbeiten").find());
-	}
-
-	// public static final String PAGEBREAK_REGEX =
-	// "</p>\\s*(<pagenum.*?</pagenum\\s*>)\\s*<p>";
-	@Test
-	public void testPagebreak1() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.PAGEBREAK_REGEX);
-		final String inner = "<pagenum id=\"page-20\" page=\"normal\">20</pagenum>";
-		final String input = "</p>\n\t" + inner + "\n\t<p>";
-		assertTrue(pattern.matcher(input).find());
-		assertEquals(
-				" " + inner + " ",
-				pattern.matcher(input).replaceAll(
-						PrepToolLoader.PAGEBREAK_REPLACE));
-	}
-
-	@Test
-	public void testPagebreak2() {
-		final Pattern pattern = Pattern.compile(PrepToolLoader.PAGEBREAK_REGEX);
-		final String input = "</p>\n\t<pagenum id=\"page-20\" page=\"normal\">20</pagenum>\n\t<p>";
-		assertTrue(pattern.matcher(input).find());
-		assertEquals(
-				" <pagenum id=\"page-20\" page=\"normal\">20</pagenum> ",
-				pattern.matcher(input).replaceAll(
-						PrepToolLoader.PAGEBREAK_REPLACE));
 	}
 
 	@Test
@@ -390,4 +329,64 @@ public class RegexTest {
 		final String input = "bla 〉 bla";
 		assertFalse(pattern.matcher(input).find());
 	}
+
+	@Test
+	public void testBackref() {
+		final Pattern pattern = Pattern.compile("(.)b\\1");
+		assertTrue(pattern.matcher("aba").find());
+		assertFalse(pattern.matcher("oba").find());
+	}
+
+	@Test
+	public void testBackref2() {
+		final Pattern pattern = Pattern.compile("(.)(.)b\\2\\1");
+		assertTrue(pattern.matcher("aoboa").find());
+		assertFalse(pattern.matcher("aobaa").find());
+	}
+
+	// named groups available only from Java 7 on
+	// http://download.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#groupname
+	// Java 6 doesn't support them:
+	// http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html#cg
+	@Test
+	public void testBackrefName() {
+		final Pattern pattern = Pattern
+				.compile(isJava7() ? "(?<first>)(?<second>)b\\k<second>\\k<first>"
+						: "(.)(.)b\\2\\1");
+		assertTrue(pattern.matcher("aoboa").find());
+		assertFalse(pattern.matcher("aobaa").find());
+	}
+
+	// named groups available only from Java 7 on
+	// http://download.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#groupname
+	// Java 6 doesn't support them:
+	// http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html#cg
+	// http://blogs.oracle.com/xuemingshen/entry/named_capturing_group_in_jdk7
+	// http://stackoverflow.com/questions/415580/regex-named-groups-in-java
+	@Test
+	public void testBackrefNameReplace() {
+		final Pattern pattern = Pattern
+				.compile(isJava7() ? "(?<first>)(?<second>)b\\k<second>\\k<first>"
+						: "(.)(.)b\\2\\1");
+		assertEquals(
+				"oBa aobaa",
+				pattern.matcher("aoboa aobaa").replaceAll(
+						isJava7() ? "${second}B${first}" : "$2B$1"));
+	}
+
+	// http://download.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html#backref
+	@Test
+	public void testBackrefMoreThan10() {
+		final Pattern pattern = Pattern
+				.compile("(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)x\\1\\2\\3\\4\\5\\6\\7\\8\\9\\10\\11\\12");
+		assertTrue(pattern.matcher("123456789abcx123456789abc").find());
+		assertFalse(pattern.matcher("123456789abcx223456789abc").find());
+	}
+
+	private static boolean isJava7() {
+		return JAVA_7;
+	}
+
+	private static final boolean JAVA_7 = "1.7".equals(System
+			.getProperty("java.specification.version"));
 }
