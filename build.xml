@@ -106,6 +106,16 @@
 		</exec>
 	</target>
 	
+	<target name="tags" description="Create a TAGS file">
+	  <apply executable="etags" parallel="true" osfamily="unix">
+	    <fileset dir="${basedir}">
+	      <patternset>
+		<include name="**/*.java"/>
+	      </patternset>
+	    </fileset>
+	  </apply>
+	</target>
+	
 	<target name="checkCmdlineParTag" unless="git.tag">
 		<fail message="git.tag not set. Please provide it with cmd line parameter -Dgit.tag=..."/>
 	</target>

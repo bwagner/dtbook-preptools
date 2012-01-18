@@ -1,7 +1,10 @@
+/MANIFEST.MF
+/TAGS
+/bin
+/build.properties
 /generated_src
 /plugin.xml
 /dtbook-preptools.jar
 /dtbook-preptools.zip
 /bin
 /stamp.properties
-/build.properties
