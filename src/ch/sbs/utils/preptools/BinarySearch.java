@@ -17,6 +17,26 @@ import java.util.List;
  * the searched value was found, if they aren't the searched value is smaller
  * than all values in list.
  */
+/**
+	* Copyright (C) 2010 Swiss Library for the Blind, Visually Impaired and Print Disabled
+	*
+	* This file is part of dtbook-preptools.
+	* 	
+	* dtbook-preptools is free software: you can redistribute it
+	* and/or modify it under the terms of the GNU Lesser General Public
+	* License as published by the Free Software Foundation, either
+	* version 3 of the License, or (at your option) any later version.
+	* 	
+	* This program is distributed in the hope that it will be useful,
+	* but WITHOUT ANY WARRANTY; without even the implied warranty of
+	* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+	* Lesser General Public License for more details.
+	* 	
+	* You should have received a copy of the GNU Lesser General Public
+	* License along with this program. If not, see
+	* <http://www.gnu.org/licenses/>.
+	*/
+
 public class BinarySearch {
 	static <T extends Comparable<? super T>> int search(T value, List<T> values) {
 		int left = 0, right = values.size() - 1;
