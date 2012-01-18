@@ -6,9 +6,17 @@ dtbook-files as a preparatory step to translation to [Braille](http://en.wikiped
 
 
 Prerequisite installs
-------------------------
+---------------------
 
 * [oXygen XML Editor](http://www.oxygenxml.com/)
+
+
+Developing with [eclipse](http://eclipse.org/)
+-----------------------------------------------
+
+In order to work on this project with [eclipse](http://eclipse.org/) you need to run the ant "compile"
+task once after importing the project into eclipse in order for the required "generated_src" 
+source folder to be generated.
 
 Authors
 -------
