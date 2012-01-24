@@ -81,7 +81,7 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 				public void edit() {
 
 					try {
-						doSomething();
+						doAction();
 					} catch (final RuntimeException e) {
 						prepToolsPluginExtension
 								.showDialog("RuntimeException occurred: " + e
@@ -159,7 +159,7 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	 * 
 	 * @throws BadLocationException
 	 */
-	protected abstract void doSomething() throws BadLocationException;
+	protected abstract void doAction() throws BadLocationException;
 
 	/**
 	 * Utility method that returns the start position of the current selection.
@@ -288,7 +288,7 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 	}
 
 	@Override
-	protected void doSomething() throws BadLocationException {
+	protected void doAction() throws BadLocationException {
 		final WSEditor editorAccess = prepToolsPluginExtension.getWsEditor();
 		final WSTextEditorPage aWSTextEditorPage = prepToolsPluginExtension
 				.getPage();
@@ -373,7 +373,7 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 	 * @see ch.sbs.plugin.preptools.AbstractVFormAction#doSomething(ro.sync.exml.workspace.api.editor.WSEditor, ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage, javax.swing.text.Document, ch.sbs.plugin.preptools.DocumentMetaInfo)
 	 */
 	@Override
-	protected void doSomething() throws BadLocationException {
+	protected void doAction() throws BadLocationException {
 		final WSTextEditorPage aWSTextEditorPage = prepToolsPluginExtension
 				.getPage();
 
@@ -1049,7 +1049,7 @@ abstract class AbstractOrphanParenAction extends AbstractPrepToolAction {
 	}
 
 	@Override
-	protected void doSomething() throws BadLocationException {
+	protected void doAction() throws BadLocationException {
 		init();
 
 		if (getMetaInfo().hasNext()) {
