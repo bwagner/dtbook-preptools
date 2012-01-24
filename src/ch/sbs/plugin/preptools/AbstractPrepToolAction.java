@@ -25,24 +25,25 @@ import ch.sbs.utils.preptools.TextUtils;
 import ch.sbs.utils.preptools.parens.ParensUtil;
 
 /**
-	* Copyright (C) 2010 Swiss Library for the Blind, Visually Impaired and Print Disabled
-	*
-	* This file is part of dtbook-preptools.
-	* 	
-	* dtbook-preptools is free software: you can redistribute it
-	* and/or modify it under the terms of the GNU Lesser General Public
-	* License as published by the Free Software Foundation, either
-	* version 3 of the License, or (at your option) any later version.
-	* 	
-	* This program is distributed in the hope that it will be useful,
-	* but WITHOUT ANY WARRANTY; without even the implied warranty of
-	* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-	* Lesser General Public License for more details.
-	* 	
-	* You should have received a copy of the GNU Lesser General Public
-	* License along with this program. If not, see
-	* <http://www.gnu.org/licenses/>.
-	*/
+ * Copyright (C) 2010 Swiss Library for the Blind, Visually Impaired and Print
+ * Disabled
+ * 
+ * This file is part of dtbook-preptools.
+ * 
+ * dtbook-preptools is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 
 @SuppressWarnings("serial")
 abstract class AbstractPrepToolAction extends AbstractAction {
@@ -792,7 +793,8 @@ class OrdinalChangeAction extends AbstractChangeAction {
 	 * @param input
 	 * @return
 	 */
-	public static String appendNbspToOrdinal(final Pattern pattern, final String input) {
+	public static String appendNbspToOrdinal(final Pattern pattern,
+			final String input) {
 		final Matcher matcher = pattern.matcher(input);
 		matcher.find();
 		String replacement = "<brl:num role=\"ordinal\">$1</brl:num>";
@@ -829,11 +831,11 @@ class OrdinalChangeAction extends AbstractChangeAction {
  * (@see <a href="http://redmine.sbszh.ch/issues/1443">Bug 1443</a>)
  * This pattern is used for the Abbrev-Start-, -Find-, and Change-Actions to
  * allow them to plug in an additional pattern to skip, namely to avoid matching
- * text within a p element, particularly:
+ * text within a p tag, particularly:
  * <p class="sourcePublisher">
  */
-interface Bug1443 {
-	public static final String CUSTOM_PATTERN = "<p[^>]*>";
+interface SkipTextWithinPTag {
+	public static final String PATTERN = "<p[^>]*>";
 }
 
 @SuppressWarnings("serial")
@@ -888,7 +890,7 @@ class AbbrevChangeAction extends AbstractChangeAction {
 	 */
 	@Override
 	protected String getCustomSkipPatternToAdd() {
-		return Bug1443.CUSTOM_PATTERN;
+		return SkipTextWithinPTag.PATTERN;
 	}
 
 }
@@ -909,7 +911,7 @@ class AbbrevStartAction extends RegexStartAction {
 	 */
 	@Override
 	protected String getCustomSkipPatternToAdd() {
-		return Bug1443.CUSTOM_PATTERN;
+		return SkipTextWithinPTag.PATTERN;
 	}
 
 }
@@ -928,7 +930,7 @@ class AbbrevFindAction extends RegexFindAction {
 	 */
 	@Override
 	protected String getCustomSkipPatternToAdd() {
-		return Bug1443.CUSTOM_PATTERN;
+		return SkipTextWithinPTag.PATTERN;
 	}
 
 }
