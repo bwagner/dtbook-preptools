@@ -792,7 +792,7 @@ class OrdinalChangeAction extends AbstractChangeAction {
 	 * @param input
 	 * @return
 	 */
-	public static String feature1416(final Pattern pattern, final String input) {
+	public static String appendNbspToOrdinal(final Pattern pattern, final String input) {
 		final Matcher matcher = pattern.matcher(input);
 		matcher.find();
 		String replacement = "<brl:num role=\"ordinal\">$1</brl:num>";
@@ -821,7 +821,7 @@ class OrdinalChangeAction extends AbstractChangeAction {
 	@Override
 	protected String performReplacement(final Pattern thePattern,
 			final String selText) {
-		return feature1416(thePattern, selText);
+		return appendNbspToOrdinal(thePattern, selText);
 	}
 }
 
