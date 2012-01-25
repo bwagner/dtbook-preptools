@@ -18,6 +18,20 @@ In order to work on this project with [eclipse](http://eclipse.org/) you need to
 task once after importing the project into eclipse in order for the required "generated_src" 
 source folder to be generated.
 
+Debugging with [eclipse](http://eclipse.org/)
+-----------------------------------------------
+
+You can choose whether to connect to a running instance of oxygen or to monitor it from its start.
+Add the following line to the startup script that comes with oXygen (named '`oxygen`'). This is a
+command line option to the '`java`' command:
+
+    -Xrunjdwp:transport=dt_socket,address=104442,server=y,suspend=$SUSPEND
+    
+`$SUSPEND` can be either '`y`' or '`n`'. When '`y`', oXygen startup will be suspended until a
+debugger connects. The port to connect to is given from the oxygen command on stdout as follows:
+
+    Listening for transport dt_socket at address: <number>
+
 Authors
 -------
 
