@@ -603,31 +603,6 @@ class FullRegexPrepTool extends RegexPrepTool {
 				theChangeAction);
 	}
 
-	/**
-	 * @param thePrepToolsPluginExtension
-	 * @param theMenuItemNr
-	 * @param theMnemonic
-	 * @param thePrepToolName
-	 * @param thePatternToSearch
-	 * @param theReplaceString
-	 * @param thePatternToSkip
-	 * @param theChangeButtonLabel
-	 * @param theStartAction
-	 * @param theChangeAction
-	 */
-	FullRegexPrepTool(
-			final PrepToolsPluginExtension thePrepToolsPluginExtension,
-			int theMenuItemNr, int theMnemonic, final String thePrepToolName,
-			final String thePatternToSearch, final String theReplaceString,
-			final String thePatternToSkip, final String theChangeButtonLabel,
-			final AbstractPrepToolAction theStartAction,
-			final AbstractPrepToolAction theChangeAction) {
-		this(thePrepToolsPluginExtension, theMenuItemNr, theMnemonic,
-				thePrepToolName, thePatternToSearch, theReplaceString,
-				thePatternToSkip, theChangeButtonLabel, theStartAction, null,
-				theChangeAction);
-	}
-
 	FullRegexPrepTool(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension,
 			int theMenuItemNr, int theMnemonic, final String thePrepToolName,

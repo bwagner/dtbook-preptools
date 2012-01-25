@@ -955,7 +955,7 @@ class UrlChangeAction extends AbstractChangeAction {
 	@Override
 	protected String performReplacement(final Pattern thePattern,
 			final String selText) {
-		return changeUrlOrEmail(thePattern, getReplaceString(), selText);
+		return changeUrlOrEmail(thePattern, selText);
 	}
 
 	/**
@@ -963,21 +963,47 @@ class UrlChangeAction extends AbstractChangeAction {
 	 * according to http://redmine.sbszh.ch/issues/1629, i.e. email or url.
 	 * 
 	 * @param pattern
-	 * @param theReplaceString
 	 * @param input
 	 * @return
 	 */
 	public static String changeUrlOrEmail(final Pattern pattern,
-			final String theReplaceString, final String input) {
+			final String input) {
 		final Matcher matcher = pattern.matcher(input);
-		matcher.find();
-		if (matcher.group(1) != null) { // email
-			return pattern.matcher(input).replaceAll(theReplaceString);
+		if (!matcher.find()) {
+			throw new RuntimeException("PROGRAMMING ERROR1: '" + input
+					+ "' didn't match: '" + pattern + "'");
 		}
-		else { // url
-			return pattern.matcher(input).replaceAll("not yet implemented!");
+		if (matcher.group(1) != null) { // email
+			return pattern.matcher(input).replaceAll(EMAIL_REPLACE);
+		}
+		else if (matcher.group(3) != null) { // url
+			final String replaceAll;
+			if (matcher.group(3).toLowerCase().startsWith("http")) {
+				replaceAll = pattern.matcher(input).replaceAll(URL_REPLACE);
+			}
+			else {
+				replaceAll = pattern.matcher(input).replaceAll(
+						URL_REPLACE_WITH_HTTP);
+			}
+			return replaceAll;
+		}
+		else {
+			throw new RuntimeException("PROGRAMMING ERROR2: '" + input
+					+ "' didn't match: '" + pattern + "'");
 		}
 	}
+
+	private static final String EMAIL_REPLACE = "<" + PrepToolLoader.URL_TAG
+			+ " href=\"mailto:$2\" external=\"true\">" + "$0" + "</"
+			+ PrepToolLoader.URL_TAG + ">";
+
+	private static final String URL_REPLACE = "<" + PrepToolLoader.URL_TAG
+			+ " href=\"$3\" external=\"true\">" + "$0" + "</"
+			+ PrepToolLoader.URL_TAG + ">";
+
+	private static final String URL_REPLACE_WITH_HTTP = "<"
+			+ PrepToolLoader.URL_TAG + " href=\"http://$3\" external=\"true\">"
+			+ "$0" + "</" + PrepToolLoader.URL_TAG + ">";
 
 }
 
