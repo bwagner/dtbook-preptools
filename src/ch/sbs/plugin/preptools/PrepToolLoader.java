@@ -8,24 +8,25 @@ import java.util.List;
  * about specific tools.
  */
 /**
-	* Copyright (C) 2010 Swiss Library for the Blind, Visually Impaired and Print Disabled
-	*
-	* This file is part of dtbook-preptools.
-	* 	
-	* dtbook-preptools is free software: you can redistribute it
-	* and/or modify it under the terms of the GNU Lesser General Public
-	* License as published by the Free Software Foundation, either
-	* version 3 of the License, or (at your option) any later version.
-	* 	
-	* This program is distributed in the hope that it will be useful,
-	* but WITHOUT ANY WARRANTY; without even the implied warranty of
-	* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-	* Lesser General Public License for more details.
-	* 	
-	* You should have received a copy of the GNU Lesser General Public
-	* License along with this program. If not, see
-	* <http://www.gnu.org/licenses/>.
-	*/
+ * Copyright (C) 2010 Swiss Library for the Blind, Visually Impaired and Print
+ * Disabled
+ * 
+ * This file is part of dtbook-preptools.
+ * 
+ * dtbook-preptools is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 
 public class PrepToolLoader {
 
@@ -73,6 +74,15 @@ public class PrepToolLoader {
 			+ PLACEHOLDER + "\">$1</span>";
 	public static final String ACCENT_SKIP_REGEX = "span.*?";
 
+	// http://redmine.sbszh.ch/issues/1629 mark up email-addresses and urls
+	// TODO: complete regex with oct chars
+	public static final String EMAIL_SEARCH_REGEX = "(?i)(?:mailto:)?([-!#$%&'*+/=?^_`{}|~0-9A-Z]+(?:\\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*@(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\\.)+[A-Z]{2,6}\\.?)";
+	public static final String URL_TAG = "dtb:a";
+	public static final String EMAIL_REPLACE = "<" + URL_TAG
+			+ " href=\"mailto:$1\" external=\"true\">" + "$0" + "</" + URL_TAG
+			+ ">";
+	public static final String URL_SKIP_REGEX = "dtb:a[^>]*";
+
 	public static List<PrepTool> loadPrepTools(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
 		final List<PrepTool> prepTools = new ArrayList<PrepTool>();
@@ -92,7 +102,7 @@ public class PrepToolLoader {
 		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'r',
 				"Roman", ROMAN_SEARCH_REGEX, ROMAN_TAG, ROMAN_SKIP_REGEX));
 
-		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'u',
+		prepTools.add(new RegexPrepTool(thePrepToolsPluginExtension, i++, 'm',
 				"Measure", MEASURE_SEARCH_REGEX, MEASURE_TAG,
 				MEASURE_SKIP_REGEX));
 
@@ -105,6 +115,12 @@ public class PrepToolLoader {
 						ABBREV_SEARCH_REGEX, "Abbreviation"),
 				new AbbrevChangeAction(thePrepToolsPluginExtension, "Change",
 						ABBREV_SEARCH_REGEX, "Abbreviation")));
+
+		prepTools.add(new FullRegexPrepTool(thePrepToolsPluginExtension, i++,
+				'u', "Url/Email", EMAIL_SEARCH_REGEX, URL_TAG, URL_SKIP_REGEX,
+				null, new UrlChangeAction(thePrepToolsPluginExtension,
+						"Change", EMAIL_SEARCH_REGEX, "Url/Email",
+						EMAIL_REPLACE)));
 
 		prepTools.add(new PageBreakPrepTool(thePrepToolsPluginExtension, i++,
 				'k'));

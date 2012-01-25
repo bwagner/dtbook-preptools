@@ -936,6 +936,52 @@ class AbbrevFindAction extends RegexFindAction {
 }
 
 @SuppressWarnings("serial")
+class UrlChangeAction extends AbstractChangeAction {
+
+	UrlChangeAction(final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName, final String thePattern,
+			final String thePrepToolName) {
+		this(thePrepToolsPluginExtension, theName, thePattern, thePrepToolName,
+				null);
+	}
+
+	UrlChangeAction(final PrepToolsPluginExtension thePrepToolsPluginExtension,
+			final String theName, final String thePattern,
+			final String thePrepToolName, final String theReplaceString) {
+		super(thePrepToolsPluginExtension, theName, thePattern,
+				thePrepToolName, theReplaceString);
+	}
+
+	@Override
+	protected String performReplacement(final Pattern thePattern,
+			final String selText) {
+		return changeUrlOrEmail(thePattern, getReplaceString(), selText);
+	}
+
+	/**
+	 * Applies the given pattern to the given input and replaces the matches
+	 * according to http://redmine.sbszh.ch/issues/1629, i.e. email or url.
+	 * 
+	 * @param pattern
+	 * @param theReplaceString
+	 * @param input
+	 * @return
+	 */
+	public static String changeUrlOrEmail(final Pattern pattern,
+			final String theReplaceString, final String input) {
+		final Matcher matcher = pattern.matcher(input);
+		matcher.find();
+		if (matcher.group(1) != null) { // email
+			return pattern.matcher(input).replaceAll(theReplaceString);
+		}
+		else { // url
+			return pattern.matcher(input).replaceAll("not yet implemented!");
+		}
+	}
+
+}
+
+@SuppressWarnings("serial")
 class RegexFindAction extends AbstractMarkupFindAction {
 	private final RegexHelper helper;
 
