@@ -18,8 +18,8 @@ In order to work on this project with [eclipse](http://eclipse.org/) you need to
 task once after importing the project into eclipse in order for the required "generated_src" 
 source folder to be generated.
 
-Debugging with [eclipse](http://eclipse.org/)
------------------------------------------------
+Debugging
+---------
 
 You can choose whether to connect to a running instance of oxygen or to monitor it from its start.
 Invoke oxygen startup (a shell script to be found in the oxygen installation directory that is named
