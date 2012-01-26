@@ -17,28 +17,29 @@ import ch.sbs.utils.preptools.Match;
  * 
  */
 /**
-	* Copyright (C) 2010 Swiss Library for the Blind, Visually Impaired and Print Disabled
-	*
-	* This file is part of dtbook-preptools.
-	* 	
-	* dtbook-preptools is free software: you can redistribute it
-	* and/or modify it under the terms of the GNU Lesser General Public
-	* License as published by the Free Software Foundation, either
-	* version 3 of the License, or (at your option) any later version.
-	* 	
-	* This program is distributed in the hope that it will be useful,
-	* but WITHOUT ANY WARRANTY; without even the implied warranty of
-	* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-	* Lesser General Public License for more details.
-	* 	
-	* You should have received a copy of the GNU Lesser General Public
-	* License along with this program. If not, see
-	* <http://www.gnu.org/licenses/>.
-	*/
+ * Copyright (C) 2010 Swiss Library for the Blind, Visually Impaired and Print
+ * Disabled
+ * 
+ * This file is part of dtbook-preptools.
+ * 
+ * dtbook-preptools is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 
 class DocumentMetaInfo {
 
-	static class MetaInfo {
+	static class PrepToolState {
 		private boolean hasStarted;
 		private boolean isDone;
 		private boolean cancelled;
@@ -87,14 +88,15 @@ class DocumentMetaInfo {
 		}
 
 		public void setCancelled(boolean theCancelled) {
+
 			cancelled = theCancelled;
 		}
 
 	}
 
-	final Map<String, MetaInfo> toolSpecific;
+	final Map<String, PrepToolState> toolSpecific;
 
-	public MetaInfo getToolSpecificMetaInfo(final String label) {
+	public PrepToolState getToolSpecificMetaInfo(final String label) {
 		return toolSpecific.get(label);
 	}
 
@@ -303,7 +305,7 @@ class DocumentMetaInfo {
 		currentPrepTool.setCurrentState(this);
 	}
 
-	public MetaInfo getCurrentToolSpecificMetaInfo() {
+	public PrepToolState getCurrentToolSpecificMetaInfo() {
 		if (currentPrepTool == null) {
 			return null;
 		}
@@ -312,47 +314,41 @@ class DocumentMetaInfo {
 	}
 
 	public boolean isProcessing() {
-		final MetaInfo currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
+		final PrepToolState currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
 		return currentToolSpecificMetaInfo != null
 				&& currentToolSpecificMetaInfo.isProcessing();
 	}
 
 	public boolean hasStarted() {
-		final MetaInfo currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
+		final PrepToolState currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
 		return currentToolSpecificMetaInfo != null
 				&& getCurrentToolSpecificMetaInfo().hasStarted();
 	}
 
 	public void setHasStarted(boolean theHasStarted) {
-		final MetaInfo currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
+		final PrepToolState currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
 		if (currentToolSpecificMetaInfo != null) {
 			getCurrentToolSpecificMetaInfo().setHasStarted(theHasStarted);
 		}
 	}
 
 	public boolean isDone() {
-		final MetaInfo currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
+		final PrepToolState currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
 		return currentToolSpecificMetaInfo != null
 				&& getCurrentToolSpecificMetaInfo().isDone();
 	}
 
 	public void setDone(boolean theIsDone) {
-		final MetaInfo currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
+		final PrepToolState currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
 		if (currentToolSpecificMetaInfo != null) {
 			getCurrentToolSpecificMetaInfo().setDone(theIsDone);
 		}
 	}
 
 	public boolean isCancelled() {
-		final MetaInfo currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
+		final PrepToolState currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
 		return currentToolSpecificMetaInfo != null
 				&& getCurrentToolSpecificMetaInfo().isCancelled();
 	}
 
-	public void setDCancelled(boolean theIsCancelled) {
-		final MetaInfo currentToolSpecificMetaInfo = getCurrentToolSpecificMetaInfo();
-		if (currentToolSpecificMetaInfo != null) {
-			getCurrentToolSpecificMetaInfo().setCancelled(theIsCancelled);
-		}
-	}
 }

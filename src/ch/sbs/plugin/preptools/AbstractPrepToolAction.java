@@ -273,7 +273,7 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 	 */
 	abstract protected Pattern getPattern();
 
-	protected DocumentMetaInfo.MetaInfo getMetaInfo() {
+	protected DocumentMetaInfo.PrepToolState getMetaInfo() {
 		return prepToolsPluginExtension.getDocumentMetaInfo()
 				.getCurrentToolSpecificMetaInfo();
 	}
@@ -294,7 +294,7 @@ abstract class AbstractMarkupStartAction extends AbstractMarkupAction {
 		final WSTextEditorPage aWSTextEditorPage = prepToolsPluginExtension
 				.getPage();
 		final URL editorLocation = editorAccess.getEditorLocation();
-		final DocumentMetaInfo.MetaInfo metaInfo = getMetaInfo();
+		final DocumentMetaInfo.PrepToolState metaInfo = getMetaInfo();
 		if (metaInfo.isDone()) {
 			if (prepToolsPluginExtension.showConfirmDialog(getPrepToolName()
 					+ ": Start Over?",

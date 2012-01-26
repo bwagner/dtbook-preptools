@@ -81,8 +81,8 @@ abstract class PrepTool {
 	 * @param document
 	 * @return DocumentMetaInfo.MetaInfo
 	 */
-	public DocumentMetaInfo.MetaInfo makeMetaInfo(final Document document) {
-		return new DocumentMetaInfo.MetaInfo();
+	public DocumentMetaInfo.PrepToolState makeMetaInfo(final Document document) {
+		return new DocumentMetaInfo.PrepToolState();
 	}
 
 	/**
@@ -732,11 +732,11 @@ class AccentPrepTool extends RegexPrepTool {
 class VFormPrepTool extends AbstractMarkupPrepTool {
 
 	@Override
-	public DocumentMetaInfo.MetaInfo makeMetaInfo(final Document document) {
+	public DocumentMetaInfo.PrepToolState makeMetaInfo(final Document document) {
 		return new MetaInfo();
 	}
 
-	static class MetaInfo extends DocumentMetaInfo.MetaInfo {
+	static class MetaInfo extends DocumentMetaInfo.PrepToolState {
 		private Pattern currentPattern;
 
 		public MetaInfo() {
@@ -859,11 +859,11 @@ class VFormPrepTool extends AbstractMarkupPrepTool {
 class ParensPrepTool extends PrepTool {
 
 	@Override
-	public DocumentMetaInfo.MetaInfo makeMetaInfo(final Document document) {
+	public DocumentMetaInfo.PrepToolState makeMetaInfo(final Document document) {
 		return new MetaInfo(document);
 	}
 
-	static class MetaInfo extends DocumentMetaInfo.MetaInfo {
+	static class MetaInfo extends DocumentMetaInfo.PrepToolState {
 		private Iterator<Match.PositionMatch> orphanedParensIterator;
 		private final Document document;
 

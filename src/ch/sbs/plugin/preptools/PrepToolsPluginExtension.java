@@ -41,7 +41,7 @@ import ro.sync.exml.workspace.api.standalone.ToolbarInfo;
 import ro.sync.exml.workspace.api.standalone.ViewComponentCustomizer;
 import ro.sync.exml.workspace.api.standalone.ViewInfo;
 import ro.sync.ui.Icons;
-import ch.sbs.plugin.preptools.DocumentMetaInfo.MetaInfo;
+import ch.sbs.plugin.preptools.DocumentMetaInfo.PrepToolState;
 import ch.sbs.utils.preptools.FileUtils;
 import ch.sbs.utils.preptools.Match.PositionMatch;
 import ch.sbs.utils.preptools.PropsUtils;
@@ -55,24 +55,25 @@ import ch.sbs.utils.swing.MenuPlugger;
  * 
  */
 /**
-	* Copyright (C) 2010 Swiss Library for the Blind, Visually Impaired and Print Disabled
-	*
-	* This file is part of dtbook-preptools.
-	* 	
-	* dtbook-preptools is free software: you can redistribute it
-	* and/or modify it under the terms of the GNU Lesser General Public
-	* License as published by the Free Software Foundation, either
-	* version 3 of the License, or (at your option) any later version.
-	* 	
-	* This program is distributed in the hope that it will be useful,
-	* but WITHOUT ANY WARRANTY; without even the implied warranty of
-	* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-	* Lesser General Public License for more details.
-	* 	
-	* You should have received a copy of the GNU Lesser General Public
-	* License along with this program. If not, see
-	* <http://www.gnu.org/licenses/>.
-	*/
+ * Copyright (C) 2010 Swiss Library for the Blind, Visually Impaired and Print
+ * Disabled
+ * 
+ * This file is part of dtbook-preptools.
+ * 
+ * dtbook-preptools is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 
 public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension {
 
@@ -86,8 +87,8 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 	 * @param document
 	 * @return
 	 */
-	Map<String, MetaInfo> getToolSpecificMetaInfos(final Document document) {
-		final Map<String, MetaInfo> toolSpecific = new HashMap<String, MetaInfo>();
+	Map<String, PrepToolState> getToolSpecificMetaInfos(final Document document) {
+		final Map<String, PrepToolState> toolSpecific = new HashMap<String, PrepToolState>();
 		for (final PrepTool preptool : prepTools) {
 			toolSpecific.put(preptool.getPrepToolName(),
 					preptool.makeMetaInfo(document));
@@ -205,8 +206,8 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 		PrepTool preptool = null;
 		while (!found && iter.hasNext()) {
 			preptool = iter.next();
-			final MetaInfo mi = getDocumentMetaInfo().getToolSpecificMetaInfo(
-					preptool.getPrepToolName());
+			final PrepToolState mi = getDocumentMetaInfo()
+					.getToolSpecificMetaInfo(preptool.getPrepToolName());
 			if (!(found = !mi.isDone())) {
 				++i;
 			}
@@ -299,7 +300,7 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 								// Unfortunately, we don't know whether the user
 								// canceled the Revert action. But we'll
 								// restart anyway. No big deal.
-								final MetaInfo mi = getDocumentMetaInfo()
+								final PrepToolState mi = getDocumentMetaInfo()
 										.getCurrentToolSpecificMetaInfo();
 								if (mi.hasStarted()) {
 									mi.setHasStarted(false);
@@ -530,24 +531,24 @@ public class PrepToolsPluginExtension implements WorkspaceAccessPluginExtension 
 
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							final MetaInfo metaInfo = getDocumentMetaInfo()
+							final PrepToolState prepToolState = getDocumentMetaInfo()
 									.getCurrentToolSpecificMetaInfo();
 							final PrepTool currentPrepTool = getCurrentPrepTool();
 							final String label = currentPrepTool
 									.getPrepToolName();
 							if (preptool != currentPrepTool
-									&& (!metaInfo.isProcessing() || showConfirmDialog(
+									&& (!prepToolState.isProcessing() || showConfirmDialog(
 											"Switching:",
 											"Not Yet Done Processing " + label
 													+ "!", "Switch Anyway",
 											"Cancel"))) {
+								prepToolState.setHasStarted(false);
 								preptool.activate();
 							}
 							else {
-								// not the smartest way, but since
-								// there won't be more than 20 preptools
-								// the linear search (indexOf) of
-								// the current tool should be bearable.
+								// Re-select the current preptool, otherwise
+								// the radio button of the newly selected
+								// preptool will remain selected.
 								selectPrepToolItem(prepTools
 										.indexOf(currentPrepTool));
 							}
