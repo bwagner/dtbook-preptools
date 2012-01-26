@@ -77,8 +77,8 @@ public class PrepToolLoader {
 	// http://redmine.sbszh.ch/issues/1629 mark up email-addresses and urls
 	// TODO: complete regex with oct chars
 	private static final String EMAIL_SEARCH_REGEX = "(?:mailto:)?([-!#$%&'*+/=?^_`{}|~0-9A-Z]+(?:\\.[-!#$%&'*+/=?^_`{}|~0-9A-Z]+)*@(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\\.)+[A-Z]{2,6}\\.?)";
-	public static final String URL_TAG = "dtb:a";
-	public static final String URL_SKIP_REGEX = "dtb:a[^>]*";
+	public static final String URL_TAG = "a";
+	public static final String URL_SKIP_REGEX = "a[^>]*";
 
 	// public static final String KILLER_URL_REGEX =
 	// "(?:(?:https?|ftp)://)?(?:\\S+(?::\\S*)?@)?(?:(?!10(?:\\.\\d{1,3}){3})(?!127(?:\\.\\d{1,3}){3})(?!169\\.254(?:\\.\\d{1,3}){2})(?!192\\.168(?:\\.\\d{1,3}){2})(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,})))(?::\\d{2,5})?(?:/[^\\s]*)?";
@@ -90,8 +90,8 @@ public class PrepToolLoader {
 	// group 1: email addr complete
 	// group 2: email without mailto:
 	// group 3: url
-	public static final String EMAIL_URL_SEARCH_REGEX = "(?i)(" + EMAIL_SEARCH_REGEX
-			+ ")" + "|" + "(" + URL_SEARCH_REGEX + ")";
+	public static final String EMAIL_URL_SEARCH_REGEX = "(?i)("
+			+ EMAIL_SEARCH_REGEX + ")" + "|" + "(" + URL_SEARCH_REGEX + ")";
 
 	public static List<PrepTool> loadPrepTools(
 			final PrepToolsPluginExtension thePrepToolsPluginExtension) {
@@ -127,9 +127,10 @@ public class PrepToolLoader {
 						ABBREV_SEARCH_REGEX, "Abbreviation")));
 
 		prepTools.add(new FullRegexPrepTool(thePrepToolsPluginExtension, i++,
-				'u', "Url/Email", EMAIL_URL_SEARCH_REGEX, URL_TAG, URL_SKIP_REGEX,
-				null, new UrlChangeAction(thePrepToolsPluginExtension,
-						"Change", EMAIL_URL_SEARCH_REGEX, "Url/Email")));
+				'u', "Url/Email", EMAIL_URL_SEARCH_REGEX, URL_TAG,
+				URL_SKIP_REGEX, null, new UrlChangeAction(
+						thePrepToolsPluginExtension, "Change",
+						EMAIL_URL_SEARCH_REGEX, "Url/Email")));
 
 		prepTools.add(new PageBreakPrepTool(thePrepToolsPluginExtension, i++,
 				'k'));
