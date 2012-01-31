@@ -3,6 +3,7 @@ package ch.sbs.plugin.preptools;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URL;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -83,13 +84,13 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 
 					try {
 						doAction();
-					} catch (final RuntimeException e) {
+					} catch (final Throwable e) {
+						final Writer result = new StringWriter();
+						final PrintWriter pw = new PrintWriter(result);
+						e.printStackTrace(pw);
 						prepToolsPluginExtension
-								.showDialog("RuntimeException occurred: " + e
-										+ " " + getStackTrace(e));
-					} catch (final BadLocationException e) {
-						prepToolsPluginExtension.showDialog(e.getMessage()
-								+ " " + getStackTrace(e));
+								.showDialog("Throwable occurred: " + e + " "
+										+ result.toString());
 						throw new RuntimeException(e);
 					}
 
