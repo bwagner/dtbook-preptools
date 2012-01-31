@@ -3,7 +3,6 @@ package ch.sbs.plugin.preptools;
 import java.awt.event.ActionEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.net.URL;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -84,14 +83,11 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 
 					try {
 						doAction();
-					} catch (final Throwable e) {
-						final Writer result = new StringWriter();
-						final PrintWriter pw = new PrintWriter(result);
-						e.printStackTrace(pw);
+					} catch (final Throwable t) {
 						prepToolsPluginExtension
-								.showDialog("Throwable occurred: " + e + " "
-										+ result.toString());
-						throw new RuntimeException(e);
+								.showDialog("Throwable occurred: " + t + " "
+										+ getStackTrace(t));
+						throw new RuntimeException(t);
 					}
 
 				}
@@ -141,7 +137,7 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	}
 
 	/**
-	 * Hook thet gets called just before meta-information is inserted into the
+	 * Hook that gets called just before meta-information is inserted into the
 	 * document. This code is executed as a single edit, so it can be undone by
 	 * the user as a single edit step.
 	 */
@@ -149,9 +145,9 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 
 	}
 
-	private String getStackTrace(final Exception e) {
+	private String getStackTrace(final Throwable t) {
 		final StringWriter sw = new StringWriter();
-		e.printStackTrace(new PrintWriter(sw));
+		t.printStackTrace(new PrintWriter(sw));
 		return sw.toString();
 	}
 
