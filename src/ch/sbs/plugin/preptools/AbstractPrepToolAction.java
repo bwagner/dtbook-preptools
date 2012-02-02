@@ -83,14 +83,11 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 
 					try {
 						doAction();
-					} catch (final RuntimeException e) {
+					} catch (final Throwable t) {
 						prepToolsPluginExtension
-								.showDialog("RuntimeException occurred: " + e
-										+ " " + getStackTrace(e));
-					} catch (final BadLocationException e) {
-						prepToolsPluginExtension.showDialog(e.getMessage()
-								+ " " + getStackTrace(e));
-						throw new RuntimeException(e);
+								.showDialog("Throwable occurred: " + t + " "
+										+ getStackTrace(t));
+						throw new RuntimeException(t);
 					}
 
 				}
@@ -140,7 +137,7 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 	}
 
 	/**
-	 * Hook thet gets called just before meta-information is inserted into the
+	 * Hook that gets called just before meta-information is inserted into the
 	 * document. This code is executed as a single edit, so it can be undone by
 	 * the user as a single edit step.
 	 */
@@ -148,9 +145,9 @@ abstract class AbstractPrepToolAction extends AbstractAction {
 
 	}
 
-	private String getStackTrace(final Exception e) {
+	private String getStackTrace(final Throwable t) {
 		final StringWriter sw = new StringWriter();
-		e.printStackTrace(new PrintWriter(sw));
+		t.printStackTrace(new PrintWriter(sw));
 		return sw.toString();
 	}
 

@@ -11,7 +11,7 @@
 	<!-- used by "stamp" -->
 	<property name="stamp.properties" value="stamp.properties" />
 
-	<!-- used by "deploy", "jar" and "plugin.xml" -->
+	<!-- used by "dist", "jar" and "plugin.xml" -->
 	<property name="jarfile" value="${ant.project.name}.jar" />
 
 	<!-- used by "jar" and "init" -->
@@ -46,6 +46,10 @@
 	<property name="toolbarid" value="${ant.project.name}toolbarid" />
 
 	<property name="lib.dir" value="lib" />
+
+	<!-- used by "dist" and "plugin.xml" -->
+	<property name="intervaltree.jar" value="org.arabidopsis.interval.jar" />
+	
 	<path id="classpath.path">
 		<pathelement location="${build.dir}" />
 		<fileset dir="${lib.dir}">
@@ -77,11 +81,24 @@
 		<antcall target="startoxy" />
 	</target>
 
+	<target name="deploydebug" description="install plugin in local oxygen and restart debuggable oxygen" >
+		<antcall target="stopoxy" />
+		<antcall target="dist" />
+		<antcall target="startoxydebug" />
+	</target>
+
+	<target name="deploydebugwait" description="install plugin in local oxygen and restart debuggable oxygen that waits for debugger to connect" >
+		<antcall target="stopoxy" />
+		<antcall target="dist" />
+		<antcall target="startoxydebugwait" />
+	</target>
+
 	<target name="dist" depends="jar, plugin.xml, oxygendir" description="install plugin in local oxygen" >
 		<property name="plugindir" value="${oxygendir}/plugins/${ant.project.name}" />
 		<delete dir="${plugindir}" />
 		<mkdir dir="${plugindir}/lib" />
 		<copy file="${jarfile}" todir="${plugindir}/lib" />
+		<copy file="${lib.dir}/${intervaltree.jar}" todir="${plugindir}/lib" />
 		<copy file="${pluginfile}" todir="${plugindir}" />
 		<!--
 		<copy file="${stamp.properties}" todir="${plugindir}" />
@@ -178,6 +195,7 @@
 					class="${fqnclazz}"&gt;
 				&lt;runtime&gt;
 					&lt;library name="lib/${jarfile}"/&gt;
+					&lt;library name="lib/${intervaltree.jar}"/&gt;
 				&lt;/runtime&gt;
 			&lt;extension type="${type}" 
 				class="${extensionClazz}"/&gt;
@@ -310,7 +328,22 @@
 	</target>
 
 	<target name="startoxy" description="start oxygen" >
-		<exec executable="oxygen" spawn="true"/>
+		<exec executable="oxygen"/>
+	</target>
+
+	<target name="startoxydebug" description="start debuggable oxygen" >
+		<exec executable="oxygen">
+            <arg value="-J-Xrunjdwp:transport=dt_socket,address=104442,server=y,suspend=n" />
+        </exec>
+	</target>
+
+	<target name="startoxydebugwait" description="start debuggable oxygen that waits for debugger to connect" >
+		<exec executable="notify-send">
+            <arg value="notify-send 'oxygen running, waiting for debugger to connect!'" />
+        </exec>
+		<exec executable="oxygen">
+            <arg value="-J-Xrunjdwp:transport=dt_socket,address=104442,server=y,suspend=y" />
+        </exec>
 	</target>
 
 	<!-- begin git stuff -->
