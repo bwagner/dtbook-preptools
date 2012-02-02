@@ -1,5 +1,8 @@
 package ch.sbs.utils.preptools.vform;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import net.xmlizer.wordhierarchy.WordHierarchyBuilder;
@@ -48,35 +51,24 @@ public class VFormUtil {
 			"Eurethalben", "Euretwegen", "Euretwillen", "Eurige", "Eurigem",
 			"Eurigen", "Euriger", "Euriges", };
 
-	private static final String[] forms3rdPersonPlural = new String[] { WordHierarchyBuilder
-			.createWordTree(thirdPP).toRegex() };
-
-	private static final String[] forms2ndPerson = new String[] { WordHierarchyBuilder
-			.createWordTree(secondP).toRegex() };
-
-	private static final String[] allForms;
-
-	static {
-		allForms = new String[forms3rdPersonPlural.length
-				+ forms2ndPerson.length];
-		int i = 0;
-		for (final String[] forms : new String[][] { forms3rdPersonPlural,
-				forms2ndPerson }) {
-			for (final String form : forms) {
-				allForms[i++] = form;
-			}
-		}
-	}
-
-	private static Pattern vFormDefaultPattern;
-
 	private static final Pattern vFormPatternAll;
 	private static final Pattern vFormPattern3rdPersonPlural;
 
 	static {
-		vFormPatternAll = makePattern(allForms);
-		vFormPattern3rdPersonPlural = makePattern(forms3rdPersonPlural);
-		vFormDefaultPattern = vFormPatternAll;
+		final Set<String> allForms = new HashSet<String>(thirdPP.length
+				+ secondP.length);
+		allForms.addAll(Arrays.asList(thirdPP));
+		allForms.addAll(Arrays.asList(secondP));
+		vFormPatternAll = Pattern
+				.compile(wrapInWordBoundaries(WordHierarchyBuilder
+						.createWordTree(allForms).toRegex()));
+		vFormPattern3rdPersonPlural = Pattern
+				.compile(wrapInWordBoundaries(WordHierarchyBuilder
+						.createWordTree(thirdPP).toRegex()));
+	}
+
+	private static String wrapInWordBoundaries(final String pattern) {
+		return "(?:" + pattern + ")\\b";
 	}
 
 	public static Pattern get3rdPPPattern() {
@@ -87,26 +79,14 @@ public class VFormUtil {
 		return vFormPatternAll;
 	}
 
-	private static Pattern makePattern(final String[] forms) {
-		final StringBuffer sb = new StringBuffer("(?:"); // non-capturing group,
-															// see
-		// http://download.oracle.com/javase/1.5.0/docs/api/java/util/regex/Pattern.html#special
-		for (final String form : forms) {
-			sb.append(form);
-			sb.append("|");
-		}
-		sb.setLength(sb.length() - 1); // chop off last "|"
-		sb.append(")\\b"); // make sure we don't match substrings.
-		return Pattern.compile(sb.toString());
-	}
-
 	/**
-	 * Does the same as matches for the default pattern.
+	 * Does the same as matches for the all pattern.
 	 * 
 	 * @param text
-	 * @return
+	 *            text to match
+	 * @return true if text matches all pattern
 	 */
-	public static boolean matches(final String text) {
-		return MarkupUtil.matches(text, vFormDefaultPattern);
+	public static boolean matchesAll(final String text) {
+		return MarkupUtil.matches(text, vFormPatternAll);
 	}
 }
