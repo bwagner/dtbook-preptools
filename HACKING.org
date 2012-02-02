@@ -63,6 +63,59 @@ Not needed in favor of the MenuPlugger
 
 ** VFormActionHelper.java
 
+* External Dependencies
+- https://github.com/bwagner/interval-tree as forked from https://github.com/dyoo/interval-tree
+- https://github.com/bwagner/wordhierarchy
+
+* Individual PrepTools
+Short description of individual preptools. Included is discussion of feasibility in xslt.
+The idea is to replace the preptools written in Java by one generic preptool that knows
+how to treat specially marked-up dtbook files.
+pros:
+- xslt operates on xml instead of raw text
+cons:
+- the process becomes more clunky, as we have a call to the pipeline in the edit->preptool->check-cycle.
+  particularly: Parens-PrepTool
+
+** VForms
+Searches for a collection of vforms and allows user to verify (accept/reject).
+Offers two different patterns of matching vforms selectable via a checkbox.
+Implementation in XSLT should be possible. Challenge: how to handle user's choice of pattern.
+-> generic plugin should allow flags specific to process, i.e. for vforms the choice of pattern.
+
+** Parens
+Finds orphaned parens and wrongly oriented quotation marks.
+
+** Ordinal
+Finds potential ordinal numbers and allows user to verify (accept/reject).
+Implementation in XSLT should be possible.
+
+** Roman
+Finds potential roman numbers and allows user to verify (accept/reject).
+Implementation in XSLT should be possible.
+
+** Measure
+Finds potential measure numbers and allows user to verify (accept/reject).
+Implementation in XSLT should be possible.
+
+** Abbreviation
+Finds potential abbreviations and allows user to verify (accept/reject).
+Implementation in XSLT should be possible.
+
+** Url/Email
+Finds potential urls/emails and allows user to verify (accept/reject).
+Implementation in XSLT should be possible.
+
+** Pagebreak
+Finds page breaks and allows user to verify (accept/reject) or to add a <precedingemptyline> element.
+Implementation in XSLT should be possible, however, it's a process that allows not only two choices, but three.
+
+** Accent
+Finds accents and allows user to verify (accept/reject). The difference to other preptools: once a word has
+been marked with a certain choice, the same choice is applied globally to all occurrences of the word in the text.
+This functionality would need to be implemented in the generic preptool.
+
+
 * Future work
 
 There is an effort underway within the [[http://www.daisy.org/pipeline2][DAISY pipeline 2 project]] to
