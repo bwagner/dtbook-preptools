@@ -8,7 +8,6 @@ import ch.sbs.plugin.preptools.RegexAbbrevTest;
 import ch.sbs.plugin.preptools.RegexOrdinalTest;
 import ch.sbs.utils.preptools.parens.ParensUtilTest;
 import ch.sbs.utils.preptools.vform.VFormUtilTest;
-import ch.sbs.utils.preptools.vform.WordHierarchyTest;
 import ch.sbs.utils.string.StringUtilsTest;
 
 /**
@@ -37,8 +36,7 @@ import ch.sbs.utils.string.StringUtilsTest;
 		FileUtilsTest.class, ParensUtilTest.class, PropsUtilsTest.class,
 		RegexAbbrevTest.class, RegexMeasureTest.class, RegexOrdinalTest.class,
 		RegexPageBreakTest.class, RegexTest.class, RegionSkipperTest.class,
-		StringUtilsTest.class, TextUtilsTest.class, VFormUtilTest.class,
-		WordHierarchyTest.class, })
+		StringUtilsTest.class, TextUtilsTest.class, VFormUtilTest.class, })
 public class AllTests {
 	// the class remains completely empty,
 	// being used only as a holder for the above annotations

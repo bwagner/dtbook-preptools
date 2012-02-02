@@ -7,6 +7,7 @@
 	<classpathentry kind="lib" path="lib/oxygen.jar"/>
 	<classpathentry kind="lib" path="lib/org.arabidopsis.interval.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.9.jar"/>
+	<classpathentry kind="lib" path="lib/wordhierarchy.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/Oxygen XML Editor 13.0"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

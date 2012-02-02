@@ -49,6 +49,7 @@
 
 	<!-- used by "dist" and "plugin.xml" -->
 	<property name="intervaltree.jar" value="org.arabidopsis.interval.jar" />
+	<property name="wordhierarchy.jar" value="wordhierarchy.jar" />
 	
 	<path id="classpath.path">
 		<pathelement location="${build.dir}" />
@@ -99,6 +100,7 @@
 		<mkdir dir="${plugindir}/lib" />
 		<copy file="${jarfile}" todir="${plugindir}/lib" />
 		<copy file="${lib.dir}/${intervaltree.jar}" todir="${plugindir}/lib" />
+		<copy file="${lib.dir}/${wordhierarchy.jar}" todir="${plugindir}/lib" />
 		<copy file="${pluginfile}" todir="${plugindir}" />
 		<!--
 		<copy file="${stamp.properties}" todir="${plugindir}" />
@@ -196,6 +198,7 @@
 				&lt;runtime&gt;
 					&lt;library name="lib/${jarfile}"/&gt;
 					&lt;library name="lib/${intervaltree.jar}"/&gt;
+					&lt;library name="lib/${wordhierarchy.jar}"/&gt;
 				&lt;/runtime&gt;
 			&lt;extension type="${type}" 
 				class="${extensionClazz}"/&gt;
