@@ -85,6 +85,7 @@ Implementation in XSLT should be possible. Challenge: how to handle user's choic
 
 ** Parens
 Finds orphaned parens and wrongly oriented quotation marks.
+Implementation in XSLT possible, but more awkward than current implementation (see introduction).
 
 ** Ordinal
 Finds potential ordinal numbers and allows user to verify (accept/reject).
