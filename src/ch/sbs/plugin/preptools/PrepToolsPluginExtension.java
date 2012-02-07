@@ -43,7 +43,7 @@ import ro.sync.exml.workspace.api.standalone.ViewInfo;
 import ro.sync.ui.Icons;
 import ch.sbs.plugin.preptools.DocumentMetaInfo.PrepToolState;
 import ch.sbs.utils.preptools.FileUtils;
-import ch.sbs.utils.preptools.Match.PositionMatch;
+import ch.sbs.utils.preptools.PositionMatch;
 import ch.sbs.utils.preptools.PropsUtils;
 import ch.sbs.utils.preptools.RegionSkipper;
 import ch.sbs.utils.string.StringUtils;

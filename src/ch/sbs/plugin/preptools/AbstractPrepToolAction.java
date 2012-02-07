@@ -18,8 +18,8 @@ import ch.sbs.utils.preptools.DocumentUtils;
 import ch.sbs.utils.preptools.FileUtils;
 import ch.sbs.utils.preptools.MarkupUtil;
 import ch.sbs.utils.preptools.Match;
-import ch.sbs.utils.preptools.Match.PositionMatch;
 import ch.sbs.utils.preptools.MetaUtils;
+import ch.sbs.utils.preptools.PositionMatch;
 import ch.sbs.utils.preptools.RegionSkipper;
 import ch.sbs.utils.preptools.TextUtils;
 import ch.sbs.utils.preptools.parens.ParensUtil;
@@ -251,7 +251,7 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 		}
 		dmi.setCurrentState();
 		prepToolsPluginExtension.select(match.startOffset, match.endOffset);
-		dmi.setCurrentPositionMatch(new Match.PositionMatch(document, match));
+		dmi.setCurrentPositionMatch(new PositionMatch(document, match));
 	}
 
 	/**
@@ -404,7 +404,7 @@ abstract class AbstractMarkupProceedAction extends AbstractMarkupAction {
 				.getPage();
 		lastMatchStart = aWSTextEditorPage.getSelectionStart();
 		lastMatchEnd = aWSTextEditorPage.getSelectionEnd();
-		final Match.PositionMatch pm = dmi.getCurrentPositionMatch();
+		final PositionMatch pm = dmi.getCurrentPositionMatch();
 		if (lastMatchStart != pm.startOffset.getOffset()
 				|| lastMatchEnd != pm.endOffset.getOffset()) {
 			if (takeUpWhereWeLeftOffLastTime()) {

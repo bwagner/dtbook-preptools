@@ -10,6 +10,7 @@ import javax.swing.text.Document;
 
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
 import ch.sbs.utils.preptools.Match;
+import ch.sbs.utils.preptools.PositionMatch;
 
 /**
  * Keeps meta information about a document known to the plugin.
@@ -108,7 +109,7 @@ class DocumentMetaInfo {
 	private Document document;
 	private final URL url;
 	private DocumentListener documentListener;
-	private Match.PositionMatch currentPositionMatch;
+	private PositionMatch currentPositionMatch;
 	private PrepTool currentPrepTool;
 
 	public DocumentMetaInfo(
@@ -226,7 +227,7 @@ class DocumentMetaInfo {
 	 * @param theMatch
 	 */
 	public void setCurrentPositionMatch(final Match theMatch) {
-		setCurrentPositionMatch(new Match.PositionMatch(document,
+		setCurrentPositionMatch(new PositionMatch(document,
 				theMatch.startOffset, theMatch.endOffset));
 	}
 
@@ -240,7 +241,7 @@ class DocumentMetaInfo {
 	 * @param theCurrentPositionMatch
 	 */
 	public void setCurrentPositionMatch(int theStart, int theEnd) {
-		setCurrentPositionMatch(new Match.PositionMatch(document, theStart,
+		setCurrentPositionMatch(new PositionMatch(document, theStart,
 				theEnd));
 	}
 
@@ -251,7 +252,7 @@ class DocumentMetaInfo {
 	 * @param theCurrentPositionMatch
 	 */
 	public void setCurrentPositionMatch(
-			final Match.PositionMatch theCurrentPositionMatch) {
+			final PositionMatch theCurrentPositionMatch) {
 		lastEditWasManual = false;
 		currentPositionMatch = theCurrentPositionMatch;
 	}
@@ -262,7 +263,7 @@ class DocumentMetaInfo {
 	 * 
 	 * @return
 	 */
-	public Match.PositionMatch getCurrentPositionMatch() {
+	public PositionMatch getCurrentPositionMatch() {
 		return currentPositionMatch;
 	}
 

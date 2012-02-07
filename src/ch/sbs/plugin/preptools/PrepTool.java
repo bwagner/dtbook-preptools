@@ -25,6 +25,7 @@ import javax.swing.text.Document;
 
 import ro.sync.exml.editor.EditorPageConstants;
 import ch.sbs.utils.preptools.Match;
+import ch.sbs.utils.preptools.PositionMatch;
 import ch.sbs.utils.preptools.vform.VFormUtil;
 
 /**
@@ -864,7 +865,7 @@ class ParensPrepTool extends PrepTool {
 	}
 
 	static class MetaInfo extends DocumentMetaInfo.PrepToolState {
-		private Iterator<Match.PositionMatch> orphanedParensIterator;
+		private Iterator<PositionMatch> orphanedParensIterator;
 		private final Document document;
 
 		MetaInfo(final Document theDocument) {
@@ -877,9 +878,9 @@ class ParensPrepTool extends PrepTool {
 		 * @param theOrphanedParens
 		 */
 		public void set(final List<Match> theOrphanedParens) {
-			final List<Match.PositionMatch> pml = new ArrayList<Match.PositionMatch>();
+			final List<PositionMatch> pml = new ArrayList<PositionMatch>();
 			for (final Match match : theOrphanedParens) {
-				final Match.PositionMatch mp = new Match.PositionMatch(
+				final PositionMatch mp = new PositionMatch(
 						document, match);
 				pml.add(mp);
 			}
@@ -900,7 +901,7 @@ class ParensPrepTool extends PrepTool {
 		 * 
 		 * @return next orphaned paren of this iterator.
 		 */
-		public Match.PositionMatch next() {
+		public PositionMatch next() {
 			return orphanedParensIterator.next();
 		}
 
