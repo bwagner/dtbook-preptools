@@ -9,7 +9,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import ro.sync.exml.workspace.api.editor.page.text.WSTextEditorPage;
-import ch.sbs.utils.preptools.Match;
 import ch.sbs.utils.preptools.PositionMatch;
 
 /**
@@ -230,8 +229,7 @@ class DocumentMetaInfo {
 	 * @param theCurrentPositionMatch
 	 */
 	public void setCurrentPositionMatch(int theStart, int theEnd) {
-		setCurrentPositionMatch(new PositionMatch(document, theStart,
-				theEnd));
+		setCurrentPositionMatch(new PositionMatch(document, theStart, theEnd));
 	}
 
 	/**
