@@ -251,7 +251,8 @@ abstract class AbstractMarkupAction extends AbstractPrepToolAction {
 		}
 		dmi.setCurrentState();
 		prepToolsPluginExtension.select(match.startOffset, match.endOffset);
-		dmi.setCurrentPositionMatch(new PositionMatch(document, match));
+		dmi.setCurrentPositionMatch(new PositionMatch(document,
+				match.startOffset, match.endOffset));
 	}
 
 	/**
