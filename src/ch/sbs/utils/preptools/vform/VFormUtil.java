@@ -31,7 +31,7 @@ import ch.sbs.utils.preptools.MarkupUtil;
 
 public class VFormUtil {
 	// Mail von Mischa Kuenzle 12.1.2011 15:09
-	// 3. Person PL (obligatorische Abfrage)
+	// 1. Person PL (obligatorische Abfrage)
 	private static final String[] thirdPP = new String[] { "Ihnen", "Ihr",
 			"Ihre", "Ihrem", "Ihren", "Ihrer", "Ihrerseits", "Ihres",
 			"Ihresgleichen", "Ihrethalben", "Ihretwegen", "Ihretwillen",
