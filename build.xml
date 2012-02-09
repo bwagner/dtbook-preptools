@@ -26,6 +26,9 @@
 	<!-- used by "boilerplate" -->
 	<property name="src.generated" value="generated_src" />
 
+	<!-- used by "junit" -->
+	<property name="test.src" value="test_src" />
+
 	<!-- used by "plugin.xml" -->
 	<property name="description" value="Test" />
 	<!-- TODO: possibly the following values can be found from the sources -->
@@ -381,5 +384,22 @@
 		</condition>
 	</target>
 	<!-- end git stuff -->
+
+    <target name="junit" depends="compile">
+        <junit printsummary="withOutAndErr" haltonfailure="yes">
+            <classpath>
+                <fileset dir="lib">
+                <include name="**/*.jar"/>
+                </fileset>
+                <path location="${build.dir}"/>
+                <path location="."/>
+            </classpath>
+            <batchtest fork="yes">
+                    <fileset dir="${test.src}">
+                            <include name="**/*Test.java"/>
+                    </fileset>
+            </batchtest>
+        </junit>
+    </target>
 
 </project>
