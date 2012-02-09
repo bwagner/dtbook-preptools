@@ -5,16 +5,16 @@
 	<!-- used by "send": properties "recipient" and "greet" -->
 	<property file="build.properties" />
 
-	<!-- used by "deploy" and "plugin.xml" -->
+	<!-- used by "deploy", "plugin.xml", "clean" -->
 	<property name="pluginfile" value="plugin.xml" />
 
-	<!-- used by "stamp" -->
+	<!-- used by "stamp", "jar", "clean" -->
 	<property name="stamp.properties" value="stamp.properties" />
 
-	<!-- used by "dist", "jar" and "plugin.xml" -->
+	<!-- used by "dist", "jar", "plugin.xml", "clean" -->
 	<property name="jarfile" value="${ant.project.name}.jar" />
 
-	<!-- used by "jar" and "init" -->
+	<!-- used by "compile", "jar", "init", "junit", "clean" -->
 	<property name="build.dir" value="bin" />
 
 	<!-- used by "compile" -->
@@ -28,6 +28,9 @@
 
 	<!-- used by "junit" -->
 	<property name="test.src" value="test_src" />
+
+	<!-- used by "zip", "clean" -->
+	<property name="zip.file" value="${ant.project.name}.zip" />
 
 	<!-- used by "plugin.xml" -->
 	<property name="description" value="Test" />
@@ -117,7 +120,7 @@
 	
 	<target name="zip" depends="dist" description="makes zip for official distribution">
 		<property name="plugindir" value="${oxygendir}/plugins/${ant.project.name}" />
-		<zip destfile="${ant.project.name}.zip" duplicate="fail" basedir="${plugindir}/.." includes="${ant.project.name}/**"/>
+		<zip destfile="${zip.file}" duplicate="fail" basedir="${plugindir}/.." includes="${ant.project.name}/**"/>
 	</target>
 	
 	<target name="send" depends="zip" description="opens thunderbird to send zip">
@@ -275,7 +278,7 @@
 		<tstamp>
 			<format property="release.time" pattern="dd.MM.yyyy HH:mm:ss" />
 		</tstamp>
-		<echo file="stamp.properties">
+		<echo file="${stamp.properties}">
 			# ${header.generated}
 			stamp = ${repository.version}  (${release.time})
 			</echo>
@@ -385,7 +388,7 @@
 	</target>
 	<!-- end git stuff -->
 
-    <target name="junit" depends="compile">
+    <target name="junit" depends="compile" description="junit">
         <junit printsummary="withOutAndErr" haltonfailure="yes">
             <classpath>
                 <fileset dir="lib">
@@ -401,5 +404,13 @@
             </batchtest>
         </junit>
     </target>
+
+	<target name="clean" description="clean">
+		<delete dir="${build.dir}"/>
+		<delete file="${zip.file}"/>
+		<delete file="${jarfile}"/>
+		<delete file="${stamp.properties}"/>
+		<delete file="${pluginfile}"/>
+	</target>
 
 </project>
